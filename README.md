@@ -1,73 +1,118 @@
-# React + TypeScript + Vite
+# Frontend do sistema da Paraíba Hot Dog
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Tecnologias
 
-Currently, two official plugins are available:
+- React
+- TypeScript
+- Vite
+- TailwindCSS
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+# Como rodar o projeto
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Clonar o repositório
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+git clone <url-do-repositorio>
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Entrar na pasta do projeto
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+cd Paraiba-Hot-Dog-Front
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Instalar dependências
+
+```bash
+npm install
+```
+
+## Rodar em ambiente de desenvolvimento
+
+```bash
+npm run dev
+```
+
+O projeto ficará disponível em:
+
+```bash
+http://localhost:5173
+```
+
+---
+
+# Scripts disponíveis
+
+## Desenvolvimento
+
+```bash
+npm run dev
+```
+
+Inicia o servidor de desenvolvimento.
+
+---
+
+## Build de produção
+
+```bash
+npm run build
+```
+
+Gera a build de produção.
+
+---
+
+## Preview da build
+
+```bash
+npm run preview
+```
+
+Executa a build localmente para testes.
+
+---
+
+# Arquitetura do projeto
+
+```bash
+componentes/
+│
+├── globais/
+│   ├── Componentes compartilhados entre diferentes áreas do sistema
+│
+├── usuario/
+│   └── Componentes utilizados nas telas do usuário
+│
+└── administrador/
+    └── Componentes utilizados na área administrativa
+
+
+imagens/
+│
+├── itens/
+│   └── Imagens dos produtos
+│
+├── local/
+│   └── Imagens relacionadas às unidades e localização
+│
+├── logos/
+│   └── Logos da aplicação
+│
+├── outros/
+│   └── Elementos visuais complementares
+│
+└── social/
+    └── Ícones de redes sociais
+
+
+telas/
+│
+├── usuario/
+│   └── Telas voltadas para os usuários do sistema
+│
+└── administrador/
+    └── Telas voltadas para administração
 ```
