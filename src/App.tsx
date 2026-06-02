@@ -1,5 +1,5 @@
-import Inicio from './telas/usuario/inicio'
+import Blog from './telas/usuario/Blog'
 
 export default function App() {
-  return <Inicio />
+  return <Blog />
 }
