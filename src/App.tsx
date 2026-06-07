@@ -1,5 +1,5 @@
-import Inicio from './telas/usuario/inicio'
+import Painel from './telas/administrador/Painel'
 
 export default function App() {
-  return <Inicio />
+  return <Painel />
 }
