@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Menu, User, X } from 'lucide-react'
-import logo from '../../imagens/logos/logo-preta.png'
+import logoBranca from '../../imagens/logos/logo-branca.png'
+import logoPreta from '../../imagens/logos/logo-preta.png'
 
 const navLinks = [
   { label: 'Cardápio', href: '/cardapio' },
@@ -14,10 +15,7 @@ const ADMIN_HREF = '/admin'
 const MIN_GAP_RIGHT = 20
 const RIGHT_ACTION_WIDTH = 44
 
-const linkClassName =
-  'font-barlow-condensed text-2xl font-semibold text-preto-v1 transition-colors hover:text-amarelo'
-
-function NavItems() {
+function NavItems({ linkClassName }: { linkClassName: string }) {
   return navLinks.map(({ label, href }) => (
     <li key={href}>
       <a href={href} className={linkClassName}>
@@ -27,9 +25,23 @@ function NavItems() {
   ))
 }
 
-export default function Navbar() {
+type NavbarProps = {
+  variant?: 'light' | 'dark'
+}
+
+export default function Navbar({ variant = 'light' }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [useMobileMenu, setUseMobileMenu] = useState(false)
+  const isDark = variant === 'dark'
+  const logo = isDark ? logoBranca : logoPreta
+  const headerClassName = isDark ? 'bg-preto-v1' : 'bg-branco'
+  const linkClassName = `font-barlow-condensed text-2xl font-semibold transition-colors hover:text-amarelo ${
+    isDark ? 'text-branco' : 'text-preto-v1'
+  }`
+  const iconClassName = isDark ? 'text-branco hover:text-amarelo' : 'text-preto-v1 hover:text-amarelo'
+  const mobileMenuClassName = isDark
+    ? 'border-t border-branco/10 bg-preto-v1 px-6 py-5'
+    : 'border-t border-preto-v1/10 bg-branco px-6 py-5'
 
   const barRef = useRef<HTMLDivElement>(null)
   const logoRef = useRef<HTMLAnchorElement>(null)
@@ -48,7 +60,10 @@ export default function Navbar() {
     const availableNavWidth =
       bar.clientWidth - logo.offsetWidth - paddingX - RIGHT_ACTION_WIDTH - MIN_GAP_RIGHT
 
-    setUseMobileMenu(requiredNavWidth > availableNavWidth)
+    const shouldUseMobileMenu = requiredNavWidth > availableNavWidth
+
+    setUseMobileMenu(shouldUseMobileMenu)
+    if (!shouldUseMobileMenu) setIsOpen(false)
   }, [])
 
   useLayoutEffect(() => {
@@ -70,16 +85,12 @@ export default function Navbar() {
     }
   }, [checkLayout])
 
-  useEffect(() => {
-    if (!useMobileMenu) setIsOpen(false)
-  }, [useMobileMenu])
-
   const toggleMenu = () => setIsOpen((open) => !open)
   const closeMenu = () => setIsOpen(false)
 
   return (
     <header
-      className={`fixed top-0 left-0 z-50 w-full bg-branco ${isOpen ? '' : 'h-16'}`}
+      className={`fixed top-0 left-0 z-50 w-full ${headerClassName} ${isOpen ? '' : 'h-16'}`}
     >
       <div
         ref={barRef}
@@ -91,7 +102,7 @@ export default function Navbar() {
           className="pointer-events-none invisible absolute flex items-center gap-6 whitespace-nowrap md:gap-8 xl:gap-10"
           aria-hidden
         >
-          <NavItems />
+          <NavItems linkClassName={linkClassName} />
         </ul>
 
         <a
@@ -116,7 +127,7 @@ export default function Navbar() {
               aria-label="Navegação principal"
             >
               <ul className="flex items-center gap-6 whitespace-nowrap md:gap-8">
-                <NavItems />
+                <NavItems linkClassName={linkClassName} />
               </ul>
             </nav>
 
@@ -126,7 +137,7 @@ export default function Navbar() {
               aria-label="Navegação principal"
             >
               <ul className="pointer-events-auto flex items-center gap-10 whitespace-nowrap">
-                <NavItems />
+                <NavItems linkClassName={linkClassName} />
               </ul>
             </nav>
           </>
@@ -137,7 +148,7 @@ export default function Navbar() {
         {useMobileMenu ? (
           <button
             type="button"
-            className="relative z-10 ml-auto flex shrink-0 items-center justify-center p-2 text-preto-v1"
+            className={`relative z-10 ml-auto flex shrink-0 items-center justify-center p-2 ${iconClassName}`}
             onClick={toggleMenu}
             aria-expanded={isOpen}
             aria-controls="mobile-menu"
@@ -148,7 +159,7 @@ export default function Navbar() {
         ) : (
           <a
             href={ADMIN_HREF}
-            className="relative z-10 ml-auto flex shrink-0 items-center justify-center p-2 text-preto-v1 transition-colors hover:text-amarelo"
+            className={`relative z-10 ml-auto flex shrink-0 items-center justify-center p-2 transition-colors ${iconClassName}`}
             aria-label="Acesso administrativo"
           >
             <User size={28} strokeWidth={2} />
@@ -159,7 +170,7 @@ export default function Navbar() {
       {isOpen && useMobileMenu && (
         <nav
           id="mobile-menu"
-          className="border-t border-preto-v1/10 bg-branco px-6 py-5"
+          className={mobileMenuClassName}
           aria-label="Navegação principal"
         >
           <ul className="flex flex-col gap-5">
