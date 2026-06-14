@@ -2,68 +2,68 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import logoBranca from '../../imagens/logos/logo-branca.png'
 
-// Parâmetros do Keycloak local (Direct Grant — Resource Owner Password Credentials)
+// Keycloak local parameters (Direct Grant — Resource Owner Password Credentials)
 const KEYCLOAK_URL = 'http://localhost:8080'
 const KEYCLOAK_REALM = 'paraiba-hotdog'
 const KEYCLOAK_CLIENT_ID = 'paraiba-hotdog-api'
 
 export default function Login() {
-    // Estados para controlar os campos do formulário
     const [email, setEmail] = useState('')
-    const [senha, setSenha] = useState('')
-    const [carregando, setCarregando] = useState(false)
+    const [password, setPassword] = useState('')
+    const [loading, setLoading] = useState(false)
 
-    const navegar = useNavigate()
+    const navigate = useNavigate()
 
     /**
-     * Realiza o login via Direct Grant (Resource Owner Password Credentials).
-     * Envia as credenciais diretamente ao endpoint de token do Keycloak,
-     * sem redirecionar o browser para a página de login do Keycloak.
+     * Handles form submission via Keycloak Direct Grant
+     * (Resource Owner Password Credentials flow).
+     * Sends credentials directly to the Keycloak token endpoint
+     * without redirecting the browser to the Keycloak login page.
      */
-    async function lidarComLogin(e: React.FormEvent<HTMLFormElement>) {
+    async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
-        setCarregando(true)
+        setLoading(true)
 
         const tokenUrl = `${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token`
 
-        const corpo = new URLSearchParams({
+        const body = new URLSearchParams({
             grant_type: 'password',
             client_id: KEYCLOAK_CLIENT_ID,
             username: email,
-            password: senha,
+            password: password,
         })
 
         try {
-            const resposta = await fetch(tokenUrl, {
+            const response = await fetch(tokenUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: corpo.toString(),
+                body: body.toString(),
             })
 
-            if (!resposta.ok) {
-                // Keycloak retorna 401 para credenciais inválidas
-                throw new Error(`Falha na autenticação: ${resposta.status}`)
+            if (!response.ok) {
+                // Keycloak returns 401 for invalid credentials
+                throw new Error(`Authentication failed: ${response.status}`)
             }
 
-            const dados = await resposta.json()
+            const data = await response.json()
 
-            // Salva o access token no localStorage conforme solicitado
-            localStorage.setItem('token', dados.access_token)
+            // Save the access token to localStorage
+            localStorage.setItem('token', data.access_token)
 
-            // Redireciona para a tela inicial
-            navegar('/')
-        } catch (erro) {
-            console.error('Erro ao realizar login:', erro)
+            // Redirect to the home screen
+            navigate('/')
+        } catch (error) {
+            console.error('Login error:', error)
             alert('Credenciais inválidas ou servidor fora do ar. Verifique seus dados e tente novamente.')
         } finally {
-            setCarregando(false)
+            setLoading(false)
         }
     }
 
     return (
         <div className="flex min-h-screen flex-col bg-gray-100">
 
-            {/* CABEÇALHO — barra de navegação preta fina com logo destacada */}
+            {/* HEADER — thin black navigation bar with prominent logo */}
             <header className="w-full bg-preto-v1 px-6 py-2 h-16 flex items-center overflow-visible">
                 <a href="/" aria-label="Paraíba Hot Dog — início">
                     <img
@@ -74,11 +74,11 @@ export default function Login() {
                 </a>
             </header>
 
-            {/* CONTEÚDO PRINCIPAL — formulário centralizado */}
+            {/* MAIN CONTENT — centered login form */}
             <main className="flex flex-1 items-center justify-center px-4 py-12">
                 <div className="w-full max-w-sm rounded-2xl bg-white px-8 py-10 shadow-lg">
 
-                    {/* TÍTULO */}
+                    {/* TITLE */}
                     <h1 className="mb-2 font-barlow-condensed text-4xl font-black uppercase tracking-wide text-preto-v1">
                         Login
                     </h1>
@@ -86,10 +86,10 @@ export default function Login() {
                         Acesse o painel Paraíba Hot Dog
                     </p>
 
-                    {/* FORMULÁRIO */}
-                    <form onSubmit={lidarComLogin} noValidate className="flex flex-col gap-5">
+                    {/* FORM */}
+                    <form onSubmit={handleLogin} noValidate className="flex flex-col gap-5">
 
-                        {/* CAMPO DE E-MAIL */}
+                        {/* EMAIL FIELD */}
                         <div className="flex flex-col gap-1.5">
                             <label
                                 htmlFor="email"
@@ -105,33 +105,33 @@ export default function Login() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                disabled={carregando}
+                                disabled={loading}
                                 className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-barlow text-sm text-preto-v1 outline-none transition-colors placeholder:text-gray-400 focus:border-amarelo focus:ring-2 focus:ring-amarelo/30 disabled:opacity-60"
                             />
                         </div>
 
-                        {/* CAMPO DE SENHA */}
+                        {/* PASSWORD FIELD */}
                         <div className="flex flex-col gap-1.5">
                             <label
-                                htmlFor="senha"
+                                htmlFor="password"
                                 className="font-barlow text-sm font-semibold text-preto-v1"
                             >
                                 Senha
                             </label>
                             <input
-                                id="senha"
+                                id="password"
                                 type="password"
                                 autoComplete="current-password"
                                 placeholder="••••••••"
-                                value={senha}
-                                onChange={(e) => setSenha(e.target.value)}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 required
-                                disabled={carregando}
+                                disabled={loading}
                                 className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-barlow text-sm text-preto-v1 outline-none transition-colors placeholder:text-gray-400 focus:border-amarelo focus:ring-2 focus:ring-amarelo/30 disabled:opacity-60"
                             />
                         </div>
 
-                        {/* LINK ESQUECI A SENHA */}
+                        {/* FORGOT PASSWORD LINK */}
                         <div className="text-right">
                             <a
                                 href="/esqueci-senha"
@@ -141,17 +141,17 @@ export default function Login() {
                             </a>
                         </div>
 
-                        {/* BOTÃO ENTRAR */}
+                        {/* SUBMIT BUTTON */}
                         <button
                             type="submit"
-                            disabled={carregando}
+                            disabled={loading}
                             className="mt-1 w-full rounded-xl bg-amarelo py-3 font-barlow-condensed text-base font-bold uppercase tracking-widest text-preto-v1 shadow-md transition-opacity hover:opacity-90 active:opacity-80 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            {carregando ? 'ENTRANDO...' : 'ENTRAR'}
+                            {loading ? 'ENTRANDO...' : 'ENTRAR'}
                         </button>
                     </form>
 
-                    {/* RODAPÉ DO CARD */}
+                    {/* CARD FOOTER */}
                     <p className="mt-8 font-barlow text-sm text-cinza-base">
                         Não tem uma conta?{' '}
                         <a
