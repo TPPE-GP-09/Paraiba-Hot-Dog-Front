@@ -2,6 +2,7 @@ import CardapioAdm from './telas/administrador/CardapioAdm'
 import Painel from './telas/administrador/Painel'
 import GestaoUnidades from './telas/administrador/GestaoUnidades'
 import GestaoUsuarios from './telas/administrador/GestaoUsuarios'
+import GestaoBlog from './telas/administrador/GestaoBlog'
 import { useAuth } from './contextos/useAuth'
 import Cardapio from './telas/usuario/Cardapio'
 import CartaoFidelidade from './telas/usuario/CartaoFidelidade'
@@ -9,6 +10,7 @@ import Cozinha from './telas/cozinha/Cozinha'
 import Dashboard from './telas/dashboard/Dashboard'
 import Inicio from './telas/usuario/Inicio'
 import Login from './telas/usuario/Login'
+import SobreNos from './telas/usuario/SobreNos'
 import RecuperarSenha from './telas/usuario/RecuperarSenha'
 import RedefinirSenha from './telas/usuario/RedefinirSenha'
 import UnidadeAraucarias from './telas/usuario/UnidadeAraucarias'
@@ -47,6 +49,10 @@ export default function App() {
     return <GestaoUnidades />
   }
 
+  if (pathname === '/admin/configuracoes/blog') {
+    return <GestaoBlog />
+  }
+
   if (pathname === '/admin/anotar-pedidos') {
     return <AnotarPedidos />
   }
@@ -69,6 +75,10 @@ export default function App() {
 
   if (pathname === '/cartao-fidelidade') {
     return <CartaoFidelidade />
+  }
+
+  if (pathname === '/sobre-nos') {
+    return <SobreNos />
   }
 
   if (pathname === '/esqueci-senha') {

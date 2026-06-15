@@ -69,31 +69,6 @@ const pedidosExemplo: PedidoCozinha[] = [
   },
 ]
 
-const entreguesExemplo: PedidoCozinha[] = [
-  {
-    id: 228,
-    hora: '20:45',
-    mesa: 'Mesa 8',
-    lote: 1,
-    status: 'entregue',
-    itens: [
-      { nome: '2x Smash', adicionais: ['Ponto de Ervas'], quantidade: 2 },
-      { nome: '1x Coca Cola 500ml', adicionais: [], quantidade: 1 },
-    ],
-  },
-  {
-    id: 229,
-    hora: '20:50',
-    mesa: 'Mesa 1',
-    lote: 1,
-    status: 'entregue',
-    itens: [
-      { nome: '1x Arretado', adicionais: ['Molho de Bacon', 'Sem milho'], quantidade: 1 },
-      { nome: '1x Batata', adicionais: [], quantidade: 1 },
-    ],
-  },
-]
-
 function agruparItens(items: CozinhaItem[]) {
   const grupos = new Map<string, PedidoCozinha>()
 
