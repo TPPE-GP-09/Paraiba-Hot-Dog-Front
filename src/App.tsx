@@ -1,4 +1,5 @@
 import Painel from './telas/administrador/Painel'
+import { useAuth } from './contextos/useAuth'
 import Dashboard from './telas/dashboard/Dashboard'
 import CartaoFidelidade from './telas/usuario/CartaoFidelidade'
 import Inicio from './telas/usuario/Inicio'
@@ -9,6 +10,20 @@ import UnidadeAraucarias from './telas/usuario/UnidadeAraucarias'
 
 export default function App() {
   const { pathname } = window.location
+  const { isAuthenticated, hasRole } = useAuth()
+
+  const rotaAdministrativa =
+    pathname === '/admin' ||
+    pathname === '/admin/dashboard' ||
+    pathname === '/dashboard'
+
+  if (rotaAdministrativa && !isAuthenticated) {
+    return <Login />
+  }
+
+  if (rotaAdministrativa && !hasRole('administrador')) {
+    return <AcessoNegado />
+  }
 
   if (pathname === '/admin') {
     return <Painel />
@@ -39,4 +54,25 @@ export default function App() {
   }
 
   return <Inicio />
+}
+
+function AcessoNegado() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-preto-v1 px-6 text-center text-branco">
+      <div>
+        <h1 className="font-barlow-condensed text-4xl font-black uppercase text-amarelo">
+          Acesso negado
+        </h1>
+        <p className="mt-3 font-barlow text-lg">
+          Esta área é exclusiva para administradores.
+        </p>
+        <a
+          href="/"
+          className="mt-6 inline-flex rounded-xl bg-amarelo px-6 py-3 font-barlow-condensed font-bold uppercase text-preto-v1"
+        >
+          Voltar ao início
+        </a>
+      </div>
+    </main>
+  )
 }

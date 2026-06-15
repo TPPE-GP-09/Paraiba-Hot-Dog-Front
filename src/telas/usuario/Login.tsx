@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import logoBranca from '../../imagens/logos/logo-branca.png'
 import { loginWithKeycloak } from '../../servicos/authApi'
+import { tokenPossuiRole } from '../../servicos/authToken'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -12,7 +13,13 @@ export default function Login() {
     setLoading(true)
 
     try {
-      await loginWithKeycloak(email, password)
+      const tokens = await loginWithKeycloak(email, password)
+
+      if (tokenPossuiRole(tokens.access_token, 'administrador')) {
+        window.location.href = '/admin'
+        return
+      }
+
       window.location.href = '/'
     } catch (error) {
       console.error('Login error:', error)
