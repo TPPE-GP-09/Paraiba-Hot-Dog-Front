@@ -1,4 +1,5 @@
 import Painel from './telas/administrador/Painel'
+import GestaoUnidades from './telas/administrador/GestaoUnidades'
 import GestaoUsuarios from './telas/administrador/GestaoUsuarios'
 import { useAuth } from './contextos/useAuth'
 import Dashboard from './telas/dashboard/Dashboard'
@@ -29,6 +30,10 @@ export default function App() {
 
   if (pathname === '/admin/configuracoes/usuarios') {
     return <GestaoUsuarios />
+  }
+
+  if (pathname === '/admin/configuracoes/unidades') {
+    return <GestaoUnidades />
   }
 
   if (pathname === '/dashboard' || pathname === '/admin/dashboard') {

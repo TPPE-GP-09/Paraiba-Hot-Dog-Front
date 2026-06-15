@@ -21,6 +21,7 @@ export type Unidade = {
   abertura: string
   fechamento: string
   descricao: string | null
+  mapa_url: string | null
   endereco: Endereco
 }
 
@@ -55,6 +56,26 @@ export function resolverUrlImagem(caminho: string | null | undefined) {
   if (/^https?:\/\//i.test(caminho)) return caminho
 
   return `${API_URL}${caminho.startsWith('/') ? caminho : `/${caminho}`}`
+}
+
+export function resolverUrlMapaEmbed(
+  mapaUrl: string | null | undefined,
+  enderecoAlternativo: string,
+) {
+  if (mapaUrl?.includes('output=embed')) return mapaUrl
+
+  const coordenadasDoLocal = mapaUrl?.match(
+    /!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/,
+  )
+  const coordenadasDaVisualizacao = mapaUrl?.match(
+    /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/,
+  )
+  const coordenadas = coordenadasDoLocal ?? coordenadasDaVisualizacao
+  const consulta = coordenadas
+    ? `${coordenadas[1]},${coordenadas[2]}`
+    : enderecoAlternativo
+
+  return `https://www.google.com/maps?q=${encodeURIComponent(consulta)}&output=embed`
 }
 
 function normalizarSlug(valor: string) {
