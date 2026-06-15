@@ -15,7 +15,10 @@ export default function App() {
   const { pathname } = window.location
   const { isAuthenticated, hasRole } = useAuth()
 
-  const rotaAdministrativa = pathname.startsWith('/admin') || pathname === '/dashboard'
+  const rotaAdministrativa =
+    pathname.startsWith('/admin') ||
+    pathname === '/dashboard' ||
+    pathname === '/cozinha'
 
   if (rotaAdministrativa && !isAuthenticated) {
     return <Login />
@@ -41,7 +44,7 @@ export default function App() {
     return <Dashboard />
   }
 
-  if (pathname === '/cozinha') {
+  if (pathname === '/cozinha' || pathname === '/admin/cozinha') {
     return <Cozinha />
   }
 
