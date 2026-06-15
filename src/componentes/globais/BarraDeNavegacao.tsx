@@ -15,10 +15,18 @@ const ADMIN_HREF = '/admin'
 const MIN_GAP_RIGHT = 20
 const RIGHT_ACTION_WIDTH = 44
 
-function NavItems({ linkClassName }: { linkClassName: string }) {
+function NavItems({
+  activeLinkClassName,
+  currentPath,
+  linkClassName,
+}: {
+  activeLinkClassName: string
+  currentPath: string
+  linkClassName: string
+}) {
   return navLinks.map(({ label, href }) => (
     <li key={href}>
-      <a href={href} className={linkClassName}>
+      <a href={href} className={currentPath === href ? activeLinkClassName : linkClassName}>
         {label}
       </a>
     </li>
@@ -32,12 +40,13 @@ type NavbarProps = {
 export default function Navbar({ variant = 'light' }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [useMobileMenu, setUseMobileMenu] = useState(false)
+  const currentPath = window.location.pathname
   const isDark = variant === 'dark'
   const logo = isDark ? logoBranca : logoPreta
   const headerClassName = isDark ? 'bg-preto-v1' : 'bg-branco'
-  const linkClassName = `font-barlow-condensed text-2xl font-semibold transition-colors hover:text-amarelo ${
-    isDark ? 'text-branco' : 'text-preto-v1'
-  }`
+  const linkBaseClassName = 'font-barlow-condensed text-2xl font-semibold transition-colors hover:text-amarelo'
+  const linkClassName = `${linkBaseClassName} ${isDark ? 'text-branco' : 'text-preto-v1'}`
+  const activeLinkClassName = `${linkBaseClassName} text-amarelo`
   const iconClassName = isDark ? 'text-branco hover:text-amarelo' : 'text-preto-v1 hover:text-amarelo'
   const mobileMenuClassName = isDark
     ? 'border-t border-branco/10 bg-preto-v1 px-6 py-5'
@@ -102,7 +111,11 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
           className="pointer-events-none invisible absolute flex items-center gap-6 whitespace-nowrap md:gap-8 xl:gap-10"
           aria-hidden
         >
-          <NavItems linkClassName={linkClassName} />
+          <NavItems
+            activeLinkClassName={activeLinkClassName}
+            currentPath={currentPath}
+            linkClassName={linkClassName}
+          />
         </ul>
 
         <a
@@ -127,7 +140,11 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
               aria-label="Navegação principal"
             >
               <ul className="flex items-center gap-6 whitespace-nowrap md:gap-8">
-                <NavItems linkClassName={linkClassName} />
+                <NavItems
+                  activeLinkClassName={activeLinkClassName}
+                  currentPath={currentPath}
+                  linkClassName={linkClassName}
+                />
               </ul>
             </nav>
 
@@ -137,7 +154,11 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
               aria-label="Navegação principal"
             >
               <ul className="pointer-events-auto flex items-center gap-10 whitespace-nowrap">
-                <NavItems linkClassName={linkClassName} />
+                <NavItems
+                  activeLinkClassName={activeLinkClassName}
+                  currentPath={currentPath}
+                  linkClassName={linkClassName}
+                />
               </ul>
             </nav>
           </>
@@ -176,7 +197,7 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
           <ul className="flex flex-col gap-5">
             {navLinks.map(({ label, href }) => (
               <li key={href}>
-                <a href={href} className={linkClassName} onClick={closeMenu}>
+                <a href={href} className={currentPath === href ? activeLinkClassName : linkClassName} onClick={closeMenu}>
                   {label}
                 </a>
               </li>

@@ -1,7 +1,6 @@
 import { useMemo, type ReactNode } from 'react'
+import { getStoredToken } from '../servicos/apiFetch'
 import { AuthContext, type AuthContextValue } from './authContextCore'
-
-const TOKEN_KEYS = ['access_token', 'token', 'auth_token', 'kc_token'] as const
 
 function readCookie(name: string) {
   const cookie = document.cookie
@@ -12,10 +11,10 @@ function readCookie(name: string) {
 }
 
 function readToken() {
-  for (const key of TOKEN_KEYS) {
-    const localToken = localStorage.getItem(key)
-    if (localToken) return localToken
+  const storedToken = getStoredToken()
+  if (storedToken) return storedToken
 
+  for (const key of ['token', 'access_token', 'auth_token', 'kc_token']) {
     const cookieToken = readCookie(key)
     if (cookieToken) return cookieToken
   }

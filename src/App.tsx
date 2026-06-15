@@ -1,5 +1,9 @@
+import CartaoFidelidade from './telas/usuario/CartaoFidelidade'
 import Dashboard from './telas/dashboard/Dashboard'
 import Inicio from './telas/usuario/Inicio'
+import Login from './telas/usuario/Login'
+import RecuperarSenha from './telas/usuario/RecuperarSenha'
+import RedefinirSenha from './telas/usuario/RedefinirSenha'
 import UnidadeAraucarias from './telas/usuario/UnidadeAraucarias'
 
 export default function App() {
@@ -7,6 +11,22 @@ export default function App() {
 
   if (pathname === '/dashboard') {
     return <Dashboard />
+  }
+
+  if (pathname === '/login' || pathname === '/admin') {
+    return <Login />
+  }
+
+  if (pathname === '/cartao-fidelidade') {
+    return <CartaoFidelidade />
+  }
+
+  if (pathname === '/esqueci-senha') {
+    return <RecuperarSenha />
+  }
+
+  if (pathname === '/recuperar-senha') {
+    return <RedefinirSenha />
   }
 
   if (pathname.startsWith('/unidades/')) {

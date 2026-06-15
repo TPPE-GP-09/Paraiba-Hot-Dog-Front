@@ -1,48 +1,10 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import BarraDeNavegacao from '../../componentes/globais/BarraDeNavegacao'
-import Rodape from '../../componentes/globais/Rodape'
-import { useAuth } from '../../contextos/useAuth'
-
-type DashboardApi = {
-  kpis: {
-    receita_bruta: string
-    lucro_liquido: string
-    ticket_medio: string
-    total_pedidos: number
-    variacao_receita_bruta: string
-    variacao_lucro_liquido: string
-    variacao_ticket_medio: string
-    variacao_total_pedidos: string
-  }
-  vendas_por_hora: Array<{
-    hora: string
-    quantidade: number
-    destaque: boolean
-  }>
-  top_produtos: Array<{
-    rank: number
-    produto_id: number
-    nome: string
-    quantidade: number
-    receita: string
-    variacao: string
-  }>
-  mix_produtos: Array<{
-    nome: string
-    percentual: string
-  }>
-  vendas_totais: string
-  pedidos_registrados: number
-  destaque: {
-    nome: string
-    margem_ganho: string
-    margem_liquida: string
-  } | null
-}
+import { getDashboard, getDashboardPdf, type DashboardApi } from '../../servicos/dashboardApi'
+import ControlesDashboard from './ControlesDashboard'
 
 type KpiTone = 'positive' | 'negative'
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000'
 const mixColors = ['#ffcc00', '#d71920', '#9ba9b8']
 
 const emptyDashboard: DashboardApi = {
@@ -89,11 +51,87 @@ function variationTone(value: string | number): KpiTone {
   return Number(value) < 0 ? 'negative' : 'positive'
 }
 
+function sanitizeYear(year: string) {
+  const cleanedYear = year.replace(/\D/g, '').slice(0, 4)
+
+  return cleanedYear.length === 4 ? cleanedYear : ''
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+  const fileUrl = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+
+  link.href = fileUrl
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(fileUrl)
+}
+
+function escapePdfText(text: string) {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\x20-\x7E]/g, ' ')
+    .replace(/\\/g, '\\\\')
+    .replace(/\(/g, '\\(')
+    .replace(/\)/g, '\\)')
+}
+
+function createLocalDashboardPdf(dashboard: DashboardApi, year?: string) {
+  const lines = [
+    'Relatorio BI - Paraiba Hot Dog',
+    `Ano: ${year || 'Todos'}`,
+    `Receita bruta: ${formatCurrency(dashboard.kpis.receita_bruta)}`,
+    `Lucro liquido: ${formatCurrency(dashboard.kpis.lucro_liquido)}`,
+    `Ticket medio: ${formatCurrency(dashboard.kpis.ticket_medio)}`,
+    `Total de pedidos: ${dashboard.kpis.total_pedidos}`,
+    `Vendas totais: ${formatCurrency(dashboard.vendas_totais)}`,
+    '',
+    'Top produtos:',
+    ...(dashboard.top_produtos.length
+      ? dashboard.top_produtos.map(
+          (product) =>
+            `${product.rank}. ${product.nome} - ${product.quantidade} un. - ${formatCurrency(product.receita)}`,
+        )
+      : ['Nenhum produto vendido no periodo.']),
+  ]
+
+  const content = lines.map((line, index) => `BT /F1 12 Tf 48 ${792 - 64 - index * 18} Td (${escapePdfText(line)}) Tj ET`).join('\n')
+  const objects = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
+  ]
+  let pdf = '%PDF-1.4\n'
+  const offsets = [0]
+
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length)
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`
+  })
+
+  const xrefOffset = pdf.length
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, '0')} 00000 n \n`
+  })
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`
+
+  return new Blob([pdf], { type: 'application/pdf' })
+}
+
 export default function Dashboard() {
+  const currentYear = new Date().getFullYear()
   const [dashboard, setDashboard] = useState<DashboardApi>(emptyDashboard)
   const [isLoading, setIsLoading] = useState(true)
+  const [isExporting, setIsExporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { getAuthHeaders } = useAuth()
+  const [yearFilter, setYearFilter] = useState(String(currentYear))
+  const [appliedYear, setAppliedYear] = useState(String(currentYear))
 
   useEffect(() => {
     const controller = new AbortController()
@@ -103,20 +141,7 @@ export default function Dashboard() {
         setIsLoading(true)
         setError(null)
 
-        const response = await fetch(`${apiBaseUrl}/bi/dashboard`, {
-          signal: controller.signal,
-          headers: getAuthHeaders(),
-        })
-
-        if (response.status === 401) {
-          throw new Error('A API recusou a requisicao. Informe um token valido no localStorage ou nos cookies.')
-        }
-
-        if (!response.ok) {
-          throw new Error('Nao foi possivel carregar os indicadores da API.')
-        }
-
-        setDashboard(await response.json())
+        setDashboard(await getDashboard(appliedYear, controller.signal))
       } catch (requestError) {
         if (requestError instanceof DOMException && requestError.name === 'AbortError') {
           return
@@ -132,7 +157,26 @@ export default function Dashboard() {
     loadDashboard()
 
     return () => controller.abort()
-  }, [getAuthHeaders])
+  }, [appliedYear])
+
+  async function exportDashboardPdf() {
+    try {
+      setIsExporting(true)
+      setError(null)
+
+      const response = await getDashboardPdf(appliedYear)
+      const pdfBlob = response.ok ? await response.blob() : createLocalDashboardPdf(dashboard, appliedYear)
+      downloadBlob(pdfBlob, `relatorio-bi-${appliedYear || 'todos'}.pdf`)
+    } catch {
+      downloadBlob(createLocalDashboardPdf(dashboard, appliedYear), `relatorio-bi-${appliedYear || 'todos'}.pdf`)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  function applyYearFilter() {
+    setAppliedYear(sanitizeYear(yearFilter))
+  }
 
   const kpis = [
     {
@@ -288,14 +332,15 @@ export default function Dashboard() {
                   </div>
                 </article>
 
-                <div className="flex items-center gap-9 pt-4 max-[900px]:gap-3">
-                  <button className="h-10 min-w-32 rounded-lg bg-[#ef000c] px-5 text-[11px] font-black uppercase text-white" type="button">
-                    Exportar relatorio
-                  </button>
-                  <button className="h-10 min-w-32 rounded-lg bg-[#ef000c] px-5 text-[11px] font-black uppercase text-white" type="button">
-                    Filtrar
-                  </button>
-                </div>
+                <ControlesDashboard
+                  ano={yearFilter}
+                  anoAtual={currentYear}
+                  exportando={isExporting}
+                  filtrando={isLoading}
+                  onAnoChange={setYearFilter}
+                  onExportarPdf={exportDashboardPdf}
+                  onFiltrar={applyYearFilter}
+                />
               </section>
 
               <aside className="grid gap-3" aria-label="Resumo lateral">
@@ -359,7 +404,6 @@ export default function Dashboard() {
           </div>
         </section>
       </main>
-
     </>
   )
 }
