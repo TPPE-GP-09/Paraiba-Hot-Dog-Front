@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 import { ArrowRight } from 'lucide-react'
-import iconeIfood from '../../imagens/social/ifood.svg'
+import iconeIfood from '../../../imagens/social/ifood.svg'
 
 type BotaoProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode
