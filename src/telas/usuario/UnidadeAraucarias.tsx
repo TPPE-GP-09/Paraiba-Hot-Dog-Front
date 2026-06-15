@@ -6,6 +6,7 @@ import {
   criarSlugUnidade,
   listarUnidades,
   resolverUrlImagem,
+  resolverUrlMapaEmbed,
   type Unidade,
 } from '../../servicos/api'
 
@@ -216,11 +217,14 @@ function mapearUnidade(unidade: Unidade) {
   const localizacaoMapa = `Paraíba Hot Dog, ${enderecoCompleto}`
   const mapaCadastrado = MAPAS_POR_UNIDADE[criarSlugUnidade(unidade)]
   const mapsUrl =
+    unidade.mapa_url ??
     mapaCadastrado?.mapsUrl ??
     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(localizacaoMapa)}`
   const mapsEmbedUrl =
-    mapaCadastrado?.mapsEmbedUrl ??
-    `https://www.google.com/maps?q=${encodeURIComponent(localizacaoMapa)}&output=embed`
+    unidade.mapa_url
+      ? resolverUrlMapaEmbed(unidade.mapa_url, localizacaoMapa)
+      : mapaCadastrado?.mapsEmbedUrl ??
+        resolverUrlMapaEmbed(null, localizacaoMapa)
 
   return {
     nome: endereco.bairro,

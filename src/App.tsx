@@ -1,4 +1,5 @@
 import Painel from './telas/administrador/Painel'
+import GestaoUnidades from './telas/administrador/GestaoUnidades'
 import GestaoUsuarios from './telas/administrador/GestaoUsuarios'
 import { useAuth } from './contextos/useAuth'
 import CartaoFidelidade from './telas/usuario/CartaoFidelidade'
@@ -14,7 +15,10 @@ export default function App() {
   const { pathname } = window.location
   const { isAuthenticated, hasRole } = useAuth()
 
-  const rotaAdministrativa = pathname.startsWith('/admin') || pathname === '/dashboard'
+  const rotaAdministrativa =
+    pathname.startsWith('/admin') ||
+    pathname === '/dashboard' ||
+    pathname === '/cozinha'
 
   if (rotaAdministrativa && !isAuthenticated) {
     return <Login />
@@ -32,11 +36,15 @@ export default function App() {
     return <GestaoUsuarios />
   }
 
+  if (pathname === '/admin/configuracoes/unidades') {
+    return <GestaoUnidades />
+  }
+
   if (pathname === '/dashboard' || pathname === '/admin/dashboard') {
     return <Dashboard />
   }
 
-  if (pathname === '/cozinha') {
+  if (pathname === '/cozinha' || pathname === '/admin/cozinha') {
     return <Cozinha />
   }
 
