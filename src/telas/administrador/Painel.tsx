@@ -1,18 +1,39 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import CabecalhoAdmin from '../../componentes/administrador/BarraDeNavegacaoAdmin'
 import ModalConfirmacaoSaida from '../../componentes/administrador/painel/ModalConfirmacaoSaida'
 import OpcoesPainel from '../../componentes/administrador/painel/OpcoesPainel'
 import SeletorUnidade from '../../componentes/administrador/painel/SeletorUnidade'
-
-const unidades = [
-  'Samambaia Norte',
-  'Águas Claras — Araucárias',
-  'Águas Claras — Jequitibá',
-] as const
+import { listarUnidades } from '../../servicos/api'
 
 export default function Painel() {
-  const [unidadeSelecionada, setUnidadeSelecionada] = useState<string>(unidades[0])
+  const [unidades, setUnidades] = useState<string[]>([])
+  const [unidadeSelecionada, setUnidadeSelecionada] = useState('')
+  const [carregandoUnidades, setCarregandoUnidades] = useState(true)
+  const [erroUnidades, setErroUnidades] = useState(false)
   const [modalSairAberto, setModalSairAberto] = useState(false)
+
+  useEffect(() => {
+    let ativo = true
+
+    listarUnidades()
+      .then((unidadesApi) => {
+        if (!ativo) return
+
+        const nomes = unidadesApi.map((unidade) => unidade.nome)
+        setUnidades(nomes)
+        setUnidadeSelecionada(nomes[0] ?? '')
+      })
+      .catch(() => {
+        if (ativo) setErroUnidades(true)
+      })
+      .finally(() => {
+        if (ativo) setCarregandoUnidades(false)
+      })
+
+    return () => {
+      ativo = false
+    }
+  }, [])
 
   function abrirModalSair() {
     setModalSairAberto(true)
@@ -38,11 +59,31 @@ export default function Painel() {
           </h1>
 
           <div className="mt-8 w-full">
-            <SeletorUnidade
-              opcoes={unidades}
-              valor={unidadeSelecionada}
-              onChange={setUnidadeSelecionada}
-            />
+            {carregandoUnidades && (
+              <p className="text-center font-barlow text-cinza-base">
+                Carregando unidades...
+              </p>
+            )}
+
+            {!carregandoUnidades && erroUnidades && (
+              <p className="text-center font-barlow text-red-600">
+                Nao foi possivel carregar as unidades.
+              </p>
+            )}
+
+            {!carregandoUnidades && !erroUnidades && unidades.length === 0 && (
+              <p className="text-center font-barlow text-cinza-base">
+                Nenhuma unidade cadastrada.
+              </p>
+            )}
+
+            {!carregandoUnidades && !erroUnidades && unidades.length > 0 && (
+              <SeletorUnidade
+                opcoes={unidades}
+                valor={unidadeSelecionada}
+                onChange={setUnidadeSelecionada}
+              />
+            )}
           </div>
 
           <OpcoesPainel />

@@ -10,7 +10,7 @@ const navLinks = [
   { label: 'Cartão fidelidade', href: '/cartao-fidelidade' },
 ] as const
 
-const ADMIN_HREF = '/admin'
+const ADMIN_HREF = '/login'
 
 const MIN_GAP_RIGHT = 20
 const RIGHT_ACTION_WIDTH = 44
