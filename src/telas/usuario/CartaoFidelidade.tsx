@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
-import BarraDeNavegacao from '../../componentes/globais/BarraDeNavegacao'
-import Rodape from '../../componentes/globais/Rodape'
+import BarraDeNavegacao from '../../componentes/usuario/BarraDeNavegacaoUsuario'
+import Rodape from '../../componentes/usuario/Rodape'
 import { consultarFidelidade } from '../../servicos/fidelidadeApi'
 
 type ResultadoFidelidade =

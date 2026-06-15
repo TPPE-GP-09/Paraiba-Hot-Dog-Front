@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Clock, ExternalLink, MapPin, Utensils } from 'lucide-react'
-import BarraDeNavegacao from '../../componentes/globais/BarraDeNavegacao'
-import Rodape from '../../componentes/globais/Rodape'
+import BarraDeNavegacao from '../../componentes/usuario/BarraDeNavegacaoUsuario'
+import Rodape from '../../componentes/usuario/Rodape'
 import {
   criarSlugUnidade,
   listarUnidades,

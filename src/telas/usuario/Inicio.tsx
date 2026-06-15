@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
-import BarraDeNavegacao from '../../componentes/globais/BarraDeNavegacao'
-import Botao from '../../componentes/usuario/Botao'
-import BotaoUnidade from '../../componentes/usuario/BotaoUnidade'
-import DuvidasFrequentes from '../../componentes/usuario/DuvidasFrequentes'
-import Rodape from '../../componentes/globais/Rodape'
+import BarraDeNavegacao from '../../componentes/usuario/BarraDeNavegacaoUsuario'
+import Botao from '../../componentes/usuario/inicio/Botao'
+import BotaoUnidade from '../../componentes/usuario/inicio/BotaoUnidade'
+import DuvidasFrequentes from '../../componentes/usuario/inicio/DuvidasFrequentes'
+import Rodape from '../../componentes/usuario/Rodape'
 import CarrosselNossosDogs, {
   type HotDogCard,
-} from '../../componentes/usuario/CarrosselNossosDogs'
+} from '../../componentes/usuario/inicio/CarrosselNossosDogs'
 import imgSmashHome from '../../imagens/logos/img-smash-home.svg'
 import smashDog from '../../imagens/itens/smash-mandacaru.jpeg'
 import hotDogs from '../../imagens/itens/quatro-dogs.jpeg'

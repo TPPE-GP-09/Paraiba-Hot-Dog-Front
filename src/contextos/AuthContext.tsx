@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react'
 import { getStoredToken } from '../servicos/apiFetch'
+import { extrairRolesToken, tokenExpirado } from '../servicos/authToken'
 import { AuthContext, type AuthContextValue } from './authContextCore'
 
 function readCookie(name: string) {
@@ -25,14 +26,19 @@ function readToken() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AuthContextValue>(() => {
     const getToken = () => readToken()
+    const token = getToken()
+    const roles = tokenExpirado(token) ? [] : extrairRolesToken(token)
 
     return {
-      token: getToken(),
+      token,
+      roles,
+      isAuthenticated: Boolean(token) && !tokenExpirado(token),
       getToken,
       getAuthHeaders: () => {
         const token = getToken()
         return token ? { Authorization: `Bearer ${token}` } : ({} as HeadersInit)
       },
+      hasRole: (role) => roles.includes(role),
     }
   }, [])
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
-import BarraDeNavegacao from '../../componentes/globais/BarraDeNavegacao'
+import CabecalhoAdmin from '../../componentes/administrador/BarraDeNavegacaoAdmin'
 import { getDashboard, getDashboardPdf, type DashboardApi } from '../../servicos/dashboardApi'
 import ControlesDashboard from './ControlesDashboard'
 
@@ -208,9 +208,9 @@ export default function Dashboard() {
 
   return (
     <>
-      <BarraDeNavegacao variant="dark" />
+      <CabecalhoAdmin />
 
-      <main className="min-h-screen bg-[#edf2f8] pt-16 text-[#243247]">
+      <main className="min-h-[calc(100vh-4rem)] bg-[#edf2f8] text-[#243247]">
         <section className="min-h-[calc(100vh-4rem)] w-full bg-[#edf2f8]" aria-label="Dashboard BI Paraiba Hot Dog">
           <div className="min-h-[calc(100vh-4rem)] px-[6vw] py-7 max-[900px]:px-3.5 max-[900px]:py-4">
             <div className="mb-5 flex items-end justify-between gap-4 max-[900px]:grid">
