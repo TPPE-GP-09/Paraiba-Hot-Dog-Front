@@ -10,6 +10,7 @@ import Login from './telas/usuario/Login'
 import RecuperarSenha from './telas/usuario/RecuperarSenha'
 import RedefinirSenha from './telas/usuario/RedefinirSenha'
 import UnidadeAraucarias from './telas/usuario/UnidadeAraucarias'
+import AnotarPedidos from './telas/pedidos/AnotarPedidos'
 
 export default function App() {
   const { pathname } = window.location
@@ -38,6 +39,10 @@ export default function App() {
 
   if (pathname === '/admin/configuracoes/unidades') {
     return <GestaoUnidades />
+  }
+
+  if (pathname === '/admin/anotar-pedidos') {
+    return <AnotarPedidos />
   }
 
   if (pathname === '/dashboard' || pathname === '/admin/dashboard') {
