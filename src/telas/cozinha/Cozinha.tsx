@@ -108,9 +108,12 @@ function agruparItens(items: CozinhaItem[]) {
       itens: [],
     }
 
-    pedido.status = item.status === 'preparando' ? 'preparando' : pedido.status
+    // preparando tem prioridade sobre aberto; entregue só se todos estiverem entregues
+    if (item.status === 'preparando') pedido.status = 'preparando'
+    else if (item.status === 'aberto' && pedido.status === 'entregue') pedido.status = 'aberto'
+
     pedido.itens.push({
-      nome: `${item.quantidade}x ${item.produto_variacao_nome ?? item.produto_nome}`,
+      nome: `${item.quantidade}x ${nomeItemCozinha(item.produto_nome, item.produto_variacao_nome)}`,
       adicionais: item.adicionais.map((adicional) => adicional.nome),
       observacao: item.observacao,
       quantidade: item.quantidade,
@@ -119,6 +122,23 @@ function agruparItens(items: CozinhaItem[]) {
   })
 
   return Array.from(grupos.values())
+}
+
+function nomeItemCozinha(produto: string, variacao: string | null) {
+  const nomeProduto = formatarNomeProduto(produto)
+  const nomeVariacao = variacao?.trim()
+
+  if (!nomeVariacao || nomeVariacao.toLocaleLowerCase('pt-BR') === 'unico') {
+    return nomeProduto
+  }
+
+  return `${nomeProduto} - ${nomeVariacao}`
+}
+
+function formatarNomeProduto(nome: string) {
+  return nome
+    .toLocaleLowerCase('pt-BR')
+    .replace(/(^|[\s-])\S/g, (letra) => letra.toLocaleUpperCase('pt-BR'))
 }
 
 function textoBotaoStatus(status: StatusCozinha) {
@@ -245,10 +265,16 @@ function PedidoCard({
                   ))}
                 </ul>
               )}
-              {item.observacao && (
-                <p className="mt-1.5 text-[11px] font-bold leading-tight tracking-wide text-[#d71920]">
-                  {item.observacao}
-                </p>
+              {item.observacao && item.observacao.split('\n').map((linha, i) =>
+                linha.startsWith('Obs: ') ? (
+                  <p key={i} className="mt-1.5 text-[13px] font-bold leading-tight tracking-wide text-[#d71920]">
+                    observação: {linha.slice(5)}
+                  </p>
+                ) : (
+                  <p key={i} className="mt-1.5 text-[11px] font-bold leading-tight tracking-wide text-[#d71920]">
+                    {linha}
+                  </p>
+                )
               )}
             </section>
           ))}
@@ -301,21 +327,23 @@ function PedidoCard({
 
 export default function Cozinha() {
   const [aba, setAba] = useState<AbaCozinha>('fila')
-  const [entregues, setEntregues] = useState<PedidoCozinha[]>(entreguesExemplo)
+  const [entregues, setEntregues] = useState<PedidoCozinha[]>([])
   const [erro, setErro] = useState('')
-  const [fila, setFila] = useState<PedidoCozinha[]>(pedidosExemplo)
+  const [fila, setFila] = useState<PedidoCozinha[]>([])
   const [loading, setLoading] = useState(true)
   const [pedidoCancelando, setPedidoCancelando] = useState<PedidoCozinha | null>(null)
   const [updatingKey, setUpdatingKey] = useState<string | null>(null)
 
-  async function carregarFila() {
+  async function carregarCozinha() {
     try {
       setLoading(true)
       setErro('')
       const items = await listarCozinha()
-      setFila(items.length ? agruparItens(items) : pedidosExemplo)
+      const grupos = agruparItens(items)
+      setFila(grupos.filter((p) => p.status !== 'entregue' && p.status !== 'cancelado'))
+      setEntregues(grupos.filter((p) => p.status === 'entregue'))
     } catch {
-      setErro('Nao foi possivel carregar a fila da API. Exibindo pedidos de exemplo.')
+      setErro('Nao foi possivel carregar a fila da API.')
       setFila(pedidosExemplo)
     } finally {
       setLoading(false)
@@ -324,7 +352,7 @@ export default function Cozinha() {
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
-      void carregarFila()
+      void carregarCozinha()
     }, 0)
 
     return () => window.clearTimeout(timeout)
@@ -350,7 +378,6 @@ export default function Cozinha() {
 
     try {
       await atualizarStatusCozinha(pedido.id, pedido.lote, status)
-
       atualizarPedidoLocal(pedido, status)
     } catch {
       setErro('Nao foi possivel atualizar o pedido agora.')
@@ -370,43 +397,39 @@ export default function Cozinha() {
             if (!pedidoCancelando) return
             try {
               await cancelarPedido(pedidoCancelando.id, motivo)
+              setFila((atual) => atual.filter((item) => item.id !== pedidoCancelando.id))
+              setPedidoCancelando(null)
             } catch {
               setErro('Nao foi possivel cancelar o pedido agora.')
             }
-            setFila((atual) =>
-              atual.filter((item) => !(item.id === pedidoCancelando.id && item.lote === pedidoCancelando.lote)),
-            )
-            setPedidoCancelando(null)
           }}
         />
       )}
 
-      <header className="bg-preto-v1">
-        <div className="flex h-16 items-center gap-4 px-4 sm:h-[108px] sm:gap-8 sm:px-9">
-          <a href="/" aria-label="Paraiba Hot Dog - inicio" className="shrink-0">
-            <img src={logoBranca} alt="Paraiba Hot Dog" className="h-14 w-auto object-contain sm:h-[108px]" />
-          </a>
+      <header className="flex h-16 w-full shrink-0 items-center overflow-visible bg-preto-v1 px-6">
+        <a href="/admin" aria-label="Voltar ao painel administrativo">
+          <img src={logoBranca} alt="Paraiba Hot Dog" className="relative z-10 h-30 w-auto object-contain" />
+        </a>
 
-          <nav className="flex flex-1 items-center justify-center gap-5 font-barlow-condensed text-lg font-black uppercase sm:gap-12 sm:text-3xl">
-            <button
-              className={`transition-colors ${aba === 'fila' ? 'text-amarelo' : 'text-branco/45 hover:text-branco'}`}
-              onClick={() => setAba('fila')}
-              type="button"
-            >
-              Fila de pedidos
-            </button>
-            <button
-              className={`transition-colors ${aba === 'entregues' ? 'text-amarelo' : 'text-branco/45 hover:text-branco'}`}
-              onClick={() => setAba('entregues')}
-              type="button"
-            >
-              Entregues
-            </button>
-          </nav>
-        </div>
+        <nav className="flex flex-1 items-center justify-center gap-8 font-barlow-condensed text-lg font-black uppercase">
+          <button
+            className={`transition-colors ${aba === 'fila' ? 'text-amarelo' : 'text-branco/45 hover:text-branco'}`}
+            onClick={() => setAba('fila')}
+            type="button"
+          >
+            Fila de pedidos
+          </button>
+          <button
+            className={`transition-colors ${aba === 'entregues' ? 'text-amarelo' : 'text-branco/45 hover:text-branco'}`}
+            onClick={() => setAba('entregues')}
+            type="button"
+          >
+            Entregues
+          </button>
+        </nav>
       </header>
 
-      <section className="min-h-[calc(100vh-4rem)] bg-branco px-4 py-6 sm:min-h-[calc(100vh-6.75rem)] sm:px-8 sm:py-10 lg:px-16 lg:py-12">
+      <section className="min-h-[calc(100vh-4rem)] bg-branco px-6 py-8 lg:px-16 lg:py-12">
         {(loading || erro) && (
           <p className="mb-5 min-h-6 font-barlow text-xs font-bold text-[#777]">
             {loading ? 'Carregando pedidos...' : erro}
