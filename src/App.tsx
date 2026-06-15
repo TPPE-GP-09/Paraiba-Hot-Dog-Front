@@ -1,7 +1,8 @@
 import Painel from './telas/administrador/Painel'
 import { useAuth } from './contextos/useAuth'
-import Dashboard from './telas/dashboard/Dashboard'
 import CartaoFidelidade from './telas/usuario/CartaoFidelidade'
+import Cozinha from './telas/cozinha/Cozinha'
+import Dashboard from './telas/dashboard/Dashboard'
 import Inicio from './telas/usuario/Inicio'
 import Login from './telas/usuario/Login'
 import RecuperarSenha from './telas/usuario/RecuperarSenha'
@@ -31,6 +32,10 @@ export default function App() {
 
   if (pathname === '/dashboard' || pathname === '/admin/dashboard') {
     return <Dashboard />
+  }
+
+  if (pathname === '/cozinha') {
+    return <Cozinha />
   }
 
   if (pathname === '/login') {

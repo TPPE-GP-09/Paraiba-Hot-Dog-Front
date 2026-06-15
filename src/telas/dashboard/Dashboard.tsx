@@ -131,7 +131,11 @@ export default function Dashboard() {
   const [isExporting, setIsExporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [yearFilter, setYearFilter] = useState(String(currentYear))
+  const [monthFilter, setMonthFilter] = useState('')
+  const [fechamentoMesFilter, setFechamentoMesFilter] = useState(false)
   const [appliedYear, setAppliedYear] = useState(String(currentYear))
+  const [appliedMonth, setAppliedMonth] = useState('')
+  const [appliedFechamento, setAppliedFechamento] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -141,7 +145,7 @@ export default function Dashboard() {
         setIsLoading(true)
         setError(null)
 
-        setDashboard(await getDashboard(appliedYear, controller.signal))
+        setDashboard(await getDashboard(appliedYear, appliedMonth, appliedFechamento, controller.signal))
       } catch (requestError) {
         if (requestError instanceof DOMException && requestError.name === 'AbortError') {
           return
@@ -157,7 +161,7 @@ export default function Dashboard() {
     loadDashboard()
 
     return () => controller.abort()
-  }, [appliedYear])
+  }, [appliedYear, appliedMonth, appliedFechamento])
 
   async function exportDashboardPdf() {
     try {
@@ -174,8 +178,15 @@ export default function Dashboard() {
     }
   }
 
-  function applyYearFilter() {
-    setAppliedYear(sanitizeYear(yearFilter))
+  function applyFilters() {
+    setAppliedFechamento(fechamentoMesFilter)
+    if (fechamentoMesFilter) {
+      setAppliedYear('')
+      setAppliedMonth('')
+    } else {
+      setAppliedYear(sanitizeYear(yearFilter))
+      setAppliedMonth(monthFilter)
+    }
   }
 
   const kpis = [
@@ -336,10 +347,14 @@ export default function Dashboard() {
                   ano={yearFilter}
                   anoAtual={currentYear}
                   exportando={isExporting}
+                  fechamentoMes={fechamentoMesFilter}
                   filtrando={isLoading}
+                  mes={monthFilter}
                   onAnoChange={setYearFilter}
                   onExportarPdf={exportDashboardPdf}
-                  onFiltrar={applyYearFilter}
+                  onFechamentoMesChange={setFechamentoMesFilter}
+                  onFiltrar={applyFilters}
+                  onMesChange={setMonthFilter}
                 />
               </section>
 

@@ -37,9 +37,18 @@ export type DashboardApi = {
   } | null
 }
 
-export async function getDashboard(ano: string, signal?: AbortSignal) {
+export async function getDashboard(
+  ano: string,
+  mes: string,
+  fechamentoMes: boolean,
+  signal?: AbortSignal,
+) {
   const response = await apiFetch('/bi/dashboard', {
-    params: { ano },
+    params: {
+      ano: ano || undefined,
+      mes: mes || undefined,
+      fechamento_mes: fechamentoMes || undefined,
+    },
     signal,
   })
 
