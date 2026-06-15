@@ -8,9 +8,6 @@ import CarrosselNossosDogs, {
   type HotDogCard,
 } from '../../componentes/usuario/inicio/CarrosselNossosDogs'
 import imgSmashHome from '../../imagens/logos/img-smash-home.svg'
-import smashDog from '../../imagens/itens/smash-mandacaru.jpeg'
-import hotDogs from '../../imagens/itens/quatro-dogs.jpeg'
-import sodaItaliana from '../../imagens/itens/bedida-soda.jpeg'
 import {
   criarSlugUnidade,
   listarProdutos,
@@ -20,9 +17,21 @@ import {
 } from '../../servicos/api'
 
 const hotDogsCards = [
-  { image: smashDog, title: 'Smash Dogs', alt: 'Smash Dogs' },
-  { image: hotDogs, title: 'Hot Dogs', alt: 'Hot Dogs' },
-  { image: sodaItaliana, title: 'Soda Italiana', alt: 'Soda Italiana' },
+  {
+    image: resolverUrlImagem('/uploads/produtos/smash-mandacaru.jpeg')!,
+    title: 'Smash Dogs',
+    alt: 'Smash Dogs',
+  },
+  {
+    image: resolverUrlImagem('/uploads/produtos/quatro-dogs.jpeg')!,
+    title: 'Hot Dogs',
+    alt: 'Hot Dogs',
+  },
+  {
+    image: resolverUrlImagem('/uploads/produtos/bedida-soda.jpeg')!,
+    title: 'Soda Italiana',
+    alt: 'Soda Italiana',
+  },
 ] as const
 
 export default function Inicio() {

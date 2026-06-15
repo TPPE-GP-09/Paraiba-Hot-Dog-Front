@@ -4,6 +4,7 @@ import BarraDeNavegacao from "../../componentes/usuario/BarraDeNavegacaoUsuario"
 import Rodape from "../../componentes/usuario/Rodape";
 import type { ProdutoCardapio, SecaoCardapio } from "../../model/cardapio";
 import { listarSecoesCardapio } from "../../repository/cardapioRepository";
+import { listarUnidades, type Unidade } from "../../servicos/api";
 
 const formatadorPreco = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -254,15 +255,21 @@ function SecaoProdutos({
 
 export default function Cardapio() {
   const [secoes, setSecoes] = useState<SecaoCardapio[]>([]);
+  const [unidades, setUnidades] = useState<Unidade[]>([]);
+  const [unidadeSelecionadaId, setUnidadeSelecionadaId] = useState<number | "">(
+    "",
+  );
   const [carregando, setCarregando] = useState(true);
+  const [carregandoUnidades, setCarregandoUnidades] = useState(true);
   const [erroCarregamento, setErroCarregamento] = useState(false);
+  const [erroUnidades, setErroUnidades] = useState(false);
   const [produtoSelecionado, setProdutoSelecionado] =
     useState<ProdutoCardapio | null>(null);
 
   useEffect(() => {
     let ativo = true;
 
-    listarSecoesCardapio()
+    listarSecoesCardapio(unidadeSelecionadaId || null)
       .then((resultado) => {
         if (!ativo) return;
         setSecoes(resultado);
@@ -278,11 +285,37 @@ export default function Cardapio() {
     return () => {
       ativo = false;
     };
+  }, [unidadeSelecionadaId]);
+
+  useEffect(() => {
+    let ativo = true;
+
+    listarUnidades()
+      .then((resultado) => {
+        if (!ativo) return;
+        setUnidades(resultado);
+        setErroUnidades(false);
+      })
+      .catch(() => {
+        if (ativo) setErroUnidades(true);
+      })
+      .finally(() => {
+        if (ativo) setCarregandoUnidades(false);
+      });
+
+    return () => {
+      ativo = false;
+    };
   }, []);
 
   const totalProdutos = useMemo(
     () => secoes.reduce((total, secao) => total + secao.produtos.length, 0),
     [secoes],
+  );
+  const unidadeSelecionada = useMemo(
+    () =>
+      unidades.find((unidade) => unidade.id === unidadeSelecionadaId) ?? null,
+    [unidadeSelecionadaId, unidades],
   );
 
   return (
@@ -304,6 +337,43 @@ export default function Cardapio() {
             </p>
           </div>
 
+          <div className="mt-8 max-w-xl font-barlow">
+            <label
+              htmlFor="unidade-cardapio"
+              className="block text-sm font-semibold uppercase text-branco/75"
+            >
+              Unidade
+            </label>
+            <select
+              id="unidade-cardapio"
+              value={unidadeSelecionadaId}
+              disabled={carregandoUnidades}
+              onChange={(event) => {
+                setCarregando(true);
+                setProdutoSelecionado(null);
+                setUnidadeSelecionadaId(
+                  event.target.value ? Number(event.target.value) : "",
+                );
+              }}
+              className="mt-2 h-12 w-full rounded-[5px] border border-branco/15 bg-[#222] px-4 font-barlow text-base font-semibold text-branco outline-none transition-colors focus:border-amarelo focus:ring-2 focus:ring-amarelo/30 disabled:cursor-not-allowed disabled:text-branco/45"
+            >
+              <option value="">
+                {carregandoUnidades ? "Carregando unidades..." : "Todas as unidades"}
+              </option>
+              {unidades.map((unidade) => (
+                <option key={unidade.id} value={unidade.id}>
+                  {unidade.nome}
+                </option>
+              ))}
+            </select>
+            {erroUnidades && (
+              <p className="mt-2 text-sm text-branco/55">
+                Não foi possível carregar as unidades. O cardápio completo
+                continua disponível.
+              </p>
+            )}
+          </div>
+
           {carregando ? (
             <div className="mt-12 rounded-[5px] border border-branco/10 bg-[#222] px-5 py-8 font-barlow text-branco/80">
               Carregando cardápio...
@@ -315,7 +385,8 @@ export default function Cardapio() {
           ) : (
             <>
               <p className="mt-6 font-barlow text-sm text-branco/60">
-                {totalProdutos} itens disponíveis.
+                {totalProdutos} itens disponíveis
+                {unidadeSelecionada ? ` em ${unidadeSelecionada.nome}` : ""}.
               </p>
 
               <div>

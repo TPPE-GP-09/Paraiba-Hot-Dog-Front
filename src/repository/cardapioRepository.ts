@@ -8,17 +8,6 @@ import type {
 } from "../model/cardapio";
 import { apiFetch, buildApiUrl } from "../servicos/apiFetch";
 
-import bebidaSoda from "../imagens/itens/bedida-soda.jpeg";
-import dogArretado from "../imagens/itens/dog-arretado.jpeg";
-import dogBixin from "../imagens/itens/dog-bixin.jpeg";
-import dogParaibano from "../imagens/itens/dog-paraibano.jpeg";
-import dogTradicional from "../imagens/itens/dog-tradicional.jpeg";
-import dogVegetariano from "../imagens/itens/dog-vegetariano.jpeg";
-import smashFacheiro from "../imagens/itens/smash-facheiro.jpeg";
-import smashMandacaru from "../imagens/itens/smash-mandacaru.jpeg";
-import smashMandacaruTriplo from "../imagens/itens/smash-mandacaru-triplo.jpeg";
-import smashXiqueXique from "../imagens/itens/smash-xiquexique.jpeg";
-
 export const categoriasFallback: CategoriaRead[] = [
   { id: 1, nome: "Smashdogs" },
   { id: 2, nome: "Hotdogs" },
@@ -143,8 +132,7 @@ const criarProduto = (
   subcategoria_id: subcategoriaId,
   nome,
   descricao,
-  imagem_url: null,
-  imagemLocal,
+  imagem_url: resolverUrlImagemCardapio(`/uploads/produtos/${imagemLocal}`),
   adicionais: montarAdicionais(id, adicionais),
   variacoes: [
     {
@@ -176,7 +164,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     1,
     "Facheiro",
     "Pão brioche, blend artesanal 120g, muçarela e maionese.",
-    smashFacheiro,
+    "smash-facheiro.jpeg",
     22,
     undefined,
     adicionaisSmash,
@@ -186,7 +174,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     1,
     "Mandacaru",
     "Baguete de massa brioche, burger 120g, queijo muçarela, alface americana, tomate e cebola roxa.",
-    smashMandacaru,
+    "smash-mandacaru.jpeg",
     25,
     undefined,
     adicionaisSmash,
@@ -196,7 +184,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     1,
     "Xique-Xique",
     "Baguete em massa de pão australiano, burger 120g, queijo muçarela e bacon em tiras.",
-    smashXiqueXique,
+    "smash-xiquexique.jpeg",
     27,
     undefined,
     adicionaisSmash,
@@ -206,7 +194,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     1,
     "Facheiro Duplo",
     "Baguete em massa de brioche, burger 240g, queijo muçarela e maionese artesanal.",
-    smashFacheiro,
+    "smash-facheiro.jpeg",
     29,
     undefined,
     adicionaisSmash,
@@ -216,7 +204,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     1,
     "Mandacaru Duplo",
     "Baguete de massa brioche, burger 240g, queijo muçarela, alface americana, tomate e cebola roxa.",
-    smashMandacaru,
+    "smash-mandacaru.jpeg",
     33,
     undefined,
     adicionaisSmash,
@@ -226,7 +214,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     1,
     "Xique-Xique Duplo",
     "Baguete em massa de pão australiano, burger 240g, queijo muçarela e bacon em tiras.",
-    smashXiqueXique,
+    "smash-xiquexique.jpeg",
     35,
     undefined,
     adicionaisSmash,
@@ -236,7 +224,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     1,
     "Facheiro Triplo",
     "Baguete em massa de brioche, burger 360g, queijo muçarela e maionese artesanal.",
-    smashFacheiro,
+    "smash-facheiro.jpeg",
     36,
     undefined,
     adicionaisSmash,
@@ -246,7 +234,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     1,
     "Mandacaru Triplo",
     "Baguete de massa brioche, burger 360g, queijo muçarela, alface americana, tomate e cebola roxa.",
-    smashMandacaruTriplo,
+    "smash-mandacaru-triplo.jpeg",
     40,
     undefined,
     adicionaisSmash,
@@ -256,7 +244,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     1,
     "Xique-Xique Triplo",
     "Baguete em massa de pão australiano, burger 360g, queijo muçarela e bacon em tiras.",
-    smashXiqueXique,
+    "smash-xiquexique.jpeg",
     42,
     undefined,
     adicionaisSmash,
@@ -266,7 +254,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     2,
     "Tradicional",
     "Pão de leite Ninho, salsicha Perdigão, queijo muçarela artesanal, molho de tomate caseiro, milho e batata palha.",
-    dogTradicional,
+    "dog-tradicional.jpeg",
     17,
     27,
     adicionaisHotDog,
@@ -276,7 +264,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     2,
     "Paraibano",
     "Pão de leite Ninho, salsicha Perdigão, carne moída temperada, molho de tomate artesanal, milho, vinagrete, parmesão e ovo de codorna.",
-    dogParaibano,
+    "dog-paraibano.jpeg",
     21,
     31,
     adicionaisHotDog,
@@ -286,7 +274,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     2,
     "Paraibano Duplo",
     "Pão de leite Ninho, 2 salsichas Perdigão, carne moída temperada, molho de tomate caseiro, milho, vinagrete, parmesão e ovo de codorna.",
-    dogParaibano,
+    "dog-paraibano.jpeg",
     26,
     36,
     adicionaisHotDog,
@@ -296,7 +284,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     2,
     "Arretado",
     "Pão de leite Ninho, salsicha Perdigão, queijo muçarela artesanal, carne moída temperada, milho, vinagrete, parmesão e batata palha.",
-    dogArretado,
+    "dog-arretado.jpeg",
     24,
     34,
     adicionaisHotDog,
@@ -306,7 +294,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     2,
     "Vegetariano",
     "Pão de leite Ninho, queijo muçarela artesanal, molho de tomate caseiro, milho, vinagrete, ovo de codorna e batata palha.",
-    dogVegetariano,
+    "dog-vegetariano.jpeg",
     20,
     30,
     adicionaisHotDog,
@@ -316,7 +304,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     2,
     "Arretado Duplo",
     "Pão de leite Ninho, 2 salsichas Perdigão, queijo muçarela artesanal, molho de tomate caseiro, carne moída temperada, milho, vinagrete, parmesão e batata palha.",
-    dogArretado,
+    "dog-arretado.jpeg",
     29,
     39,
     adicionaisHotDog,
@@ -326,7 +314,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     2,
     "Tradicional Duplo",
     "Pão de leite Ninho, 2 salsichas Perdigão, queijo muçarela artesanal, molho de tomate caseiro, milho e batata palha.",
-    dogTradicional,
+    "dog-tradicional.jpeg",
     22,
     32,
     adicionaisHotDog,
@@ -336,7 +324,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     2,
     "Bixin",
     "Pão de leite Ninho, salsicha Perdigão, molho de tomate caseiro e batata palha.",
-    dogBixin,
+    "dog-bixin.jpeg",
     12,
     22,
     adicionaisHotDog,
@@ -346,7 +334,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     2,
     "Bixin Duplo",
     "Pão de leite Ninho, 2 salsichas Perdigão, molho de tomate caseiro e batata palha.",
-    dogBixin,
+    "dog-bixin.jpeg",
     17,
     27,
     adicionaisHotDog,
@@ -356,7 +344,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     3,
     "Refrigerante",
     "Coca-Cola, Coca-Cola Zero, Guaraná, Guaraná Zero, Fanta Laranja e Sprite.",
-    bebidaSoda,
+    "bedida-soda.jpeg",
     7,
     undefined,
     adicionaisBebida,
@@ -366,7 +354,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     3,
     "Sucos Integral",
     "Laranja e uva.",
-    bebidaSoda,
+    "bedida-soda.jpeg",
     9,
     undefined,
     adicionaisBebida,
@@ -376,7 +364,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     3,
     "Soda Italiana",
     "Copo 400ml com gelo, 50ml de xarope, água gaseificada 500ml e canudo.",
-    bebidaSoda,
+    "bedida-soda.jpeg",
     10,
     undefined,
     adicionaisBebida,
@@ -386,7 +374,7 @@ export const produtosFallback: ProdutoCardapio[] = [
     4,
     "Paraíba Chips",
     "Batata inglesa cortada em chips e frita no óleo de palma. 50g.",
-    dogBixin,
+    "dog-bixin.jpeg",
     8,
   ),
   criarProduto(
@@ -394,13 +382,16 @@ export const produtosFallback: ProdutoCardapio[] = [
     4,
     "Maionese Artesanal",
     "Maionese caseira de alho, tradicional, ervas, apimentada ou bacon. Porção 30g.",
-    smashFacheiro,
+    "smash-facheiro.jpeg",
     3,
   ),
 ];
 
-const buscarJson = async <T>(path: string): Promise<T> => {
-  const response = await apiFetch(path, { auth: false });
+const buscarJson = async <T>(
+  path: string,
+  params?: Record<string, string | number | boolean | null | undefined>,
+): Promise<T> => {
+  const response = await apiFetch(path, { auth: false, params });
   if (!response.ok) {
     throw new Error(`Erro ao buscar ${path}`);
   }
@@ -414,14 +405,9 @@ export async function listarCategoriasCardapio(): Promise<CategoriaRead[]> {
     return ordenarCategoriasCardapio(categoriasFallback);
   }
 
-  try {
-    return ordenarCategoriasCardapio(
-      await buscarJson<CategoriaRead[]>("/produtos/categorias"),
-    );
-  } catch (err) {
-    console.error("Erro ao listar categorias do cardápio:", err);
-    return ordenarCategoriasCardapio(categoriasFallback);
-  }
+  return ordenarCategoriasCardapio(
+    await buscarJson<CategoriaRead[]>("/produtos/categorias"),
+  );
 }
 
 export async function listarSubcategoriasCardapio(): Promise<
@@ -431,12 +417,7 @@ export async function listarSubcategoriasCardapio(): Promise<
     return subcategoriasFallback;
   }
 
-  try {
-    return await buscarJson<SubcategoriaRead[]>("/produtos/subcategorias");
-  } catch (err) {
-    console.error("Erro ao listar subcategorias do cardápio:", err);
-    return subcategoriasFallback;
-  }
+  return await buscarJson<SubcategoriaRead[]>("/produtos/subcategorias");
 }
 
 function resolverUrlImagemCardapio(imagemUrl: string | null | undefined) {
@@ -456,7 +437,9 @@ function normalizarProdutoApi(produto: ProdutoRead): ProdutoCardapio {
   };
 }
 
-export async function listarSecoesCardapio(): Promise<SecaoCardapio[]> {
+export async function listarSecoesCardapio(
+  unidadeId?: number | null,
+): Promise<SecaoCardapio[]> {
   if (usarDadosFallback()) {
     return montarSecoes(
       ordenarCategoriasCardapio(categoriasFallback),
@@ -465,35 +448,20 @@ export async function listarSecoesCardapio(): Promise<SecaoCardapio[]> {
     );
   }
 
-  try {
-    const [categorias, subcategorias, produtos] = await Promise.all([
-      buscarJson<CategoriaRead[]>("/produtos/categorias"),
-      buscarJson<SubcategoriaRead[]>("/produtos/subcategorias"),
-      buscarJson<ProdutoRead[]>("/produtos/?limit=100"),
-    ]);
+  const [categorias, subcategorias, produtos] = await Promise.all([
+    buscarJson<CategoriaRead[]>("/produtos/categorias"),
+    buscarJson<SubcategoriaRead[]>("/produtos/subcategorias"),
+    buscarJson<ProdutoRead[]>("/produtos/", {
+      limit: 100,
+      unidade_id: unidadeId ?? undefined,
+    }),
+  ]);
 
-    return montarSecoes(
-      ordenarCategoriasCardapio(categorias),
-      subcategorias,
-      produtos.map(normalizarProdutoApi),
-    );
-  } catch (err) {
-    // Log do erro para diagnóstico
-    // Usar fallback apenas em desenvolvimento ou quando explicitamente habilitado
-    // via `VITE_USE_FAKE_DATA=true`.
-    // Em produção, relança o erro para não mascarar falhas da API.
-    console.error("Erro ao listar seções do cardápio:", err);
-
-    if (import.meta.env.MODE === "development") {
-      return montarSecoes(
-        ordenarCategoriasCardapio(categoriasFallback),
-        subcategoriasFallback,
-        produtosFallback,
-      );
-    }
-
-    throw err;
-  }
+  return montarSecoes(
+    ordenarCategoriasCardapio(categorias),
+    subcategorias,
+    produtos.map(normalizarProdutoApi),
+  );
 }
 
 function montarSecoes(
