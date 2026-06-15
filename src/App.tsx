@@ -1,7 +1,9 @@
+import CardapioAdm from './telas/administrador/CardapioAdm'
 import Painel from './telas/administrador/Painel'
 import GestaoUnidades from './telas/administrador/GestaoUnidades'
 import GestaoUsuarios from './telas/administrador/GestaoUsuarios'
 import { useAuth } from './contextos/useAuth'
+import Cardapio from './telas/usuario/Cardapio'
 import CartaoFidelidade from './telas/usuario/CartaoFidelidade'
 import Cozinha from './telas/cozinha/Cozinha'
 import Dashboard from './telas/dashboard/Dashboard'
@@ -32,6 +34,10 @@ export default function App() {
     return <Painel />
   }
 
+  if (pathname === '/admin/cardapio') {
+    return <CardapioAdm />
+  }
+
   if (pathname === '/admin/configuracoes/usuarios') {
     return <GestaoUsuarios />
   }
@@ -50,6 +56,10 @@ export default function App() {
 
   if (pathname === '/login') {
     return <Login />
+  }
+
+  if (pathname === '/cardapio') {
+    return <Cardapio />
   }
 
   if (pathname === '/cartao-fidelidade') {

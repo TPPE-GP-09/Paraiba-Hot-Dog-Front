@@ -70,7 +70,6 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
       bar.clientWidth - logo.offsetWidth - paddingX - RIGHT_ACTION_WIDTH - MIN_GAP_RIGHT
 
     const shouldUseMobileMenu = requiredNavWidth > availableNavWidth
-
     setUseMobileMenu(shouldUseMobileMenu)
     if (!shouldUseMobileMenu) setIsOpen(false)
   }, [])

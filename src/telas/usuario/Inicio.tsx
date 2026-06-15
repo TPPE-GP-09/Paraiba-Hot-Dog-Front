@@ -107,7 +107,12 @@ export default function Inicio() {
 
                     <CarrosselNossosDogs cards={cards} />
 
-                    <Botao className="mt-10">
+                    <Botao
+                        className="mt-10"
+                        onClick={() => {
+                            window.location.href = '/cardapio'
+                        }}
+                    >
                         VER CARDÁPIO COMPLETO
                     </Botao>
                 </section>

@@ -37,7 +37,12 @@ export function saveAuthTokens(tokens: {
 }
 
 export function buildApiUrl(path: string, params?: QueryParams, baseUrl = apiBaseUrl) {
-  const url = new URL(path, baseUrl)
+  const url = /^https?:\/\//i.test(baseUrl)
+    ? new URL(path, baseUrl)
+    : new URL(
+        `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}`,
+        window.location.origin,
+      )
 
   Object.entries(params ?? {}).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
