@@ -1,4 +1,5 @@
 import { X } from 'lucide-react'
+import EdicaoBlog from './EdicaoBlog'
 import EdicaoCardapio from './EdicaoCardapio'
 import EdicaoUnidades from './EdicaoUnidades'
 import GestaoUsuarios from './GestaoUsuarios'
@@ -45,6 +46,7 @@ export default function ModalConfiguracoes({
         <div className="flex flex-col gap-3 sm:gap-4">
           <EdicaoUnidades onNavigate={onFechar} />
           <EdicaoCardapio onNavigate={onFechar} />
+          <EdicaoBlog onNavigate={onFechar} />
           <GestaoUsuarios onNavigate={onFechar} />
         </div>
       </div>
