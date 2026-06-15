@@ -1,13 +1,23 @@
+import { useEffect, useState } from 'react'
 import BarraDeNavegacao from '../../componentes/globais/BarraDeNavegacao'
 import Botao from '../../componentes/usuario/Botao'
 import BotaoUnidade from '../../componentes/usuario/BotaoUnidade'
 import DuvidasFrequentes from '../../componentes/usuario/DuvidasFrequentes'
 import Rodape from '../../componentes/globais/Rodape'
-import CarrosselNossosDogs from '../../componentes/usuario/CarrosselNossosDogs'
+import CarrosselNossosDogs, {
+  type HotDogCard,
+} from '../../componentes/usuario/CarrosselNossosDogs'
 import imgSmashHome from '../../imagens/logos/img-smash-home.svg'
 import smashDog from '../../imagens/itens/smash-mandacaru.jpeg'
 import hotDogs from '../../imagens/itens/quatro-dogs.jpeg'
 import sodaItaliana from '../../imagens/itens/bedida-soda.jpeg'
+import {
+  criarSlugUnidade,
+  listarProdutos,
+  listarUnidades,
+  resolverUrlImagem,
+  type Unidade,
+} from '../../servicos/api'
 
 const hotDogsCards = [
   { image: smashDog, title: 'Smash Dogs', alt: 'Smash Dogs' },
@@ -15,20 +25,37 @@ const hotDogsCards = [
   { image: sodaItaliana, title: 'Soda Italiana', alt: 'Soda Italiana' },
 ] as const
 
-const unidades = [
-  {
-    href: '/unidades/aguas-claras-araucarias',
-    cidade: 'ÁGUAS CLARAS',
-    endereco: 'Av. das Araucárias',
-  },
-  {
-    href: '/unidades/aguas-claras-jequitiba',
-    cidade: 'ÁGUAS CLARAS',
-    endereco: 'Av. Jequitibá',
-  },
-] as const
-
 export default function Inicio() {
+    const [cards, setCards] = useState<readonly HotDogCard[]>(hotDogsCards)
+    const [unidades, setUnidades] = useState<
+        { href: string; cidade: string; endereco: string }[]
+    >([])
+
+    useEffect(() => {
+        listarProdutos()
+            .then((produtos) => {
+                const produtosComImagem = produtos
+                    .filter((produto) => produto.ativo && produto.imagem_url)
+                    .slice(0, 3)
+                    .map((produto) => ({
+                        image: resolverUrlImagem(produto.imagem_url)!,
+                        title: produto.nome,
+                        alt: produto.nome,
+                    }))
+
+                if (produtosComImagem.length === 3) {
+                    setCards(produtosComImagem)
+                }
+            })
+            .catch(() => undefined)
+
+        listarUnidades()
+            .then((unidadesApi) => {
+                setUnidades(unidadesApi.map(mapearUnidade))
+            })
+            .catch(() => undefined)
+    }, [])
+
     return (
         <>
             <BarraDeNavegacao />
@@ -78,7 +105,7 @@ export default function Inicio() {
                         Cada dog é uma experiência. Ingredientes premium com o tempero que só Paraíba tem!
                     </p>
 
-                    <CarrosselNossosDogs cards={hotDogsCards} />
+                    <CarrosselNossosDogs cards={cards} />
 
                     <Botao className="mt-10">
                         VER CARDÁPIO COMPLETO
@@ -112,4 +139,12 @@ export default function Inicio() {
             <Rodape />
         </>
     )
+}
+
+function mapearUnidade(unidade: Unidade) {
+    return {
+        href: `/unidades/${criarSlugUnidade(unidade)}`,
+        cidade: unidade.endereco.bairro.toUpperCase(),
+        endereco: unidade.endereco.logradouro,
+    }
 }
