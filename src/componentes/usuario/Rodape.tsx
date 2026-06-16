@@ -3,13 +3,9 @@ import iconeCacto from '../../imagens/outros/cacto-rodape.svg'
 import RedesSociais from './RedesSociais'
 
 const linksAcessoRapido = [
-
   { label: 'Cardápio', href: '/cardapio' },
-
   { label: 'Sobre nós', href: '/sobre-nos' },
-
   { label: 'Cartão fidelidade', href: '/cartao-fidelidade' },
-
 ] as const
 
 function LinksAcessoRapidoHorizontal({ className = '' }: { className?: string }) {
@@ -25,7 +21,7 @@ function LinksAcessoRapidoHorizontal({ className = '' }: { className?: string })
             )}
             <a
               href={href}
-              className="font-barlow text-base text-preto-v1 transition-opacity hover:opacity-70"
+              className="font-barlow text-base text-preto-v1 transition-opacity hover:opacity-70 min-[490px]:text-[clamp(1rem,1rem+(100vw-30.625rem)*0.0012,1.125rem)]"
             >
               {label}
             </a>
@@ -40,25 +36,19 @@ export default function Rodape() {
   return (
     <footer className="bg-branco">
       <div className="pagina-container py-8 min-[490px]:py-12 lg:py-14">
-        {/* Mobile */}
         <div className="min-[490px]:hidden">
-          <div className="flex w-full items-start justify-start gap-2">
-            <div className="flex shrink-0 flex-col items-start gap-0">
-              <a
-                href="/"
-                aria-label="Paraíba Hot Dog — início"
-                className="block leading-none"
-              >
-                <img
-                  src={logo}
-                  alt="Paraíba Hot Dog"
-                  className="block h-24 w-auto object-contain object-top"
-                />
-              </a>
-              <RedesSociais variant="plain" className="-mt-5" />
-            </div>
+          <div className="flex flex-col items-center gap-4 text-center">
+            <a href="/" aria-label="Paraíba Hot Dog — início" className="block leading-none">
+              <img
+                src={logo}
+                alt="Paraíba Hot Dog"
+                className="block h-20 w-auto object-contain object-top"
+              />
+            </a>
 
-            <p className="font-barlow-condensed text-xl font-black uppercase leading-[0.95] text-preto-v1">
+            <RedesSociais variant="plain" className="justify-center -mt-2" />
+
+            <p className="max-w-56 font-barlow-condensed text-[clamp(1.35rem,6vw,1.75rem)] font-black uppercase leading-[0.95] text-preto-v1">
               O DOG MAIS
               <br />
               <span className="text-amarelo">ARRETADO</span>
@@ -66,12 +56,12 @@ export default function Rodape() {
               DE BRASÍLIA
             </p>
           </div>
-          <LinksAcessoRapidoHorizontal className="mt-8" />
+
+          <LinksAcessoRapidoHorizontal className="mt-7" />
         </div>
 
-        {/* Tablet / Desktop */}
-        <div className="hidden w-full max-w-full min-w-0 flex-col items-center gap-10 min-[490px]:flex min-[490px]:flex-row min-[490px]:items-center min-[490px]:justify-between min-[490px]:gap-8 lg:gap-12 xl:gap-16">
-          <div className="flex w-full min-w-0 flex-row items-center gap-6 lg:gap-10">
+        <div className="hidden w-full min-w-0 flex-col items-center gap-10 min-[490px]:flex min-[490px]:flex-row min-[490px]:items-center min-[490px]:justify-between min-[490px]:gap-8 lg:gap-12 xl:gap-16">
+          <div className="flex w-full min-w-0 flex-row items-center gap-5 lg:gap-10">
             <div className="flex items-center gap-4 lg:gap-6">
               <a href="/" aria-label="Paraíba Hot Dog — início">
                 <img
@@ -80,6 +70,7 @@ export default function Rodape() {
                   className="h-36 w-auto object-contain lg:h-44"
                 />
               </a>
+
               <p className="font-barlow-condensed text-[clamp(1.25rem,3.5vw,2rem)] font-black uppercase leading-[0.95] text-preto-v1">
                 O DOG MAIS
                 <br />
@@ -88,8 +79,9 @@ export default function Rodape() {
                 DE BRASÍLIA
               </p>
             </div>
+
             <div className="flex flex-col justify-center">
-              <h3 className="font-barlow-semicondensed text-2xl font-semibold text-preto-v1">
+              <h3 className="font-barlow-condensed text-2xl font-semibold text-preto-v1">
                 Acesso rápido
               </h3>
 
@@ -98,7 +90,7 @@ export default function Rodape() {
                   <li key={href}>
                     <a
                       href={href}
-                      className="flex items-center gap-1 font-barlow text-xl leading-none text-preto-v1 transition-opacity hover:opacity-70"
+                      className="flex items-center gap-1 font-barlow text-lg leading-none text-preto-v1 transition-opacity hover:opacity-70 lg:text-xl"
                     >
                       <img
                         src={iconeCacto}
@@ -113,9 +105,11 @@ export default function Rodape() {
               </ul>
             </div>
           </div>
+
           <RedesSociais variant="circulo" className="justify-end" />
         </div>
-        <hr className="mt-8 border-0 h-px bg-gradient-to-r from-transparent via-preto-v3/30 to-transparent min-[490px]:mt-6" />
+
+        <hr className="mt-8 h-px border-0 bg-gradient-to-r from-transparent via-preto-v3/30 to-transparent min-[490px]:mt-6" />
         <p className="mt-3 text-center font-barlow text-sm text-cinza-botao min-[490px]:text-base">
           © 2026 Paraíba Hot Dog. Todos os direitos reservados.
         </p>
@@ -123,4 +117,3 @@ export default function Rodape() {
     </footer>
   )
 }
-
