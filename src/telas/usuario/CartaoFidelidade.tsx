@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import BarraDeNavegacao from "../../componentes/usuario/BarraDeNavegacaoUsuario";
 import Botao from "../../componentes/usuario/inicio/Botao";
 import Rodape from "../../componentes/usuario/Rodape";
@@ -25,6 +25,7 @@ export default function CartaoFidelidade() {
   const [consultando, setConsultando] = useState(false);
   const [mensagem, setMensagem] = useState("");
   const [resultado, setResultado] = useState<ResultadoFidelidade>(null);
+  const consultaAtualRef = useRef(0);
 
   async function handleConsultarFidelidade(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -40,10 +41,16 @@ export default function CartaoFidelidade() {
     }
 
     setMensagem("");
+    setResultado(null);
     setConsultando(true);
+    const idConsulta = ++consultaAtualRef.current;
 
     try {
       const fidelidade = await consultarFidelidade(cadastroNormalizado);
+
+      if (consultaAtualRef.current !== idConsulta) {
+        return;
+      }
 
       if (!fidelidade) {
         setMensagem(formatarMensagemNaoEncontrado());
@@ -58,13 +65,19 @@ export default function CartaoFidelidade() {
         totalParaPremio: fidelidade.total_para_premio,
       });
     } catch (error) {
+      if (consultaAtualRef.current !== idConsulta) {
+        return;
+      }
+
       console.error("Loyalty lookup error:", error);
       setMensagem(
         "Não foi possível consultar sua fidelidade agora. Tente novamente em instantes.",
       );
       setResultado(null);
     } finally {
-      setConsultando(false);
+      if (consultaAtualRef.current === idConsulta) {
+        setConsultando(false);
+      }
     }
   }
 
