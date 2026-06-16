@@ -1,8 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import logoBranca from '../../imagens/logos/logo-branca.png'
-import { atualizarStatusCozinha, cancelarPedido, listarCozinha, type CozinhaItem, type StatusCozinha } from '../../servicos/cozinhaApi'
+import {
+  atualizarStatusCozinha,
+  cancelarPedido,
+  listarCozinha,
+  listarPedidosCancelados,
+  type CozinhaItem,
+  type PedidoApi,
+  type StatusCozinha,
+} from '../../servicos/cozinhaApi'
 
-type AbaCozinha = 'fila' | 'entregues'
+type AbaCozinha = 'fila' | 'entregues' | 'cancelados'
 
 type PedidoCozinha = {
   id: number
@@ -116,6 +124,38 @@ function formatarNomeProduto(nome: string) {
     .replace(/(^|[\s-])\S/g, (letra) => letra.toLocaleUpperCase('pt-BR'))
 }
 
+function pedidosCanceladosParaCards(pedidos: PedidoApi[]): PedidoCozinha[] {
+  return pedidos.flatMap((pedido) => {
+    const grupos = new Map<number, PedidoCozinha>()
+    const hora = new Date(pedido.created_at).toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+
+    pedido.itens.forEach((item) => {
+      const grupo = grupos.get(item.lote) ?? {
+        id: pedido.id,
+        hora,
+        mesa: pedido.nome_comanda,
+        lote: item.lote,
+        status: 'cancelado',
+        itens: [],
+      }
+
+      grupo.itens.push({
+        nome: `${item.quantidade}x ${nomeItemCozinha(item.produto_nome, item.produto_variacao_nome)}`,
+        adicionais: item.adicionais.map((adicional) => adicional.nome),
+        observacao: item.observacao,
+        quantidade: item.quantidade,
+      })
+      grupos.set(item.lote, grupo)
+    })
+
+    return Array.from(grupos.values())
+  })
+}
+
+
 function textoBotaoStatus(status: StatusCozinha) {
   return status === 'preparando' ? 'Preparando' : 'Preparar'
 }
@@ -203,6 +243,7 @@ function PedidoCard({
 }) {
   const preparando = pedido.status === 'preparando'
   const entregue = pedido.status === 'entregue'
+  const cancelado = pedido.status === 'cancelado'
 
   return (
     <article
@@ -211,7 +252,9 @@ function PedidoCard({
           ? 'border-2 border-amarelo'
           : entregue
             ? 'border border-[#e0e0e0] opacity-55'
-            : 'border border-[#e0e0e0]'
+            : cancelado
+              ? 'border border-[#ff2b2b]/35 opacity-70'
+              : 'border border-[#e0e0e0]'
       } bg-[#f7f7f7]`}
     >
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
@@ -258,10 +301,14 @@ function PedidoCard({
 
       <div className="mx-4 h-px bg-[#e8e8e8]" />
 
-      {entregue ? (
+      {entregue || cancelado ? (
         <div className="px-4 py-3">
-          <div className="h-10 rounded bg-[#ebebeb] text-center font-barlow-condensed text-xs font-black uppercase leading-10 tracking-wider text-[#aaa]">
-            Entregue às {pedido.hora}
+          <div
+            className={`h-10 rounded text-center font-barlow-condensed text-xs font-black uppercase leading-10 tracking-wider ${
+              cancelado ? 'bg-[#ffe8e8] text-[#d71920]' : 'bg-[#ebebeb] text-[#aaa]'
+            }`}
+          >
+            {cancelado ? `Cancelado às ${pedido.hora}` : `Entregue às ${pedido.hora}`}
           </div>
         </div>
       ) : (
@@ -302,6 +349,7 @@ function PedidoCard({
 
 export default function Cozinha() {
   const [aba, setAba] = useState<AbaCozinha>('fila')
+  const [cancelados, setCancelados] = useState<PedidoCozinha[]>([])
   const [entregues, setEntregues] = useState<PedidoCozinha[]>([])
   const [erro, setErro] = useState('')
   const [fila, setFila] = useState<PedidoCozinha[]>([])
@@ -325,6 +373,20 @@ export default function Cozinha() {
     }
   }
 
+  async function carregarCancelados() {
+    try {
+      setLoading(true)
+      setErro('')
+      const pedidos = await listarPedidosCancelados()
+      setCancelados(pedidosCanceladosParaCards(pedidos))
+    } catch {
+      setErro('Nao foi possivel carregar os pedidos cancelados.')
+      setCancelados([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     const timeout = window.setTimeout(() => {
       void carregarCozinha()
@@ -333,7 +395,11 @@ export default function Cozinha() {
     return () => window.clearTimeout(timeout)
   }, [])
 
-  const pedidosVisiveis = useMemo(() => (aba === 'fila' ? fila : entregues), [aba, entregues, fila])
+  const pedidosVisiveis = useMemo(() => {
+    if (aba === 'fila') return fila
+    if (aba === 'entregues') return entregues
+    return cancelados
+  }, [aba, cancelados, entregues, fila])
 
   function atualizarPedidoLocal(pedido: PedidoCozinha, status: 'preparando' | 'entregue') {
     if (status === 'entregue') {
@@ -401,6 +467,16 @@ export default function Cozinha() {
           >
             Entregues
           </button>
+          <button
+            className={`transition-colors ${aba === 'cancelados' ? 'text-amarelo' : 'text-branco/45 hover:text-branco'}`}
+            onClick={() => {
+              setAba('cancelados')
+              void carregarCancelados()
+            }}
+            type="button"
+          >
+            Cancelados
+          </button>
         </nav>
       </header>
 
@@ -416,9 +492,9 @@ export default function Cozinha() {
             <PedidoCard
               disabled={updatingKey === `${pedido.id}-${pedido.lote}`}
               key={`${pedido.id}-${pedido.lote}-${pedido.hora}`}
-              onCancelar={(item) => setPedidoCancelando(item)}
-              onEntregar={(item) => mudarStatus(item, 'entregue')}
-              onPreparar={(item) => mudarStatus(item, 'preparando')}
+              onCancelar={aba === 'cancelados' ? undefined : (item) => setPedidoCancelando(item)}
+              onEntregar={aba === 'cancelados' ? undefined : (item) => mudarStatus(item, 'entregue')}
+              onPreparar={aba === 'cancelados' ? undefined : (item) => mudarStatus(item, 'preparando')}
               pedido={pedido}
             />
           ))}

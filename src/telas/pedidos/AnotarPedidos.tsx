@@ -19,18 +19,9 @@ import {
   X,
 } from 'lucide-react'
 import logoBranca from '../../imagens/logos/logo-branca.png'
-import smashFacheiro from '../../imagens/itens/smash-facheiro.jpeg'
-import smashMandacaru from '../../imagens/itens/smash-mandacaru.jpeg'
-import smashXiqueXique from '../../imagens/itens/smash-xiquexique.jpeg'
-import dogArretado from '../../imagens/itens/dog-arretado.jpeg'
-import dogBixin from '../../imagens/itens/dog-bixin.jpeg'
-import dogParaibano from '../../imagens/itens/dog-paraibano.jpeg'
-import dogTradicional from '../../imagens/itens/dog-tradicional.jpeg'
-import dogVegetariano from '../../imagens/itens/dog-vegetariano.jpeg'
-import bebidaSoda from '../../imagens/itens/bedida-soda.jpeg'
 import { consultarFidelidade, type FidelidadeCliente } from '../../servicos/fidelidadeApi'
 import { criarClienteApi } from '../../servicos/clientesApi'
-import { listarUnidades, type Unidade } from '../../servicos/api'
+import { listarUnidades, resolverUrlImagem, type Unidade } from '../../servicos/api'
 import {
   adicionarItensPedidoApi,
   aumentarQuantidadeItemPedidoApi,
@@ -93,6 +84,18 @@ type SecaoCardapio = {
   subtitulo: string
   produtos: Produto[]
 }
+
+const imagemProduto = (arquivo: string) => resolverUrlImagem('/uploads/produtos/' + arquivo) ?? ''
+const smashFacheiro = imagemProduto('smash-facheiro.jpeg')
+const smashMandacaru = imagemProduto('smash-mandacaru.jpeg')
+const smashXiqueXique = imagemProduto('smash-xiquexique.jpeg')
+const dogArretado = imagemProduto('dog-arretado.jpeg')
+const dogBixin = imagemProduto('dog-bixin.jpeg')
+const dogParaibano = imagemProduto('dog-paraibano.jpeg')
+const dogTradicional = imagemProduto('dog-tradicional.jpeg')
+const dogVegetariano = imagemProduto('dog-vegetariano.jpeg')
+const bebidaSoda = imagemProduto('bedida-soda.jpeg')
+
 
 const bebidasCombo = ['Coca-Cola lata', 'Guarana lata', 'Fanta lata']
 const VALOR_DESCONTO_FIDELIDADE = 17

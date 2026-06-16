@@ -5,9 +5,12 @@ import Rodape from '../../componentes/usuario/Rodape'
 import imgCarrossel2 from '../../imagens/sobre-nos/WhatsApp Image 2026-04-15 at 11.10.02.jpeg'
 import imgCarrossel3 from '../../imagens/sobre-nos/WhatsApp Image 2026-04-15 at 11.29.49.jpeg'
 import imgCarrossel4 from '../../imagens/sobre-nos/WhatsApp Image 2026-04-15 at 11.10.03.jpeg'
-import smashMandacaru from '../../imagens/itens/smash-mandacaru.jpeg'
-import dogArretado from '../../imagens/itens/dog-arretado.jpeg'
+import { resolverUrlImagem } from '../../servicos/api'
 import { listarPostsBlogApi, resolverImagemBlogApi, type BlogPostApi, type TipoBlogApi } from '../../servicos/blogApi'
+
+const smashMandacaru = resolverUrlImagem('/uploads/produtos/smash-mandacaru.jpeg') ?? ''
+const dogArretado = resolverUrlImagem('/uploads/produtos/dog-arretado.jpeg') ?? ''
+
 
 const historias = [
   { imagem: imgCarrossel4, posicao: 'center center' },

@@ -1,8 +1,10 @@
+import CardapioAdm from './telas/administrador/CardapioAdm'
 import Painel from './telas/administrador/Painel'
 import GestaoUnidades from './telas/administrador/GestaoUnidades'
 import GestaoUsuarios from './telas/administrador/GestaoUsuarios'
 import GestaoBlog from './telas/administrador/GestaoBlog'
 import { useAuth } from './contextos/useAuth'
+import Cardapio from './telas/usuario/Cardapio'
 import CartaoFidelidade from './telas/usuario/CartaoFidelidade'
 import Cozinha from './telas/cozinha/Cozinha'
 import Dashboard from './telas/dashboard/Dashboard'
@@ -17,6 +19,14 @@ import AnotarPedidos from './telas/pedidos/AnotarPedidos'
 export default function App() {
   const { pathname } = window.location
   const { isAuthenticated, hasRole } = useAuth()
+
+  if (pathname === '/admin/login') {
+    if (isAuthenticated && hasRole('administrador')) {
+      return <RedirectTo href="/admin" />
+    }
+
+    return <Login />
+  }
 
   const rotaAdministrativa =
     pathname.startsWith('/admin') ||
@@ -33,6 +43,10 @@ export default function App() {
 
   if (pathname === '/admin') {
     return <Painel />
+  }
+
+  if (pathname === '/admin/cardapio') {
+    return <CardapioAdm />
   }
 
   if (pathname === '/admin/configuracoes/usuarios') {
@@ -63,6 +77,10 @@ export default function App() {
     return <Login />
   }
 
+  if (pathname === '/cardapio') {
+    return <Cardapio />
+  }
+
   if (pathname === '/cartao-fidelidade') {
     return <CartaoFidelidade />
   }
@@ -84,6 +102,11 @@ export default function App() {
   }
 
   return <Inicio />
+}
+
+function RedirectTo({ href }: { href: string }) {
+  window.location.replace(href)
+  return null
 }
 
 function AcessoNegado() {

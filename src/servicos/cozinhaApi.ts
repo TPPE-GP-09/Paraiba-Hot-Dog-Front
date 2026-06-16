@@ -20,6 +20,26 @@ export type CozinhaItem = {
   }>
 }
 
+export type PedidoApi = {
+  id: number
+  nome_comanda: string
+  status: 'aberto' | 'pago' | 'cancelado'
+  created_at: string
+  itens: Array<{
+    produto_nome: string
+    produto_variacao_nome: string | null
+    quantidade: number
+    observacao: string | null
+    status: StatusCozinha
+    lote: number
+    adicionais: Array<{
+      adicional_id: number | null
+      nome: string
+      preco: string
+    }>
+  }>
+}
+
 export async function listarCozinha(unidadeId?: number) {
   const response = await apiFetch('/pedidos/cozinha', {
     params: { unidade_id: unidadeId },
@@ -30,6 +50,22 @@ export async function listarCozinha(unidadeId?: number) {
   }
 
   return (await response.json()) as CozinhaItem[]
+}
+
+export async function listarPedidosCancelados(unidadeId?: number) {
+  const response = await apiFetch('/pedidos/', {
+    params: {
+      status: 'cancelado',
+      unidade_id: unidadeId,
+      limit: 100,
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Canceled orders failed: ${response.status}`)
+  }
+
+  return (await response.json()) as PedidoApi[]
 }
 
 export async function cancelarPedido(pedidoId: number, motivoCancelamento: string) {
