@@ -17,16 +17,16 @@ const RIGHT_ACTION_WIDTH = 44
 
 function NavItems({
   activeLinkClassName,
-  currentPath,
+  currentLocation,
   linkClassName,
 }: {
   activeLinkClassName: string
-  currentPath: string
+  currentLocation: string
   linkClassName: string
 }) {
   return navLinks.map(({ label, href }) => (
     <li key={href}>
-      <a href={href} className={currentPath === href ? activeLinkClassName : linkClassName}>
+      <a href={href} className={currentLocation === href ? activeLinkClassName : linkClassName}>
         {label}
       </a>
     </li>
@@ -40,7 +40,7 @@ type NavbarProps = {
 export default function Navbar({ variant = 'light' }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [useMobileMenu, setUseMobileMenu] = useState(false)
-  const currentPath = window.location.pathname
+  const currentLocation = `${window.location.pathname}${window.location.hash}`
   const isDark = variant === 'dark'
   const logo = isDark ? logoBranca : logoPreta
   const headerClassName = isDark ? 'bg-preto-v1' : 'bg-branco'
@@ -112,7 +112,7 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
         >
           <NavItems
             activeLinkClassName={activeLinkClassName}
-            currentPath={currentPath}
+            currentLocation={currentLocation}
             linkClassName={linkClassName}
           />
         </ul>
@@ -141,7 +141,7 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
               <ul className="flex items-center gap-6 whitespace-nowrap md:gap-8">
                 <NavItems
                   activeLinkClassName={activeLinkClassName}
-                  currentPath={currentPath}
+                  currentLocation={currentLocation}
                   linkClassName={linkClassName}
                 />
               </ul>
@@ -155,7 +155,7 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
               <ul className="pointer-events-auto flex items-center gap-10 whitespace-nowrap">
                 <NavItems
                   activeLinkClassName={activeLinkClassName}
-                  currentPath={currentPath}
+                  currentLocation={currentLocation}
                   linkClassName={linkClassName}
                 />
               </ul>
@@ -196,7 +196,7 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
           <ul className="flex flex-col gap-5">
             {navLinks.map(({ label, href }) => (
               <li key={href}>
-                <a href={href} className={currentPath === href ? activeLinkClassName : linkClassName} onClick={closeMenu}>
+                <a href={href} className={currentLocation === href ? activeLinkClassName : linkClassName} onClick={closeMenu}>
                   {label}
                 </a>
               </li>

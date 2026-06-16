@@ -71,6 +71,24 @@ export default function Inicio() {
   }, []);
 
   useEffect(() => {
+    const alvoHash = window.location.hash.replace("#", "");
+    if (!alvoHash) return;
+
+    const rolarParaHash = () => {
+      const alvo = document.getElementById(alvoHash);
+      if (alvo) {
+        alvo.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
+
+    const rafId = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(rolarParaHash);
+    });
+
+    return () => window.cancelAnimationFrame(rafId);
+  }, []);
+
+  useEffect(() => {
     const footerSocialTargets = document.querySelectorAll("[data-footer-socials]");
 
     const observer = new IntersectionObserver(
