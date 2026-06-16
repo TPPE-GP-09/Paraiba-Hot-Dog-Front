@@ -202,7 +202,7 @@ export default function CartaoFidelidade() {
                     corretamente.
                   </p>
                   <p className="mx-auto mt-4 max-w-[28rem] font-barlow text-sm leading-snug text-branco/70 min-[640px]:text-base">
-                    Se voce ja fez pedidos com outro contato, vale testar o
+                    Se você já fez pedidos com outro contato, vale testar o
                     telefone ou e-mail usado no atendimento.
                   </p>
                 </article>
