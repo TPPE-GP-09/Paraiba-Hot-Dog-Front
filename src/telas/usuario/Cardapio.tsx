@@ -4,7 +4,10 @@ import BarraDeNavegacao from "../../componentes/usuario/BarraDeNavegacaoUsuario"
 import Rodape from "../../componentes/usuario/Rodape";
 import type { ProdutoCardapio, SecaoCardapio } from "../../model/cardapio";
 import { listarSecoesCardapio } from "../../repository/cardapioRepository";
+<<<<<<< HEAD
 import { listarUnidades, type Unidade } from "../../servicos/api";
+=======
+>>>>>>> 5b7c97f (Cria cardápio e integra com backend, adiciona gestão admin)
 
 const formatadorPreco = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -255,6 +258,7 @@ function SecaoProdutos({
 
 export default function Cardapio() {
   const [secoes, setSecoes] = useState<SecaoCardapio[]>([]);
+<<<<<<< HEAD
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [unidadeSelecionadaId, setUnidadeSelecionadaId] = useState<number | "">(
     "",
@@ -263,13 +267,21 @@ export default function Cardapio() {
   const [carregandoUnidades, setCarregandoUnidades] = useState(true);
   const [erroCarregamento, setErroCarregamento] = useState(false);
   const [erroUnidades, setErroUnidades] = useState(false);
+=======
+  const [carregando, setCarregando] = useState(true);
+  const [erroCarregamento, setErroCarregamento] = useState(false);
+>>>>>>> 5b7c97f (Cria cardápio e integra com backend, adiciona gestão admin)
   const [produtoSelecionado, setProdutoSelecionado] =
     useState<ProdutoCardapio | null>(null);
 
   useEffect(() => {
     let ativo = true;
 
+<<<<<<< HEAD
     listarSecoesCardapio(unidadeSelecionadaId || null)
+=======
+    listarSecoesCardapio()
+>>>>>>> 5b7c97f (Cria cardápio e integra com backend, adiciona gestão admin)
       .then((resultado) => {
         if (!ativo) return;
         setSecoes(resultado);
@@ -285,6 +297,7 @@ export default function Cardapio() {
     return () => {
       ativo = false;
     };
+<<<<<<< HEAD
   }, [unidadeSelecionadaId]);
 
   useEffect(() => {
@@ -306,17 +319,22 @@ export default function Cardapio() {
     return () => {
       ativo = false;
     };
+=======
+>>>>>>> 5b7c97f (Cria cardápio e integra com backend, adiciona gestão admin)
   }, []);
 
   const totalProdutos = useMemo(
     () => secoes.reduce((total, secao) => total + secao.produtos.length, 0),
     [secoes],
   );
+<<<<<<< HEAD
   const unidadeSelecionada = useMemo(
     () =>
       unidades.find((unidade) => unidade.id === unidadeSelecionadaId) ?? null,
     [unidadeSelecionadaId, unidades],
   );
+=======
+>>>>>>> 5b7c97f (Cria cardápio e integra com backend, adiciona gestão admin)
 
   return (
     <>
@@ -337,6 +355,7 @@ export default function Cardapio() {
             </p>
           </div>
 
+<<<<<<< HEAD
           <div className="mt-8 max-w-xl font-barlow">
             <label
               htmlFor="unidade-cardapio"
@@ -374,6 +393,8 @@ export default function Cardapio() {
             )}
           </div>
 
+=======
+>>>>>>> 5b7c97f (Cria cardápio e integra com backend, adiciona gestão admin)
           {carregando ? (
             <div className="mt-12 rounded-[5px] border border-branco/10 bg-[#222] px-5 py-8 font-barlow text-branco/80">
               Carregando cardápio...
@@ -385,8 +406,12 @@ export default function Cardapio() {
           ) : (
             <>
               <p className="mt-6 font-barlow text-sm text-branco/60">
+<<<<<<< HEAD
                 {totalProdutos} itens disponíveis
                 {unidadeSelecionada ? ` em ${unidadeSelecionada.nome}` : ""}.
+=======
+                {totalProdutos} itens disponíveis.
+>>>>>>> 5b7c97f (Cria cardápio e integra com backend, adiciona gestão admin)
               </p>
 
               <div>
