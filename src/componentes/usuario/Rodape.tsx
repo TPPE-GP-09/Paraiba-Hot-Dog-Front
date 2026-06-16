@@ -46,7 +46,9 @@ export default function Rodape() {
               />
             </a>
 
-            <RedesSociais variant="plain" className="justify-center -mt-2" />
+            <div data-footer-socials>
+              <RedesSociais variant="plain" className="justify-center -mt-2" />
+            </div>
 
             <p className="max-w-56 font-barlow-condensed text-[clamp(1.35rem,6vw,1.75rem)] font-black uppercase leading-[0.95] text-preto-v1">
               O DOG MAIS
@@ -106,7 +108,9 @@ export default function Rodape() {
             </div>
           </div>
 
-          <RedesSociais variant="circulo" className="justify-end" />
+          <div data-footer-socials>
+            <RedesSociais variant="circulo" className="justify-end" />
+          </div>
         </div>
 
         <hr className="mt-8 h-px border-0 bg-gradient-to-r from-transparent via-preto-v3/30 to-transparent min-[490px]:mt-6" />

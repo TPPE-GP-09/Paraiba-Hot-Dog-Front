@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import CardapioAdm from './telas/administrador/CardapioAdm'
 import Painel from './telas/administrador/Painel'
 import GestaoUnidades from './telas/administrador/GestaoUnidades'
@@ -19,6 +20,10 @@ import AnotarPedidos from './telas/pedidos/AnotarPedidos'
 export default function App() {
   const { pathname } = window.location
   const { isAuthenticated, hasRole } = useAuth()
+
+  useEffect(() => {
+    document.title = getPageTitle(pathname)
+  }, [pathname])
 
   if (pathname === '/admin/login') {
     if (isAuthenticated && hasRole('administrador')) {
@@ -102,6 +107,29 @@ export default function App() {
   }
 
   return <Inicio />
+}
+
+function getPageTitle(pathname: string) {
+  const baseTitle = 'Paraíba Hot Dog'
+
+  if (pathname === '/cardapio') return `Cardápio | ${baseTitle}`
+  if (pathname === '/cartao-fidelidade') return `Cartão Fidelidade | ${baseTitle}`
+  if (pathname === '/sobre-nos') return `Sobre Nós | ${baseTitle}`
+  if (pathname.startsWith('/unidades/')) return `Unidade | ${baseTitle}`
+  if (pathname === '/login' || pathname === '/admin/login') return `Login | ${baseTitle}`
+  if (pathname === '/esqueci-senha' || pathname === '/recuperar-senha') {
+    return `Recuperar Senha | ${baseTitle}`
+  }
+  if (pathname === '/admin') return `Painel Administrativo | ${baseTitle}`
+  if (pathname === '/admin/cardapio') return `Cardápio Admin | ${baseTitle}`
+  if (pathname === '/admin/configuracoes/usuarios') return `Usuários | ${baseTitle}`
+  if (pathname === '/admin/configuracoes/unidades') return `Unidades | ${baseTitle}`
+  if (pathname === '/admin/configuracoes/blog') return `Blog | ${baseTitle}`
+  if (pathname === '/admin/anotar-pedidos') return `Anotar Pedidos | ${baseTitle}`
+  if (pathname === '/dashboard' || pathname === '/admin/dashboard') return `Dashboard | ${baseTitle}`
+  if (pathname === '/cozinha' || pathname === '/admin/cozinha') return `Cozinha | ${baseTitle}`
+
+  return baseTitle
 }
 
 function RedirectTo({ href }: { href: string }) {

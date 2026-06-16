@@ -12,6 +12,9 @@ export default function RedesSociais({
 }: RedesSociaisProps) {
   const isPlain = variant === "plain";
   const isHome = variant === "home";
+  const homeButtonClass =
+    "flex h-16 w-16 items-center justify-center rounded-full bg-[#f3f3f3] shadow-[0_0_0_1px_rgba(255,255,255,0.55),0_8px_18px_rgba(255,255,255,0.28),0_14px_30px_rgba(0,0,0,0.36)] transition-all hover:scale-105 hover:shadow-[0_0_0_1px_rgba(255,255,255,0.7),0_10px_22px_rgba(255,255,255,0.34),0_18px_36px_rgba(0,0,0,0.42)]";
+  const homeIconClass = "h-8 w-8";
 
   return (
     <div
@@ -26,7 +29,7 @@ export default function RedesSociais({
           isPlain
             ? "transition-opacity hover:opacity-70"
             : isHome
-              ? "flex h-14 w-14 items-center justify-center rounded-full bg-[#e8e8e8] shadow-[0_4px_12px_rgba(255,255,255,0.16),0_10px_26px_rgba(0,0,0,0.35)] transition-all hover:opacity-90 hover:shadow-[0_6px_16px_rgba(255,255,255,0.2),0_12px_30px_rgba(0,0,0,0.42)]"
+              ? homeButtonClass
               : "flex h-14 w-14 items-center justify-center rounded-full bg-preto-v1 shadow-[0_4px_12px_rgba(0,0,0,0.35)] transition-all hover:opacity-80 hover:shadow-[0_6px_16px_rgba(0,0,0,0.45)]"
         }
       >
@@ -38,7 +41,7 @@ export default function RedesSociais({
             isPlain
               ? "h-6 w-auto"
               : isHome
-                ? "h-7 w-auto"
+                ? "h-8 w-auto"
                 : "h-7 w-auto brightness-0 invert"
           }
         />
@@ -52,7 +55,7 @@ export default function RedesSociais({
           isPlain
             ? "transition-opacity hover:opacity-70"
             : isHome
-              ? "flex h-14 w-14 items-center justify-center rounded-full bg-[#e8e8e8] shadow-[0_4px_12px_rgba(255,255,255,0.16),0_10px_26px_rgba(0,0,0,0.35)] transition-all hover:opacity-90 hover:shadow-[0_6px_16px_rgba(255,255,255,0.2),0_12px_30px_rgba(0,0,0,0.42)]"
+              ? homeButtonClass
               : "flex h-14 w-14 items-center justify-center rounded-full bg-preto-v1 shadow-[0_4px_12px_rgba(0,0,0,0.35)] transition-all hover:opacity-80 hover:shadow-[0_6px_16px_rgba(0,0,0,0.45)]"
         }
       >
@@ -64,7 +67,7 @@ export default function RedesSociais({
             isPlain
               ? "h-5 w-5"
               : isHome
-                ? "h-7 w-7"
+                ? homeIconClass
                 : "h-7 w-7 brightness-0 invert"
           }
         />

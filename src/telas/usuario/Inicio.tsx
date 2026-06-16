@@ -43,6 +43,7 @@ export default function Inicio() {
   const [unidades, setUnidades] = useState<
     { href: string; cidade: string; endereco: string }[]
   >([]);
+  const [showHomeSocials, setShowHomeSocials] = useState(true);
 
   useEffect(() => {
     listarProdutos()
@@ -69,11 +70,43 @@ export default function Inicio() {
       .catch(() => undefined);
   }, []);
 
+  useEffect(() => {
+    const footerSocialTargets = document.querySelectorAll("[data-footer-socials]");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const isVisible = entries.some((entry) => entry.isIntersecting);
+        setShowHomeSocials(!isVisible);
+      },
+      {
+        threshold: 0.1,
+      },
+    );
+
+    footerSocialTargets.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <BarraDeNavegacao />
 
-      <main className="min-h-screen overflow-x-hidden bg-preto-v1 pt-16">
+      <main className="relative min-h-screen overflow-x-clip bg-preto-v1 pt-16">
+        <div
+          aria-hidden={!showHomeSocials}
+          className={`pointer-events-none absolute inset-y-0 right-0 z-40 w-24 min-[768px]:w-28 transition-all duration-500 ease-out motion-reduce:transition-none ${
+            showHomeSocials
+              ? "translate-x-0 opacity-100 drop-shadow-[0_0_18px_rgba(255,255,255,0.28)]"
+              : "translate-x-4 opacity-0 drop-shadow-none"
+          }`}
+        >
+          <RedesSociais
+            variant="home"
+            className="pointer-events-auto sticky top-[calc(100svh-11rem)] ml-auto mr-4 flex-col gap-3 min-[490px]:top-[calc(100svh-11.5rem)] min-[490px]:mr-6 min-[768px]:mr-8"
+          />
+        </div>
+
         {/* HERO */}
         <section className="pagina-container pt-10 min-[490px]:pt-[clamp(2.5rem,1rem+4vw,6rem)]">
           <div className="relative flex w-full max-w-full min-w-0 flex-col items-center gap-6 text-center min-[490px]:grid min-[490px]:grid-cols-[auto_auto] min-[490px]:grid-rows-[auto_auto] min-[490px]:justify-center min-[490px]:gap-x-4 min-[490px]:gap-y-6 min-[768px]:gap-x-10 min-[1024px]:gap-x-16 min-[490px]:text-left">
@@ -106,11 +139,7 @@ export default function Inicio() {
               <img
                 src={imgSmashHome}
                 alt="Smash Home"
-                className="animacao-smash-home h-auto w-full max-w-[min(100%,400px)] object-contain min-[490px]:h-full min-[490px]:w-auto min-[490px]:max-w-[clamp(11rem,34vw,40rem)]"
-              />
-              <RedesSociais
-                variant="home"
-                className="absolute right-0.5 top-[125%] z-20 -translate-y-1/2 flex-col gap-3 min-[490px]:top-auto min-[490px]:bottom-[-12rem] min-[490px]:translate-y-0 min-[490px]:translate-x-[0.5rem] min-[768px]:bottom-[-12rem] min-[768px]:translate-x-[1rem]"
+                className="animacao-smash-home h-auto w-[min(78vw,22rem)] max-w-none object-contain min-[490px]:w-[clamp(22rem,48vw,52rem)]"
               />
             </div>
           </div>
@@ -130,7 +159,7 @@ export default function Inicio() {
           <CarrosselNossosDogs cards={cards} />
 
           <Botao
-            className="mt-10"
+            className="mt-10 font-black"
             onClick={() => {
               window.location.href = "/cardapio";
             }}
