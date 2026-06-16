@@ -20,6 +20,14 @@ export default function App() {
   const { pathname } = window.location
   const { isAuthenticated, hasRole } = useAuth()
 
+  if (pathname === '/admin/login') {
+    if (isAuthenticated && hasRole('administrador')) {
+      return <RedirectTo href="/admin" />
+    }
+
+    return <Login />
+  }
+
   const rotaAdministrativa =
     pathname.startsWith('/admin') ||
     pathname === '/dashboard' ||
@@ -94,6 +102,11 @@ export default function App() {
   }
 
   return <Inicio />
+}
+
+function RedirectTo({ href }: { href: string }) {
+  window.location.replace(href)
+  return null
 }
 
 function AcessoNegado() {

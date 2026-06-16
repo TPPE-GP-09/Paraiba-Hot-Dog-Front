@@ -10,7 +10,7 @@ const navLinks = [
   { label: 'Cartão fidelidade', href: '/cartao-fidelidade' },
 ] as const
 
-const ADMIN_HREF = '/login'
+const ADMIN_HREF = '/admin/login'
 
 const MIN_GAP_RIGHT = 20
 const RIGHT_ACTION_WIDTH = 44
@@ -37,7 +37,7 @@ type NavbarProps = {
   variant?: 'light' | 'dark'
 }
 
-export default function Navbar({ variant = 'light' }: NavbarProps) {
+export default function Navbar({ variant = 'dark' }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [useMobileMenu, setUseMobileMenu] = useState(false)
   const currentPath = window.location.pathname

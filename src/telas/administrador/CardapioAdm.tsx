@@ -78,6 +78,16 @@ const modalPrimaryButtonClass =
 const modalDangerButtonClass =
   "rounded-[6px] border-2 border-[#D92B2B] bg-[#D92B2B] px-5 py-3 font-barlow-condensed text-xl font-semibold uppercase tracking-wide text-white transition-colors hover:border-red-700 hover:bg-red-700";
 
+class ApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 function formatarPreco(preco: string | number) {
   return formatadorPreco.format(Number(preco));
 }
@@ -130,7 +140,18 @@ async function apiJson<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
 
   if (!response.ok) {
-    throw new Error(`Erro ${response.status} em ${path}`);
+    let detail = `Erro ${response.status} em ${path}`;
+
+    try {
+      const body = (await response.json()) as { detail?: unknown };
+      if (typeof body.detail === "string") {
+        detail = body.detail;
+      }
+    } catch {
+      // Mantem a mensagem padrao quando a API nao retorna JSON.
+    }
+
+    throw new ApiError(response.status, detail);
   }
 
   if (response.status === 204) {
@@ -163,7 +184,7 @@ function normalizarProdutoBackend(produto: ProdutoCardapio): ProdutoCardapio {
 
 function criarProdutoMultipartPayload(
   form: ProdutoFormData,
-  imagemArquivo: File,
+  imagemArquivo?: File | null,
 ) {
   const formData = new FormData();
 
@@ -179,7 +200,9 @@ function criarProdutoMultipartPayload(
     String(form.disponivelTodasUnidades),
   );
   formData.append("subcategoria_id", String(form.subcategoriaId));
-  formData.append("imagem", imagemArquivo);
+  if (imagemArquivo) {
+    formData.append("imagem", imagemArquivo);
+  }
 
   if (!form.disponivelTodasUnidades) {
     form.unidadeIds.forEach((unidadeId) => {
@@ -513,9 +536,16 @@ function CardProdutoAdm({
         aria-label={`Ver detalhes de ${produto.nome}`}
       >
         <div className="min-h-0 overflow-hidden">
-          <h3 className="font-barlow text-lg font-black leading-tight drop-shadow-[0_3px_3px_rgba(0,0,0,0.2)] min-[640px]:line-clamp-2">
-            {produto.nome}
-          </h3>
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="font-barlow text-lg font-black leading-tight drop-shadow-[0_3px_3px_rgba(0,0,0,0.2)] min-[640px]:line-clamp-2">
+              {produto.nome}
+            </h3>
+            {!produto.ativo && (
+              <span className="rounded-[5px] border border-red-400/50 px-2 py-0.5 font-barlow text-xs font-bold uppercase text-red-200">
+                Inativo
+              </span>
+            )}
+          </div>
 
           <p className="mt-1 line-clamp-5 font-barlow text-sm leading-[1.2] text-branco/85 drop-shadow-[0_3px_3px_rgba(0,0,0,0.15)] min-[640px]:line-clamp-2">
             {produto.descricao}
@@ -1643,6 +1673,9 @@ export default function CardapioAdm() {
   const [categorias, setCategorias] = useState<CategoriaRead[]>([]);
   const [subcategorias, setSubcategorias] = useState<SubcategoriaRead[]>([]);
   const [unidades, setUnidades] = useState<UnidadeRead[]>([]);
+  const [unidadeSelecionadaId, setUnidadeSelecionadaId] = useState<number | "">(
+    "",
+  );
   const [carregando, setCarregando] = useState(true);
   const [produtoSelecionado, setProdutoSelecionado] =
     useState<ProdutoCardapio | null>(null);
@@ -1671,11 +1704,11 @@ export default function CardapioAdm() {
       subcategoriasAtualizadas,
       unidadesAtualizadas,
     ] = await Promise.all([
-        listarSecoesCardapio(),
-        listarCategoriasCardapio(),
-        listarSubcategoriasCardapio(),
-        apiJson<UnidadeRead[]>("/unidades/"),
-      ]);
+      listarSecoesCardapio(unidadeSelecionadaId || null, true),
+      listarCategoriasCardapio(),
+      listarSubcategoriasCardapio(),
+      apiJson<UnidadeRead[]>("/unidades/"),
+    ]);
 
     setSecoes(secoesAtualizadas);
     setCategorias(categoriasAtualizadas);
@@ -1687,18 +1720,25 @@ export default function CardapioAdm() {
     let ativo = true;
 
     Promise.all([
-      listarSecoesCardapio(),
+      listarSecoesCardapio(unidadeSelecionadaId || null, true),
       listarCategoriasCardapio(),
       listarSubcategoriasCardapio(),
       apiJson<UnidadeRead[]>("/unidades/"),
     ])
-      .then(([secoesAtualizadas, categoriasAtualizadas, subcategoriasAtualizadas, unidadesAtualizadas]) => {
-        if (!ativo) return;
-        setSecoes(secoesAtualizadas);
-        setCategorias(categoriasAtualizadas);
-        setSubcategorias(subcategoriasAtualizadas);
-        setUnidades(unidadesAtualizadas);
-      })
+      .then(
+        ([
+          secoesAtualizadas,
+          categoriasAtualizadas,
+          subcategoriasAtualizadas,
+          unidadesAtualizadas,
+        ]) => {
+          if (!ativo) return;
+          setSecoes(secoesAtualizadas);
+          setCategorias(categoriasAtualizadas);
+          setSubcategorias(subcategoriasAtualizadas);
+          setUnidades(unidadesAtualizadas);
+        },
+      )
       .catch(() => {
         if (ativo) {
           setToast("Não foi possível carregar todo o cardápio.");
@@ -1711,11 +1751,16 @@ export default function CardapioAdm() {
     return () => {
       ativo = false;
     };
-  }, []);
+  }, [unidadeSelecionadaId]);
 
   const totalProdutos = useMemo(
     () => secoes.reduce((total, secao) => total + secao.produtos.length, 0),
     [secoes],
+  );
+  const unidadeSelecionada = useMemo(
+    () =>
+      unidades.find((unidade) => unidade.id === unidadeSelecionadaId) ?? null,
+    [unidadeSelecionadaId, unidades],
   );
 
   const primeiraSubcategoria =
@@ -1777,14 +1822,6 @@ export default function CardapioAdm() {
       ) + 1;
     const formFinal = { ...form };
 
-    if (produto && form.imagemArquivo) {
-      formFinal.imagemArquivo = null;
-      formFinal.imagemLocal = "";
-      setToast(
-        "Envio de nova imagem em edição ainda não está disponível no backend. Use URL da imagem.",
-      );
-    }
-
     const payload = {
       nome: form.nome,
       descricao: form.descricao,
@@ -1802,7 +1839,7 @@ export default function CardapioAdm() {
 
     try {
       const body =
-        !produto && formFinal.imagemArquivo
+        formFinal.imagemArquivo
           ? criarProdutoMultipartPayload(formFinal, formFinal.imagemArquivo)
           : JSON.stringify(payload);
 
@@ -1817,8 +1854,12 @@ export default function CardapioAdm() {
       idPersistido = produtoSalvo.id;
       await sincronizarVariacoes(idPersistido, formFinal, produto);
       await sincronizarAdicionais(idPersistido, formFinal, produto);
-    } catch {
-      setToast("Não foi possível salvar o produto. Verifique login e conexão.");
+    } catch (error) {
+      setToast(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível salvar o produto.",
+      );
       return;
     }
 
@@ -1863,10 +1904,13 @@ export default function CardapioAdm() {
         method: "DELETE",
       });
       setToast("Produto excluído.");
-    } catch {
+    } catch (error) {
       setToast(
-        "API indisponível ou sem autenticação. Exclusão aplicada localmente.",
+        error instanceof Error
+          ? error.message
+          : "Não foi possível excluir o produto.",
       );
+      return;
     }
 
     removerProdutoLocal(produtoExcluindo.id);
@@ -2005,7 +2049,7 @@ export default function CardapioAdm() {
             </p>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
+          <div className="mt-8 flex flex-wrap items-end gap-3">
             <button
               type="button"
               onClick={() => setMostrarCriacao(true)}
@@ -2015,8 +2059,40 @@ export default function CardapioAdm() {
               <Plus aria-hidden className="h-4 w-4" strokeWidth={3} />
               Novo item
             </button>
+
+            <div className="min-w-64 font-barlow">
+              <label
+                htmlFor="unidade-cardapio-admin"
+                className="block text-xs font-semibold uppercase text-branco/65"
+              >
+                Unidade
+              </label>
+              <select
+                id="unidade-cardapio-admin"
+                value={unidadeSelecionadaId}
+                onChange={(event) => {
+                  setCarregando(true);
+                  setProdutoSelecionado(null);
+                  setProdutoEditando(null);
+                  setProdutoExcluindo(null);
+                  setUnidadeSelecionadaId(
+                    event.target.value ? Number(event.target.value) : "",
+                  );
+                }}
+                className="mt-1 h-10 w-full rounded-[5px] border border-branco/15 bg-[#222] px-3 font-barlow text-sm font-semibold text-branco outline-none transition-colors focus:border-amarelo focus:ring-2 focus:ring-amarelo/30"
+              >
+                <option value="">Todas as unidades</option>
+                {unidades.map((unidade) => (
+                  <option key={unidade.id} value={unidade.id}>
+                    {unidade.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <p className="font-barlow text-sm text-branco/60">
-              {totalProdutos} itens disponíveis.
+              {totalProdutos} itens disponíveis
+              {unidadeSelecionada ? ` em ${unidadeSelecionada.nome}` : ""}.
             </p>
           </div>
 
