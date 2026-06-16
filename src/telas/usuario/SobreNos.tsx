@@ -11,6 +11,7 @@ import { listarPostsBlogApi, resolverImagemBlogApi, type BlogPostApi, type TipoB
 const smashMandacaru = resolverUrlImagem('/uploads/produtos/smash-mandacaru.jpeg') ?? ''
 const dogArretado = resolverUrlImagem('/uploads/produtos/dog-arretado.jpeg') ?? ''
 
+
 const historias = [
   { imagem: imgCarrossel4, posicao: 'center center' },
   { imagem: imgCarrossel2, posicao: 'center top' },

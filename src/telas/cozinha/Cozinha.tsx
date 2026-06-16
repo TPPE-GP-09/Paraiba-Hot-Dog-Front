@@ -155,6 +155,7 @@ function pedidosCanceladosParaCards(pedidos: PedidoApi[]): PedidoCozinha[] {
   })
 }
 
+
 function textoBotaoStatus(status: StatusCozinha) {
   return status === 'preparando' ? 'Preparando' : 'Preparar'
 }

@@ -96,6 +96,7 @@ const dogTradicional = imagemProduto('dog-tradicional.jpeg')
 const dogVegetariano = imagemProduto('dog-vegetariano.jpeg')
 const bebidaSoda = imagemProduto('bedida-soda.jpeg')
 
+
 const bebidasCombo = ['Coca-Cola lata', 'Guarana lata', 'Fanta lata']
 const VALOR_DESCONTO_FIDELIDADE = 17
 
