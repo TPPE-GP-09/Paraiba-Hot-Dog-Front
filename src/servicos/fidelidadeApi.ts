@@ -17,6 +17,10 @@ export async function consultarFidelidade(cadastro: string) {
     return null
   }
 
+  if (response.status >= 400 && response.status < 500) {
+    return null
+  }
+
   if (!response.ok) {
     throw new Error(`Loyalty lookup failed: ${response.status}`)
   }

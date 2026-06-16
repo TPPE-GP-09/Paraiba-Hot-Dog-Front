@@ -5,7 +5,7 @@ import logoPreta from '../../imagens/logos/logo-preta.png'
 
 const navLinks = [
   { label: 'Cardápio', href: '/cardapio' },
-  { label: 'Unidades', href: '#unidades' },
+  { label: 'Unidades', href: '/#unidades' },
   { label: 'Sobre nós', href: '/sobre-nos' },
   { label: 'Cartão fidelidade', href: '/cartao-fidelidade' },
 ] as const
