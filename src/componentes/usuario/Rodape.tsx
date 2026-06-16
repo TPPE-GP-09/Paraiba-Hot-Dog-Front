@@ -38,24 +38,25 @@ export default function Rodape() {
       <div className="pagina-container py-8 min-[490px]:py-12 lg:py-14">
         <div className="min-[490px]:hidden">
           <div className="flex flex-col items-center gap-4 text-center">
-            <a href="/" aria-label="Paraíba Hot Dog — início" className="block leading-none">
-              <img
-                src={logo}
-                alt="Paraíba Hot Dog"
-                className="block h-20 w-auto object-contain object-top"
-              />
-            </a>
+            <div className="flex items-center justify-center gap-3">
+              <a href="/" aria-label="Paraíba Hot Dog — início" className="block shrink-0 leading-none">
+                <img
+                  src={logo}
+                  alt="Paraíba Hot Dog"
+                  className="block h-16 w-auto object-contain object-top"
+                />
+              </a>
 
-            <div data-footer-socials>
-              <RedesSociais variant="plain" className="justify-center -mt-2" />
+              <div data-footer-socials className="shrink-0">
+                <RedesSociais
+                  variant="plain"
+                  className="justify-center gap-0.5 [&_img]:h-7 [&_a]:min-h-7 [&_a]:min-w-7"
+                />
+              </div>
             </div>
 
-            <p className="max-w-56 font-barlow-condensed text-[clamp(1.35rem,6vw,1.75rem)] font-black uppercase leading-[0.95] text-preto-v1">
-              O DOG MAIS
-              <br />
-              <span className="text-amarelo">ARRETADO</span>
-              <br />
-              DE BRASÍLIA
+            <p className="whitespace-nowrap font-barlow-condensed text-[clamp(0.92rem,3.9vw,1.2rem)] font-black uppercase leading-none text-preto-v1">
+              O DOG MAIS <span className="text-amarelo">ARRETADO</span> DE BRASÍLIA
             </p>
           </div>
 
