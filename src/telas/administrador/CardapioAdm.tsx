@@ -11,7 +11,6 @@ import type {
 import {
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 
@@ -480,7 +479,7 @@ function NavegacaoCategorias({ categorias }: { categorias: CategoriaRead[] }) {
       className="sticky top-16 z-[60] bg-preto-v1/95 backdrop-blur"
     >
       <div className="pagina-container py-3">
-        <div className="flex justify-center">
+        <div className="flex justify-start min-[900px]:justify-center">
           <ul className="inline-flex w-max min-w-max snap-x snap-mandatory items-stretch gap-0 overflow-x-auto rounded-[14px] border border-branco/10 bg-[#171717] px-1 shadow-[0_10px_24px_rgba(0,0,0,0.22)] [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch]">
             {categorias.map((categoria) => (
               <li key={categoria.id} className="min-w-[7.25rem] snap-start flex-none min-[640px]:min-w-40">
@@ -1719,7 +1718,6 @@ export default function CardapioAdm() {
   const [secaoAtivaId, setSecaoAtivaId] = useState(() =>
     window.location.hash.replace("#", ""),
   );
-  const observerRef = useRef<IntersectionObserver | null>(null);
 
   const carregarDados = async () => {
     const [
@@ -1780,33 +1778,36 @@ export default function CardapioAdm() {
   useEffect(() => {
     if (!secoes.length) return;
 
-    observerRef.current?.disconnect();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visiveis = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    const atualizarSecaoAtiva = () => {
+      const pontoAtivo = window.scrollY + 180;
+      let secaoAtual = secoes[0]?.id ?? "";
 
-        if (visiveis[0]?.target.id) {
-          setSecaoAtivaId(visiveis[0].target.id);
+      secoes.forEach((secao) => {
+        const elemento = document.getElementById(secao.id);
+        if (!elemento) return;
+
+        if (elemento.offsetTop <= pontoAtivo) {
+          secaoAtual = secao.id;
         }
-      },
-      {
-        root: null,
-        rootMargin: "-35% 0px -55% 0px",
-        threshold: [0.15, 0.3, 0.5, 0.7],
-      },
-    );
+      });
 
-    observerRef.current = observer;
-    secoes.forEach((secao) => {
-      const elemento = document.getElementById(secao.id);
-      if (elemento) observer.observe(elemento);
-    });
+      setSecaoAtivaId(secaoAtual);
+    };
+
+    let frameId = 0;
+    const reagirAoScroll = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(atualizarSecaoAtiva);
+    };
+
+    atualizarSecaoAtiva();
+    window.addEventListener("scroll", reagirAoScroll, { passive: true });
+    window.addEventListener("resize", reagirAoScroll);
 
     return () => {
-      observer.disconnect();
-      observerRef.current = null;
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", reagirAoScroll);
+      window.removeEventListener("resize", reagirAoScroll);
     };
   }, [secoes]);
 

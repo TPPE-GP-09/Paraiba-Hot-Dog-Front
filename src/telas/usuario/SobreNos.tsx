@@ -227,7 +227,7 @@ export default function SobreNos() {
             </p>
           </div>
 
-          <div className="mt-8 flex justify-center overflow-x-auto">
+          <div className="mt-8 flex justify-start overflow-x-auto min-[900px]:justify-center">
             <ul className="inline-flex w-max min-w-max snap-x snap-mandatory items-stretch gap-0 overflow-x-auto rounded-[14px] border border-branco/10 bg-[#171717] px-1 shadow-[0_10px_24px_rgba(0,0,0,0.22)] [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch] select-none">
               <li className="min-w-[7.25rem] snap-start flex-none min-[640px]:min-w-40">
                 <button
