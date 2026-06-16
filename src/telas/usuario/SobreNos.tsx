@@ -200,14 +200,14 @@ export default function SobreNos() {
           </div>
 
           <div className="mt-8 flex justify-center">
-            <div className="grid grid-cols-3 gap-1.5 rounded-md bg-[#2d2d2d] p-1.5">
-              <button type="button" onClick={() => setFiltro('todos')} className={`rounded px-6 py-2 text-[10px] font-black uppercase ${filtro === 'todos' ? 'bg-amarelo text-preto-v1' : 'bg-[#434343] text-branco/80'}`}>
+            <div className="grid grid-cols-3 gap-1.5 rounded-[14px] border border-branco/10 bg-[#2d2d2d] p-1.5 shadow-[0_12px_24px_rgba(0,0,0,0.28)]">
+              <button type="button" onClick={() => setFiltro('todos')} className={`rounded-[10px] px-6 py-2.5 text-[10px] font-black uppercase transition-all duration-200 hover:-translate-y-0.5 ${filtro === 'todos' ? 'bg-amarelo text-preto-v1 shadow-[0_8px_18px_rgba(225,191,0,0.22)]' : 'bg-[#434343] text-branco/80 hover:bg-[#4f4f4f] hover:text-branco'}`}>
                 Todos
               </button>
-              <button type="button" onClick={() => setFiltro('noticia')} className={`rounded px-6 py-2 text-[10px] font-black uppercase ${filtro === 'noticia' ? 'bg-amarelo text-preto-v1' : 'bg-[#434343] text-branco/80'}`}>
+              <button type="button" onClick={() => setFiltro('noticia')} className={`rounded-[10px] px-6 py-2.5 text-[10px] font-black uppercase transition-all duration-200 hover:-translate-y-0.5 ${filtro === 'noticia' ? 'bg-amarelo text-preto-v1 shadow-[0_8px_18px_rgba(225,191,0,0.22)]' : 'bg-[#434343] text-branco/80 hover:bg-[#4f4f4f] hover:text-branco'}`}>
                 Notícias
               </button>
-              <button type="button" onClick={() => setFiltro('promocao')} className={`rounded px-6 py-2 text-[10px] font-black uppercase ${filtro === 'promocao' ? 'bg-amarelo text-preto-v1' : 'bg-[#434343] text-branco/80'}`}>
+              <button type="button" onClick={() => setFiltro('promocao')} className={`rounded-[10px] px-6 py-2.5 text-[10px] font-black uppercase transition-all duration-200 hover:-translate-y-0.5 ${filtro === 'promocao' ? 'bg-amarelo text-preto-v1 shadow-[0_8px_18px_rgba(225,191,0,0.22)]' : 'bg-[#434343] text-branco/80 hover:bg-[#4f4f4f] hover:text-branco'}`}>
                 Promoções
               </button>
             </div>

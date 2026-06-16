@@ -202,21 +202,23 @@ function NavegacaoCategorias({ secoes }: { secoes: SecaoCardapio[] }) {
     <>
       <nav
         aria-label="Categorias do cardápio"
-        className="fixed left-0 right-0 top-16 z-[60] border-y border-branco/10 bg-preto-v1/95 shadow-[0_12px_24px_rgba(0,0,0,0.35)] backdrop-blur"
+        className="fixed left-0 right-0 top-16 z-[60] bg-preto-v1/90 backdrop-blur"
       >
-        <div className="pagina-container overflow-x-auto py-3">
-          <ul className="flex min-w-max min-[900px]:w-full">
-            {secoes.map((secao) => (
-              <li key={secao.id} className="min-w-40 flex-1">
-                <a
-                  href={`#${secao.id}`}
-                  className="flex items-center justify-center gap-1 border border-transparent bg-preto-v3 px-4 py-4 font-barlow-condensed text-xl font-black uppercase leading-none text-branco transition-colors hover:border-[#E1BF00] hover:bg-[#E1BF00] hover:text-black active:border-[#E1BF00] active:bg-[#E1BF00] active:text-black focus:border-[#E1BF00] focus:bg-[#E1BF00] focus:text-black focus:outline-none"
-                >
-                  {secao.titulo}
-                </a>
-              </li>
-            ))}
-          </ul>
+        <div className="pagina-container py-3">
+          <div className="mx-auto max-w-6xl rounded-[14px] border border-branco/10 bg-[#2d2d2d] p-1.5 shadow-[0_12px_24px_rgba(0,0,0,0.28)]">
+            <ul className="flex min-w-max gap-1 overflow-x-auto min-[900px]:w-full min-[900px]:justify-center">
+              {secoes.map((secao) => (
+                <li key={secao.id} className="min-w-36 flex-1">
+                  <a
+                    href={`#${secao.id}`}
+                    className="flex items-center justify-center rounded-[10px] border border-transparent bg-[#434343] px-4 py-3 font-barlow-condensed text-lg font-black uppercase leading-none text-branco/80 transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#4f4f4f] hover:text-branco focus:bg-amarelo focus:text-preto-v1 focus:outline-none active:bg-amarelo active:text-preto-v1 min-[640px]:text-xl"
+                  >
+                    {secao.titulo}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </nav>
     </>
