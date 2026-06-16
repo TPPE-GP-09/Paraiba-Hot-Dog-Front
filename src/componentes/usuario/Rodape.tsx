@@ -1,7 +1,6 @@
 import logo from '../../imagens/logos/logo-preta.png'
-import iconeIfood from '../../imagens/social/ifood.svg'
-import iconeInstagram from '../../imagens/social/instagram.svg'
 import iconeCacto from '../../imagens/outros/cacto-rodape.svg'
+import RedesSociais from './RedesSociais'
 
 const linksAcessoRapido = [
 
@@ -12,59 +11,6 @@ const linksAcessoRapido = [
   { label: 'Cartão fidelidade', href: '/cartao-fidelidade' },
 
 ] as const
-
-function RedesSociais({
-  className = '',
-  variant = 'plain',
-}: {
-  className?: string
-  variant?: 'plain' | 'circulo'
-}) {
-  const isPlain = variant === 'plain'
-
-  return (
-    <div
-      className={`flex shrink-0 items-center ${isPlain ? 'gap-1' : 'gap-2'} ${className}`}
-    >
-      <a
-        href="https://www.ifood.com.br"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Pedir pelo iFood"
-        className={
-          isPlain
-            ? 'transition-opacity hover:opacity-70'
-            : 'flex h-14 w-14 items-center justify-center rounded-full bg-preto-v1 shadow-[0_4px_12px_rgba(0,0,0,0.35)] transition-all hover:opacity-80 hover:shadow-[0_6px_16px_rgba(0,0,0,0.45)]'
-        }
-      >
-        <img
-          src={iconeIfood}
-          alt=""
-          aria-hidden
-          className={isPlain ? 'h-6 w-auto' : 'h-7 w-auto brightness-0 invert'}
-        />
-      </a>
-      <a
-        href="https://www.instagram.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Instagram da Paraíba Hot Dog"
-        className={
-          isPlain
-            ? 'transition-opacity hover:opacity-70'
-            : 'flex h-14 w-14 items-center justify-center rounded-full bg-preto-v1 shadow-[0_4px_12px_rgba(0,0,0,0.35)] transition-all hover:opacity-80 hover:shadow-[0_6px_16px_rgba(0,0,0,0.45)]'
-        }
-      >
-        <img
-          src={iconeInstagram}
-          alt=""
-          aria-hidden
-          className={isPlain ? 'h-5 w-5' : 'h-7 w-7 brightness-0 invert'}
-        />
-      </a>
-    </div>
-  )
-}
 
 function LinksAcessoRapidoHorizontal({ className = '' }: { className?: string }) {
   return (
@@ -177,5 +123,4 @@ export default function Rodape() {
     </footer>
   )
 }
-
 
