@@ -24,9 +24,17 @@ function NavItems({
   currentLocation: string
   linkClassName: string
 }) {
+  const isLinkActive = (href: string) => {
+    if (href === '/#unidades') {
+      return currentLocation === '/#unidades' || currentLocation.startsWith('/unidades/')
+    }
+
+    return currentLocation === href
+  }
+
   return navLinks.map(({ label, href }) => (
     <li key={href}>
-      <a href={href} className={currentLocation === href ? activeLinkClassName : linkClassName}>
+      <a href={href} className={isLinkActive(href) ? activeLinkClassName : linkClassName}>
         {label}
       </a>
     </li>
@@ -196,7 +204,19 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
           <ul className="flex flex-col gap-5">
             {navLinks.map(({ label, href }) => (
               <li key={href}>
-                <a href={href} className={currentLocation === href ? activeLinkClassName : linkClassName} onClick={closeMenu}>
+                <a
+                  href={href}
+                  className={
+                    href === '/#unidades'
+                      ? currentLocation === '/#unidades' || currentLocation.startsWith('/unidades/')
+                        ? activeLinkClassName
+                        : linkClassName
+                      : currentLocation === href
+                        ? activeLinkClassName
+                        : linkClassName
+                  }
+                  onClick={closeMenu}
+                >
                   {label}
                 </a>
               </li>
