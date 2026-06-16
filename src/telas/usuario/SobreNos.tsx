@@ -24,35 +24,35 @@ const noticiasFallback = [
     titulo: 'Nova unidade abre no Lago Sul',
     descricao: 'Mais um ponto para quem quer matar a fome com hot dog arretado.',
     imagem: smashMandacaru,
-    data: '10 MAR 2026',
+    data: '',
   },
   {
     categoria: 'promocao' as const,
     titulo: 'Combo especial: hot dog + batata + refri por R$ 25',
     descricao: 'Promo por tempo limitado para comer bem sem pesar no bolso.',
     imagem: dogArretado,
-    data: '18 ABR 2026',
+    data: '',
   },
 ]
 
 const depoimentos = [
   {
     nome: 'Juliana Costa',
-    cidade: 'Brasilia',
+    cidade: 'Brasília',
     texto:
-      'Simplesmente perfeito. O sabor paraibano autentico que eu procurava. Toda semana estou la.',
+      'Simplesmente perfeito. O sabor paraibano autêntico que eu procurava. Toda semana estou lá.',
   },
   {
     nome: 'Marcos Lima',
     cidade: 'Taguatinga',
     texto:
-      'O combo sai rapido e chega bonito. O atendimento e a historia da marca passam muita verdade.',
+      'O combo sai rápido e chega bonito. O atendimento e a história da marca passam muita verdade.',
   },
   {
     nome: 'Fernanda Alves',
-    cidade: 'Aguas Claras',
+    cidade: 'Águas Claras',
     texto:
-      'Sempre volto pelo sabor e pela consistencia. Os dogs e os acompanhamentos nao falham.',
+      'Sempre volto pelo sabor e pela consistência. Os dogs e os acompanhamentos não falham.',
   },
 ]
 
@@ -69,7 +69,7 @@ export default function SobreNos() {
   const estatisticas = useMemo(
     () => [
       { valor: '10+', legenda: 'Anos de funcionamento' },
-      { valor: '4,9', legenda: 'Avaliacao media' },
+      { valor: '4,9', legenda: 'Avaliação média' },
       { valor: '3', legenda: 'Unidades' },
     ],
     [],
@@ -115,11 +115,8 @@ export default function SobreNos() {
       <main className="min-h-screen bg-preto-v1 pt-16 text-branco">
         <section className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="font-barlow-condensed text-sm font-black uppercase tracking-[0.26em] text-amarelo">
-              Nossa historia
-            </p>
-            <h1 className="mt-2 font-barlow-condensed text-[clamp(2.25rem,7vw,4rem)] font-black uppercase leading-[0.9]">
-              Nossa <span className="text-amarelo">historia</span>
+            <h1 className="font-barlow-condensed text-[clamp(2.25rem,7vw,4rem)] font-black uppercase leading-[0.9]">
+              Nossa <span className="text-amarelo">história</span>
             </h1>
           </div>
 
@@ -139,7 +136,7 @@ export default function SobreNos() {
                 <div className="relative overflow-hidden rounded-[22px] border border-white/10 bg-black/25 shadow-[0_18px_40px_rgba(0,0,0,0.3)]">
                   <img
                     src={historiaAtual.imagem}
-                    alt="Historia da Paraiba Hot Dog"
+                    alt="História da Paraíba Hot Dog"
                     className="h-[230px] w-full object-cover sm:h-[330px] lg:h-[390px]"
                     style={{ objectPosition: historiaAtual.posicao }}
                   />
@@ -158,7 +155,7 @@ export default function SobreNos() {
                   type="button"
                   onClick={() => setImagemAtiva((atual) => (atual + 1) % historias.length)}
                   className="absolute right-3 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/70 text-branco transition hover:bg-black"
-                  aria-label="Proxima imagem"
+                  aria-label="Próxima imagem"
                 >
                   <ChevronRight size={22} />
                 </button>
@@ -167,10 +164,10 @@ export default function SobreNos() {
 
             <div className="px-4 py-5 sm:px-6 sm:py-7">
               <p className="mx-auto max-w-4xl text-center font-barlow text-sm leading-7 text-branco/80 sm:text-base">
-                Nascemos da paixão pela gastronomia de rua e pelo sabor autentico da Paraiba.
-                Desde 2015, levamos o melhor hot dog arretado para os brasiliense com qualidade,
-                fartura e tradição. Nossa missão e servir ingredientes frescos, receitas
-                exclusivas e um atendimento que faz voce se sentir em casa.
+                Nascemos da paixão pela gastronomia de rua e pelo sabor autêntico da Paraíba.
+                Desde 2015, levamos o melhor hot dog arretado para os brasilenses com qualidade,
+                fartura e tradição. Nossa missão é servir ingredientes frescos, receitas
+                exclusivas e um atendimento que faz você se sentir em casa.
               </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3 sm:gap-4">
@@ -192,13 +189,13 @@ export default function SobreNos() {
         <section className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="font-barlow-condensed text-[clamp(2.3rem,6vw,4rem)] font-black uppercase leading-[0.9]">
-              <span className="text-branco">Noticias e </span>
-              <span className="text-amarelo">Promocoes</span>
+              <span className="text-branco">Notícias e </span>
+              <span className="text-amarelo">Promoções</span>
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-branco/75 sm:text-base">
               Fique por dentro das novidades e aproveite
               <br />
-              nossas ofertas
+              nossas ofertas.
             </p>
           </div>
 
@@ -208,16 +205,16 @@ export default function SobreNos() {
                 Todos
               </button>
               <button type="button" onClick={() => setFiltro('noticia')} className={`rounded px-6 py-2 text-[10px] font-black uppercase ${filtro === 'noticia' ? 'bg-amarelo text-preto-v1' : 'bg-[#434343] text-branco/80'}`}>
-                Noticias
+                Notícias
               </button>
               <button type="button" onClick={() => setFiltro('promocao')} className={`rounded px-6 py-2 text-[10px] font-black uppercase ${filtro === 'promocao' ? 'bg-amarelo text-preto-v1' : 'bg-[#434343] text-branco/80'}`}>
-                Promocoes
+                Promoções
               </button>
             </div>
           </div>
 
           {carregandoPosts && (
-            <p className="mt-6 text-center text-sm text-branco/50">Carregando noticias e promocoes...</p>
+            <p className="mt-6 text-center text-sm text-branco/50">Carregando notícias e promoções...</p>
           )}
 
           <div className="mt-8 grid gap-4 lg:grid-cols-2 lg:gap-5">
@@ -233,14 +230,11 @@ export default function SobreNos() {
                     className="h-[280px] w-full object-cover"
                   />
                   <span className="absolute left-3 top-3 rounded bg-amarelo px-2 py-1 text-[9px] font-black uppercase text-preto-v1">
-                    {noticia.tipo === 'noticia' ? 'Noticias' : 'Promocao'}
+                    {noticia.tipo === 'noticia' ? 'Notícias' : 'Promoções'}
                   </span>
                 </div>
                 <div className="px-4 py-4 sm:px-5 sm:py-5">
-                  <div className="text-[10px] font-black uppercase tracking-[0.22em] text-branco/45">
-                    {noticia.data}
-                  </div>
-                  <h3 className="mt-2 font-barlow-condensed text-[clamp(1.6rem,3vw,2.1rem)] font-black uppercase leading-tight text-branco">
+                  <h3 className="font-barlow-condensed text-[clamp(1.6rem,3vw,2.1rem)] font-black uppercase leading-tight text-branco">
                     {noticia.titulo}
                   </h3>
                   <p className="mt-3 text-sm leading-7 text-branco/75">{noticia.descricao}</p>
