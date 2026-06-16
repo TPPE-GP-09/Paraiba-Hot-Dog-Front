@@ -50,7 +50,7 @@ export default function Rodape() {
               <div data-footer-socials className="shrink-0">
                 <RedesSociais
                   variant="plain"
-                  className="justify-center gap-0.5 [&_img]:h-7 [&_a]:min-h-7 [&_a]:min-w-7"
+                  className="justify-center !gap-3 [&_img]:h-7 [&_a]:min-h-7 [&_a]:min-w-7"
                 />
               </div>
             </div>
