@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import BarraDeNavegacao from '../../componentes/usuario/BarraDeNavegacaoUsuario'
 import Rodape from '../../componentes/usuario/Rodape'
@@ -61,7 +61,10 @@ export default function SobreNos() {
   const [depoimentoAtivo, setDepoimentoAtivo] = useState(0)
   const [posts, setPosts] = useState<BlogCard[]>([])
   const [filtro, setFiltro] = useState<'todos' | TipoBlogApi>('todos')
+  const [filtroExibido, setFiltroExibido] = useState<'todos' | TipoBlogApi>('todos')
+  const [animandoFiltro, setAnimandoFiltro] = useState(false)
   const [carregandoPosts, setCarregandoPosts] = useState(true)
+  const timersRef = useRef<number[]>([])
 
   const historiaAtual = historias[imagemAtiva]
   const depoimento = depoimentos[depoimentoAtivo]
@@ -106,7 +109,32 @@ export default function SobreNos() {
     }
   }, [])
 
-  const postsFiltrados = posts.filter((post) => filtro === 'todos' || post.tipo === filtro)
+  useEffect(
+    () => () => {
+      timersRef.current.forEach((timer) => window.clearTimeout(timer))
+      timersRef.current = []
+    },
+    [],
+  )
+
+  const atualizarFiltro = (novoFiltro: 'todos' | TipoBlogApi) => {
+    timersRef.current.forEach((timer) => window.clearTimeout(timer))
+    timersRef.current = []
+
+    setFiltro(novoFiltro)
+    setAnimandoFiltro(true)
+
+    const hideTimer = window.setTimeout(() => {
+      setFiltroExibido(novoFiltro)
+    }, 140)
+    const showTimer = window.setTimeout(() => {
+      setAnimandoFiltro(false)
+    }, 320)
+
+    timersRef.current = [hideTimer, showTimer]
+  }
+
+  const postsFiltrados = posts.filter((post) => filtroExibido === 'todos' || post.tipo === filtroExibido)
 
   return (
     <>
@@ -192,44 +220,76 @@ export default function SobreNos() {
               <span className="text-branco">Notícias e </span>
               <span className="text-amarelo">Promoções</span>
             </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-branco/75 sm:text-base">
+            <p className="mx-auto mt-6 max-w-2xl text-sm font-black leading-7 text-branco/75 sm:text-base">
               Fique por dentro das novidades e aproveite
               <br />
               nossas ofertas.
             </p>
           </div>
 
-          <div className="mt-8 flex justify-center">
-            <div className="grid grid-cols-3 gap-1.5 rounded-[14px] border border-branco/10 bg-[#2d2d2d] p-1.5 shadow-[0_12px_24px_rgba(0,0,0,0.28)]">
-              <button type="button" onClick={() => setFiltro('todos')} className={`rounded-[10px] px-6 py-2.5 text-[10px] font-black uppercase transition-all duration-200 hover:-translate-y-0.5 ${filtro === 'todos' ? 'bg-amarelo text-preto-v1 shadow-[0_8px_18px_rgba(225,191,0,0.22)]' : 'bg-[#434343] text-branco/80 hover:bg-[#4f4f4f] hover:text-branco'}`}>
-                Todos
-              </button>
-              <button type="button" onClick={() => setFiltro('noticia')} className={`rounded-[10px] px-6 py-2.5 text-[10px] font-black uppercase transition-all duration-200 hover:-translate-y-0.5 ${filtro === 'noticia' ? 'bg-amarelo text-preto-v1 shadow-[0_8px_18px_rgba(225,191,0,0.22)]' : 'bg-[#434343] text-branco/80 hover:bg-[#4f4f4f] hover:text-branco'}`}>
-                Notícias
-              </button>
-              <button type="button" onClick={() => setFiltro('promocao')} className={`rounded-[10px] px-6 py-2.5 text-[10px] font-black uppercase transition-all duration-200 hover:-translate-y-0.5 ${filtro === 'promocao' ? 'bg-amarelo text-preto-v1 shadow-[0_8px_18px_rgba(225,191,0,0.22)]' : 'bg-[#434343] text-branco/80 hover:bg-[#4f4f4f] hover:text-branco'}`}>
-                Promoções
-              </button>
-            </div>
+          <div className="mt-8 flex justify-center overflow-x-auto">
+            <ul className="inline-flex w-max min-w-max snap-x snap-mandatory items-stretch gap-0 overflow-x-auto rounded-[14px] border border-branco/10 bg-[#171717] px-1 shadow-[0_10px_24px_rgba(0,0,0,0.22)] [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch] select-none">
+              <li className="min-w-[7.25rem] snap-start flex-none min-[640px]:min-w-40">
+                <button
+                  type="button"
+                  onClick={() => atualizarFiltro('todos')}
+                  className={`relative flex w-full items-center justify-center whitespace-nowrap border-b-2 px-4 py-4 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-6 min-[640px]:text-xl ${
+                    filtro === 'todos'
+                      ? 'border-amarelo text-amarelo'
+                      : 'border-transparent text-branco/75 hover:border-branco/50 hover:text-branco'
+                  }`}
+                >
+                  Todos
+                </button>
+              </li>
+              <li className="min-w-[7.25rem] snap-start flex-none min-[640px]:min-w-40">
+                <button
+                  type="button"
+                  onClick={() => atualizarFiltro('noticia')}
+                  className={`relative flex w-full items-center justify-center whitespace-nowrap border-b-2 px-4 py-4 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-6 min-[640px]:text-xl ${
+                    filtro === 'noticia'
+                      ? 'border-amarelo text-amarelo'
+                      : 'border-transparent text-branco/75 hover:border-branco/50 hover:text-branco'
+                  }`}
+                >
+                  Notícias
+                </button>
+              </li>
+              <li className="min-w-[7.25rem] snap-start flex-none min-[640px]:min-w-40">
+                <button
+                  type="button"
+                  onClick={() => atualizarFiltro('promocao')}
+                  className={`relative flex w-full items-center justify-center whitespace-nowrap border-b-2 px-4 py-4 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-6 min-[640px]:text-xl ${
+                    filtro === 'promocao'
+                      ? 'border-amarelo text-amarelo'
+                      : 'border-transparent text-branco/75 hover:border-branco/50 hover:text-branco'
+                  }`}
+                >
+                  Promoções
+                </button>
+              </li>
+            </ul>
           </div>
 
           {carregandoPosts && (
             <p className="mt-6 text-center text-sm text-branco/50">Carregando notícias e promoções...</p>
           )}
 
-          <div className="mt-8 grid gap-4 lg:grid-cols-2 lg:gap-5">
+          <div className={`mt-8 grid gap-4 lg:grid-cols-2 lg:gap-5 transition-all duration-300 ${animandoFiltro ? 'translate-y-2 opacity-0 blur-[1px]' : 'translate-y-0 opacity-100 blur-0'}`}>
             {postsFiltrados.map((noticia) => (
               <article
                 key={noticia.titulo}
-                className="overflow-hidden rounded-[18px] border border-branco/10 bg-[#2a2a2a] shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+                className={`group overflow-hidden rounded-[22px] border border-branco/10 bg-[#2a2a2a] shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-300 hover:-translate-y-0.5 ${
+                  animandoFiltro ? 'translate-y-3 scale-[0.98] opacity-0' : 'translate-y-0 scale-100 opacity-100'
+                }`}
               >
-                <div className="relative">
+                <div className="relative overflow-hidden">
                   <img
                     src={noticia.imagem}
                     alt={noticia.titulo}
-                    className="h-[280px] w-full object-cover"
+                    className="h-[280px] w-full object-cover object-center transition-transform duration-700 group-hover:scale-105 group-hover:brightness-105"
                   />
-                  <span className="absolute left-3 top-3 rounded bg-amarelo px-2 py-1 text-[9px] font-black uppercase text-preto-v1">
+                  <span className="absolute left-3 top-3 rounded-full bg-amarelo px-2 py-1 text-[9px] font-black uppercase text-preto-v1">
                     {noticia.tipo === 'noticia' ? 'Notícias' : 'Promoções'}
                   </span>
                 </div>

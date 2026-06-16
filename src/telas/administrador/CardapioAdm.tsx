@@ -8,7 +8,12 @@ import type {
   SubcategoriaRead,
   UnidadeRead,
 } from "../../model/cardapio";
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import BarraDeNavegacao from "../../componentes/usuario/BarraDeNavegacaoUsuario";
 import Rodape from "../../componentes/usuario/Rodape";
@@ -90,6 +95,13 @@ class ApiError extends Error {
 
 function formatarPreco(preco: string | number) {
   return formatadorPreco.format(Number(preco));
+}
+
+function gerarIdCategoria(nome: string) {
+  return nome
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
 }
 
 function apiEndpoint(path: string) {
@@ -461,29 +473,29 @@ async function sincronizarAdicionais(
   }
 }
 
-function NavegacaoCategorias({ secoes }: { secoes: SecaoCardapio[] }) {
+function NavegacaoCategorias({ categorias }: { categorias: CategoriaRead[] }) {
   return (
-    <>
-      <nav
-        aria-label="Categorias do cardápio"
-        className="fixed left-0 right-0 top-16 z-[60] border-y border-branco/10 bg-preto-v1/95 shadow-[0_12px_24px_rgba(0,0,0,0.35)] backdrop-blur"
-      >
-        <div className="pagina-container overflow-x-auto py-3">
-          <ul className="flex min-w-max min-[900px]:w-full">
-            {secoes.map((secao) => (
-              <li key={secao.id} className="min-w-40 flex-1">
+    <nav
+      aria-label="Categorias do cardápio"
+      className="sticky top-16 z-[60] bg-preto-v1/95 backdrop-blur"
+    >
+      <div className="pagina-container py-3">
+        <div className="flex justify-center">
+          <ul className="inline-flex w-max min-w-max snap-x snap-mandatory items-stretch gap-0 overflow-x-auto rounded-[14px] border border-branco/10 bg-[#171717] px-1 shadow-[0_10px_24px_rgba(0,0,0,0.22)] [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch]">
+            {categorias.map((categoria) => (
+              <li key={categoria.id} className="min-w-[7.25rem] snap-start flex-none min-[640px]:min-w-40">
                 <a
-                  href={`#${secao.id}`}
-                  className="flex items-center justify-center gap-1 border border-transparent bg-preto-v3 px-4 py-4 font-barlow-condensed text-xl font-black uppercase leading-none text-branco transition-colors hover:border-[#E1BF00] hover:bg-[#E1BF00] hover:text-black active:border-[#E1BF00] active:bg-[#E1BF00] active:text-black focus:border-[#E1BF00] focus:bg-[#E1BF00] focus:text-black focus:outline-none"
+                  href={`#${gerarIdCategoria(categoria.nome)}`}
+                  className="flex items-center justify-center whitespace-nowrap border-b-2 px-4 py-4 font-barlow-condensed text-sm font-black uppercase leading-none text-branco/80 transition-colors duration-200 hover:border-branco/50 hover:text-branco focus:border-amarelo focus:text-amarelo focus:outline-none active:border-amarelo active:text-amarelo min-[640px]:px-6 min-[640px]:text-xl"
                 >
-                  {secao.titulo}
+                  {categoria.nome}
                 </a>
               </li>
             ))}
           </ul>
         </div>
-      </nav>
-    </>
+      </div>
+    </nav>
   );
 }
 
@@ -507,7 +519,7 @@ function CardProdutoAdm({
   const imagem = produto.imagemLocal ?? produto.imagem_url ?? "";
 
   return (
-    <article className="group relative flex w-full flex-col overflow-hidden rounded-[5px] bg-[#222] text-left shadow-[0_12px_24px_rgba(0,0,0,0.28)] outline-none transition-transform hover:-translate-y-0.5 min-[640px]:h-44 min-[640px]:flex-row">
+    <article className="group relative flex w-full flex-col overflow-hidden rounded-[12px] bg-[#222] text-left shadow-[0_12px_24px_rgba(0,0,0,0.28)] outline-none transition-transform duration-300 hover:-translate-y-0.5 min-[640px]:h-44 min-[640px]:flex-row">
       <div className="order-3 flex gap-2 border-t border-branco/10 p-3 min-[640px]:absolute min-[640px]:right-2 min-[640px]:top-2 min-[640px]:z-10 min-[640px]:order-none min-[640px]:border-0 min-[640px]:p-0">
         <button
           type="button"
@@ -579,7 +591,7 @@ function CardProdutoAdm({
           <img
             src={imagem}
             alt={produto.nome}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105 group-hover:brightness-105"
             loading="lazy"
           />
         ) : (
@@ -734,33 +746,41 @@ function SecaoProdutosAdm({
   onViewProduto,
   onEditProduto,
   onDeleteProduto,
+  ativa,
 }: {
   secao: SecaoCardapio;
   onViewProduto: (produto: ProdutoCardapio) => void;
   onEditProduto: (produto: ProdutoCardapio) => void;
   onDeleteProduto: (produto: ProdutoCardapio) => void;
+  ativa: boolean;
 }) {
   return (
     <section id={secao.id} className="scroll-mt-36 pt-14 first:pt-12">
       <h2
-        className={`font-barlow-condensed text-[clamp(2rem,8vw,3.5rem)] font-black uppercase leading-none ${
-          secao.destaque ? "text-amarelo" : "text-branco"
+        className={`font-barlow-condensed text-[clamp(2rem,8vw,3.5rem)] font-black uppercase leading-none transition-colors ${
+          ativa ? "text-amarelo" : "text-branco"
         }`}
       >
         {secao.titulo}
       </h2>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 pb-5 min-[900px]:grid-cols-2 min-[1180px]:grid-cols-3">
-        {secao.produtos.map((produto) => (
-          <CardProdutoAdm
-            key={produto.id}
-            produto={produto}
-            onView={onViewProduto}
-            onEdit={onEditProduto}
-            onDelete={onDeleteProduto}
-          />
-        ))}
-      </div>
+      {secao.produtos.length > 0 ? (
+        <div className="mt-6 grid grid-cols-1 gap-4 pb-5 min-[900px]:grid-cols-2 min-[1180px]:grid-cols-3">
+          {secao.produtos.map((produto) => (
+            <CardProdutoAdm
+              key={produto.id}
+              produto={produto}
+              onView={onViewProduto}
+              onEdit={onEditProduto}
+              onDelete={onDeleteProduto}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-6 rounded-[12px] border border-branco/10 bg-[#222] px-4 py-5 font-barlow text-sm text-branco/60">
+          Categoria cadastrada sem itens. Adicione um produto para exibi-lo aqui.
+        </div>
+      )}
     </section>
   );
 }
@@ -1696,6 +1716,10 @@ export default function CardapioAdm() {
   const [mostrarSubcategoriaCriacao, setMostrarSubcategoriaCriacao] =
     useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [secaoAtivaId, setSecaoAtivaId] = useState(() =>
+    window.location.hash.replace("#", ""),
+  );
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   const carregarDados = async () => {
     const [
@@ -1704,7 +1728,7 @@ export default function CardapioAdm() {
       subcategoriasAtualizadas,
       unidadesAtualizadas,
     ] = await Promise.all([
-      listarSecoesCardapio(unidadeSelecionadaId || null, true),
+      listarSecoesCardapio(unidadeSelecionadaId || null, true, true),
       listarCategoriasCardapio(),
       listarSubcategoriasCardapio(),
       apiJson<UnidadeRead[]>("/unidades/"),
@@ -1720,7 +1744,7 @@ export default function CardapioAdm() {
     let ativo = true;
 
     Promise.all([
-      listarSecoesCardapio(unidadeSelecionadaId || null, true),
+      listarSecoesCardapio(unidadeSelecionadaId || null, true, true),
       listarCategoriasCardapio(),
       listarSubcategoriasCardapio(),
       apiJson<UnidadeRead[]>("/unidades/"),
@@ -1752,6 +1776,41 @@ export default function CardapioAdm() {
       ativo = false;
     };
   }, [unidadeSelecionadaId]);
+
+  useEffect(() => {
+    if (!secoes.length) return;
+
+    observerRef.current?.disconnect();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visiveis = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        if (visiveis[0]?.target.id) {
+          setSecaoAtivaId(visiveis[0].target.id);
+        }
+      },
+      {
+        root: null,
+        rootMargin: "-35% 0px -55% 0px",
+        threshold: [0.15, 0.3, 0.5, 0.7],
+      },
+    );
+
+    observerRef.current = observer;
+    secoes.forEach((secao) => {
+      const elemento = document.getElementById(secao.id);
+      if (elemento) observer.observe(elemento);
+    });
+
+    return () => {
+      observer.disconnect();
+      observerRef.current = null;
+    };
+  }, [secoes]);
+
+  const secaoAtivaExibida = secaoAtivaId || secoes[0]?.id || "";
 
   const totalProdutos = useMemo(
     () => secoes.reduce((total, secao) => total + secao.produtos.length, 0),
@@ -2108,6 +2167,12 @@ export default function CardapioAdm() {
             onExcluirSubcategoria={setSubcategoriaExcluindo}
           />
 
+          {!carregando && (
+            <div className="mt-10">
+              <NavegacaoCategorias categorias={categorias} />
+            </div>
+          )}
+
           {carregando ? (
             <div className="mt-12 rounded-[5px] border border-branco/10 bg-[#222] px-5 py-8 font-barlow text-branco/80">
               Carregando cardápio...
@@ -2122,6 +2187,7 @@ export default function CardapioAdm() {
                     onViewProduto={setProdutoSelecionado}
                     onEditProduto={setProdutoEditando}
                     onDeleteProduto={setProdutoExcluindo}
+                    ativa={secao.id === secaoAtivaExibida}
                   />
                 ))}
               </div>
@@ -2129,8 +2195,6 @@ export default function CardapioAdm() {
           )}
         </section>
       </main>
-
-      {!carregando && <NavegacaoCategorias secoes={secoes} />}
 
       {mostrarCriacao && (
         <ProdutoFormModal

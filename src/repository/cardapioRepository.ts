@@ -430,6 +430,7 @@ function normalizarProdutoApi(produto: ProdutoRead): ProdutoCardapio {
 export async function listarSecoesCardapio(
   unidadeId?: number | null,
   incluirInativos = false,
+  incluirCategoriasVazias = false,
 ): Promise<SecaoCardapio[]> {
   const [categorias, subcategorias, produtos] = await Promise.all([
     buscarJson<CategoriaRead[]>("/produtos/categorias"),
@@ -445,6 +446,7 @@ export async function listarSecoesCardapio(
     subcategorias,
     produtos.map(normalizarProdutoApi),
     incluirInativos,
+    incluirCategoriasVazias,
   );
 }
 
@@ -453,6 +455,7 @@ function montarSecoes(
   subcategorias: SubcategoriaRead[],
   produtos: ProdutoCardapio[],
   incluirInativos = false,
+  incluirCategoriasVazias = false,
 ): SecaoCardapio[] {
   return categorias
     .map((categoria) => {
@@ -477,5 +480,5 @@ function montarSecoes(
         ),
       };
     })
-    .filter((secao) => secao.produtos.length > 0);
+    .filter((secao) => incluirCategoriasVazias || secao.produtos.length > 0);
 }
