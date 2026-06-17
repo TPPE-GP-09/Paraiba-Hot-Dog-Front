@@ -7,15 +7,15 @@ import GestaoBlog from './telas/administrador/GestaoBlog'
 import { useAuth } from './contextos/useAuth'
 import Cardapio from './telas/usuario/Cardapio'
 import CartaoFidelidade from './telas/usuario/CartaoFidelidade'
-import Cozinha from './telas/cozinha/Cozinha'
-import Dashboard from './telas/dashboard/Dashboard'
+import Cozinha from './telas/administrador/Cozinha'
+import Dashboard from './telas/administrador/Dashboard'
 import Inicio from './telas/usuario/Inicio'
 import Login from './telas/usuario/Login'
 import SobreNos from './telas/usuario/SobreNos'
 import RecuperarSenha from './telas/usuario/RecuperarSenha'
 import RedefinirSenha from './telas/usuario/RedefinirSenha'
 import UnidadeAraucarias from './telas/usuario/UnidadeAraucarias'
-import AnotarPedidos from './telas/pedidos/AnotarPedidos'
+import AnotarPedidos from './telas/administrador/AnotarPedidos'
 
 export default function App() {
   const { pathname } = window.location
