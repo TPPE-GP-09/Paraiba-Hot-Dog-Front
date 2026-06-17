@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
+import { ChevronDown, Search } from 'lucide-react'
 import BarraDeNavegacaoAdmin, {
   CLASSE_OFFSET_BARRA_ADMIN,
 } from '../../componentes/administrador/BarraDeNavegacaoAdmin'
@@ -14,6 +15,32 @@ import {
 
 type AbaCozinha = 'fila' | 'entregues' | 'cancelados'
 
+const ABAS_COZINHA: Array<{ id: AbaCozinha; label: string }> = [
+  { id: 'fila', label: 'Fila de pedidos' },
+  { id: 'entregues', label: 'Entregues' },
+  { id: 'cancelados', label: 'Cancelados' },
+]
+
+function textoQuantidadePedidos(
+  aba: AbaCozinha,
+  total: number,
+  filtrados: number,
+  buscaAtiva: boolean,
+) {
+  const contexto =
+    aba === 'fila' ? 'na fila' : aba === 'entregues' ? 'entregues' : 'cancelados'
+  const pedidoLabel = (quantidade: number) => (quantidade === 1 ? 'pedido' : 'pedidos')
+
+  if (buscaAtiva && filtrados !== total) {
+    return `${filtrados} de ${total} ${pedidoLabel(total)} ${contexto}`
+  }
+
+  return `${total} ${pedidoLabel(total)} ${contexto}`
+}
+
+const acaoBotaoBase =
+  'flex h-11 min-w-0 items-center justify-center rounded-[6px] border-2 px-2 font-barlow text-xs font-semibold tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm'
+
 type PedidoCozinha = {
   id: number
   hora: string
@@ -28,7 +55,11 @@ type PedidoCozinha = {
   }>
 }
 
-const pedidosExemplo: PedidoCozinha[] = [
+/** Ativo em dev para testar a interface sem pedidos reais. Desative com VITE_MOCK_COZINHA=false */
+const MODO_MOCK_COZINHA =
+  import.meta.env.DEV && import.meta.env.VITE_MOCK_COZINHA !== 'false'
+
+const mockFila: PedidoCozinha[] = [
   {
     id: 234,
     hora: '21:57',
@@ -75,6 +106,50 @@ const pedidosExemplo: PedidoCozinha[] = [
       { nome: '1x Arretado', adicionais: ['Molho de Bacon', 'Molho de Ervas', 'Sem milho'], quantidade: 1 },
       { nome: '2x Tradicional', adicionais: ['Molho de Bacon', 'Molho de Ervas'], quantidade: 2 },
       { nome: '2x Coca Cola 500ml', adicionais: [], quantidade: 2 },
+    ],
+  },
+]
+
+const mockEntregues: PedidoCozinha[] = [
+  {
+    id: 228,
+    hora: '20:15',
+    mesa: 'Balcao 2',
+    lote: 1,
+    status: 'entregue',
+    itens: [
+      {
+        nome: '1x Paraibano',
+        adicionais: ['Catupiry', 'Batata palha'],
+        observacao: 'Obs: sem cebola',
+        quantidade: 1,
+      },
+      { nome: '1x Coca Cola 500ml', adicionais: [], quantidade: 1 },
+    ],
+  },
+  {
+    id: 221,
+    hora: '19:48',
+    mesa: 'Mesa 5',
+    lote: 1,
+    status: 'entregue',
+    itens: [
+      { nome: '2x Smash', adicionais: ['Queijo extra'], quantidade: 2 },
+      { nome: '1x Batata', adicionais: [], quantidade: 1 },
+    ],
+  },
+]
+
+const mockCancelados: PedidoCozinha[] = [
+  {
+    id: 215,
+    hora: '19:42',
+    mesa: 'Mesa 7',
+    lote: 1,
+    status: 'cancelado',
+    itens: [
+      { nome: '1x Bixin', adicionais: ['Molho de Ervas'], quantidade: 1 },
+      { nome: '1x Soda Italiana', adicionais: [], quantidade: 1 },
     ],
   },
 ]
@@ -172,6 +247,101 @@ function emojiProduto(nome: string) {
   return '🌭'
 }
 
+function pedidoCorrespondeBusca(pedido: PedidoCozinha, termo: string) {
+  const busca = termo.trim().toLocaleLowerCase('pt-BR')
+  if (!busca) return true
+
+  if (String(pedido.id).includes(busca)) return true
+  if (`${pedido.id}-${pedido.lote}`.includes(busca)) return true
+  if (pedido.mesa.toLocaleLowerCase('pt-BR').includes(busca)) return true
+
+  return pedido.itens.some(
+    (item) =>
+      item.nome.toLocaleLowerCase('pt-BR').includes(busca) ||
+      item.adicionais.some((adicional) => adicional.toLocaleLowerCase('pt-BR').includes(busca)),
+  )
+}
+
+function SeletorAbaCozinha({
+  aba,
+  onChange,
+}: {
+  aba: AbaCozinha
+  onChange: (aba: AbaCozinha) => void
+}) {
+  const [aberto, setAberto] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const listaId = useId()
+  const labelAtual = ABAS_COZINHA.find((item) => item.id === aba)?.label ?? 'Fila de pedidos'
+
+  useEffect(() => {
+    if (!aberto) return
+
+    function fecharAoClicarFora(event: MouseEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setAberto(false)
+      }
+    }
+
+    document.addEventListener('mousedown', fecharAoClicarFora)
+    return () => document.removeEventListener('mousedown', fecharAoClicarFora)
+  }, [aberto])
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={aberto}
+        aria-controls={listaId}
+        onClick={() => setAberto((atual) => !atual)}
+        className={[
+          'flex w-full items-center justify-between rounded-lg border bg-white px-5 py-3.5 font-barlow-condensed text-base font-semibold uppercase tracking-wide text-preto-v1 shadow-sm transition-all duration-200 sm:text-lg',
+          aberto ? 'border-gray-400 shadow-md' : 'border-gray-300 hover:border-gray-400',
+        ].join(' ')}
+      >
+        <span className="truncate text-left">{labelAtual}</span>
+        <ChevronDown
+          size={22}
+          className={`shrink-0 text-gray-500 transition-transform duration-200 ${aberto ? 'rotate-180' : ''}`}
+          aria-hidden
+        />
+      </button>
+
+      {aberto && (
+        <ul
+          id={listaId}
+          role="listbox"
+          aria-label="Visualização da cozinha"
+          className="absolute top-full z-20 mt-1 w-full overflow-hidden rounded-lg border border-gray-200 bg-white shadow-lg"
+        >
+          {ABAS_COZINHA.map((opcao) => {
+            const selecionada = opcao.id === aba
+
+            return (
+              <li key={opcao.id} role="option" aria-selected={selecionada}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(opcao.id)
+                    setAberto(false)
+                  }}
+                  className={[
+                    'w-full px-5 py-3.5 text-left font-barlow-condensed text-base font-semibold uppercase tracking-wide transition-colors sm:text-lg',
+                    selecionada ? 'bg-gray-200 text-preto-v1' : 'bg-white text-preto-v1 hover:bg-yellow-50',
+                  ].join(' ')}
+                >
+                  {opcao.label}
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 function CancelarModal({
   pedido,
   onFechar,
@@ -182,47 +352,59 @@ function CancelarModal({
   onConfirmar: (motivo: string) => void
 }) {
   const [motivo, setMotivo] = useState('')
+  const motivoValido = motivo.trim().length > 0
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4" onClick={onFechar}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-cancelar-titulo"
+      aria-describedby="modal-cancelar-descricao"
+      onClick={onFechar}
+    >
       <div
-        className="w-full max-w-sm overflow-hidden rounded-lg shadow-2xl"
+        className="w-full max-w-sm rounded-lg bg-branco px-8 py-10 text-center shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
-        <header className="bg-preto-v1 px-6 pb-5 pt-6">
-          <h2 className="font-barlow-condensed text-xl font-black uppercase tracking-widest text-branco">
-            Cancelar Pedido #{pedido.id}
-          </h2>
-          <div className="mt-4 h-[2px] w-full bg-[#ff2b2b]" />
-        </header>
+        <p id="modal-cancelar-titulo" className="font-barlow text-lg font-bold text-preto-v1">
+          Cancelar pedido #{pedido.id}?
+        </p>
+        <p id="modal-cancelar-descricao" className="mt-2 font-barlow text-sm text-preto-v1">
+          O pedido da {pedido.mesa} será removido da fila e não poderá reverter essa exclusão.
+        </p>
 
-        <div className="bg-branco px-6 py-5">
-          <label className="mb-2 block text-sm font-bold tracking-wide text-preto-v1">
-            Motivo do cancelamento:
-          </label>
+        <label className="mt-6 block text-left font-barlow text-sm font-semibold text-preto-v1">
+          Motivo do cancelamento
+          <span className="ml-1 text-red-600" aria-hidden>
+            *
+          </span>
           <textarea
-            className="w-full resize-none rounded border border-[#ddd] p-3 text-sm text-preto-v1 placeholder-[#bbb] focus:border-[#ff2b2b] focus:outline-none"
+            className="mt-2 w-full resize-none rounded-md border border-gray-300 bg-white px-3 py-2 font-barlow text-sm text-preto-v1 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-1 focus:ring-gray-300"
             placeholder="Descreva o motivo"
             rows={4}
             value={motivo}
             onChange={(e) => setMotivo(e.target.value)}
+            required
+            aria-required="true"
           />
-        </div>
+        </label>
 
-        <div className="grid grid-cols-2 gap-3 bg-branco px-6 pb-6">
+        <div className="mt-8 flex flex-col gap-2">
           <button
-            className="h-12 rounded border-2 border-[#ccc] font-barlow-condensed text-sm font-black uppercase tracking-wider text-[#555] transition-colors hover:bg-[#f5f5f5]"
-            onClick={onFechar}
             type="button"
+            disabled={!motivoValido}
+            onClick={() => onConfirmar(motivo.trim())}
+            className="w-full rounded-md bg-red-600 py-2 font-barlow text-base font-semibold text-branco transition-colors hover:bg-red-400 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:hover:bg-gray-300"
           >
-            Voltar
+            Sim, cancelar pedido
           </button>
           <button
-            className="h-12 rounded bg-[#ff2b2b] font-barlow-condensed text-sm font-black uppercase tracking-wider text-branco transition-colors hover:bg-[#e02020]"
-            onClick={() => onConfirmar(motivo)}
             type="button"
+            onClick={onFechar}
+            className="w-full rounded-md border border-gray-400 bg-gray-100 py-2 font-barlow text-base font-semibold text-preto-v1 transition-colors hover:bg-gray-200"
           >
-            Cancelar
+            Não, manter pedido
           </button>
         </div>
       </div>
@@ -247,17 +429,17 @@ function PedidoCard({
   const entregue = pedido.status === 'entregue'
   const cancelado = pedido.status === 'cancelado'
 
+  const cardSurface = entregue
+    ? 'border border-emerald-200 bg-[#f4fbf7]'
+    : cancelado
+      ? 'border border-[#ff2b2b]/35 bg-[#fff8f8]'
+      : preparando
+        ? 'border-2 border-amarelo bg-[#f7f7f7]'
+        : 'border border-[#e0e0e0] bg-[#f7f7f7]'
+
   return (
     <article
-      className={`w-full overflow-hidden rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] sm:w-[300px] ${
-        preparando
-          ? 'border-2 border-amarelo'
-          : entregue
-            ? 'border border-[#e0e0e0] opacity-55'
-            : cancelado
-              ? 'border border-[#ff2b2b]/35 opacity-70'
-              : 'border border-[#e0e0e0]'
-      } bg-[#f7f7f7]`}
+      className={`w-[min(100%,300px)] shrink-0 snap-start overflow-hidden rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] sm:w-[300px] ${cardSurface}`}
     >
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <span className="font-barlow-condensed text-sm font-black tracking-wider text-preto-v1">
@@ -306,8 +488,10 @@ function PedidoCard({
       {entregue || cancelado ? (
         <div className="px-4 py-3">
           <div
-            className={`h-10 rounded text-center font-barlow-condensed text-xs font-black uppercase leading-10 tracking-wider ${
-              cancelado ? 'bg-[#ffe8e8] text-[#d71920]' : 'bg-[#ebebeb] text-[#aaa]'
+            className={`flex min-h-11 items-center justify-center rounded-[6px] px-3 py-2 text-center font-barlow text-sm font-semibold leading-snug tracking-wide sm:text-base ${
+              cancelado
+                ? 'bg-[#ffe8e8] text-[#d71920]'
+                : 'bg-emerald-600 text-white shadow-sm'
             }`}
           >
             {cancelado ? `Cancelado às ${pedido.hora}` : `Entregue às ${pedido.hora}`}
@@ -316,11 +500,11 @@ function PedidoCard({
       ) : (
         <footer className="grid grid-cols-3 gap-2 px-4 py-3">
           <button
-            className={`h-10 min-w-0 overflow-hidden rounded font-barlow-condensed text-[9px] font-black uppercase leading-none tracking-wide transition-colors ${
+            className={`${acaoBotaoBase} ${
               preparando
-                ? 'bg-amarelo text-preto-v1'
-                : 'border border-amarelo text-amarelo hover:bg-amarelo/10'
-            } disabled:cursor-not-allowed disabled:opacity-40`}
+                ? 'border-amarelo bg-amarelo/30 text-preto-v1'
+                : 'border-amarelo bg-amarelo/15 text-preto-v1 hover:bg-amarelo/25'
+            }`}
             disabled={disabled || preparando}
             onClick={() => onPreparar?.(pedido)}
             type="button"
@@ -328,7 +512,7 @@ function PedidoCard({
             {textoBotaoStatus(pedido.status)}
           </button>
           <button
-            className="h-10 min-w-0 overflow-hidden rounded border border-[#20c86f] font-barlow-condensed text-[11px] font-black uppercase leading-none tracking-wide text-[#20c86f] transition-colors hover:bg-[#20c86f]/10 disabled:cursor-not-allowed disabled:opacity-40"
+            className={`${acaoBotaoBase} border-emerald-600 bg-emerald-50 text-emerald-700 hover:bg-emerald-100`}
             disabled={disabled}
             onClick={() => onEntregar?.(pedido)}
             type="button"
@@ -336,7 +520,7 @@ function PedidoCard({
             Entregue
           </button>
           <button
-            className="h-10 min-w-0 overflow-hidden rounded border border-[#ff2b2b] font-barlow-condensed text-[11px] font-black uppercase leading-none tracking-wide text-[#ff2b2b] transition-colors hover:bg-[#ff2b2b]/10 disabled:cursor-not-allowed disabled:opacity-40"
+            className={`${acaoBotaoBase} border-[#D92B2B] bg-[#D92B2B]/10 text-[#D92B2B] hover:bg-[#D92B2B]/15`}
             disabled={disabled}
             onClick={() => onCancelar?.(pedido)}
             type="button"
@@ -358,8 +542,19 @@ export default function Cozinha() {
   const [loading, setLoading] = useState(true)
   const [pedidoCancelando, setPedidoCancelando] = useState<PedidoCozinha | null>(null)
   const [updatingKey, setUpdatingKey] = useState<string | null>(null)
+  const [busca, setBusca] = useState('')
 
   async function carregarCozinha() {
+    if (MODO_MOCK_COZINHA) {
+      setLoading(true)
+      setErro('')
+      setFila(mockFila)
+      setEntregues(mockEntregues)
+      setCancelados(mockCancelados)
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
       setErro('')
@@ -369,13 +564,22 @@ export default function Cozinha() {
       setEntregues(grupos.filter((p) => p.status === 'entregue'))
     } catch {
       setErro('Nao foi possivel carregar a fila da API.')
-      setFila(pedidosExemplo)
+      setFila(mockFila)
+      setEntregues(mockEntregues)
     } finally {
       setLoading(false)
     }
   }
 
   async function carregarCancelados() {
+    if (MODO_MOCK_COZINHA) {
+      setLoading(true)
+      setErro('')
+      setCancelados(mockCancelados)
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
       setErro('')
@@ -383,7 +587,7 @@ export default function Cozinha() {
       setCancelados(pedidosCanceladosParaCards(pedidos))
     } catch {
       setErro('Nao foi possivel carregar os pedidos cancelados.')
-      setCancelados([])
+      setCancelados(mockCancelados)
     } finally {
       setLoading(false)
     }
@@ -403,6 +607,19 @@ export default function Cozinha() {
     return cancelados
   }, [aba, cancelados, entregues, fila])
 
+  const pedidosFiltrados = useMemo(
+    () => pedidosVisiveis.filter((pedido) => pedidoCorrespondeBusca(pedido, busca)),
+    [busca, pedidosVisiveis],
+  )
+
+  const buscaAtiva = busca.trim().length > 0
+  const textoContagem = textoQuantidadePedidos(
+    aba,
+    pedidosVisiveis.length,
+    pedidosFiltrados.length,
+    buscaAtiva,
+  )
+
   function atualizarPedidoLocal(pedido: PedidoCozinha, status: 'preparando' | 'entregue') {
     if (status === 'entregue') {
       setFila((atual) => atual.filter((item) => !(item.id === pedido.id && item.lote === pedido.lote)))
@@ -419,6 +636,12 @@ export default function Cozinha() {
     const key = `${pedido.id}-${pedido.lote}`
     setUpdatingKey(key)
 
+    if (MODO_MOCK_COZINHA) {
+      atualizarPedidoLocal(pedido, status)
+      setUpdatingKey(null)
+      return
+    }
+
     try {
       await atualizarStatusCozinha(pedido.id, pedido.lote, status)
       atualizarPedidoLocal(pedido, status)
@@ -430,6 +653,12 @@ export default function Cozinha() {
     }
   }
 
+  function cancelarPedidoLocal(pedido: PedidoCozinha) {
+    setFila((atual) => atual.filter((item) => !(item.id === pedido.id && item.lote === pedido.lote)))
+    setCancelados((atual) => [{ ...pedido, status: 'cancelado' }, ...atual])
+    setPedidoCancelando(null)
+  }
+
   return (
     <main className={`min-h-screen bg-branco text-preto-v1 ${CLASSE_OFFSET_BARRA_ADMIN}`}>
       {pedidoCancelando && (
@@ -438,10 +667,13 @@ export default function Cozinha() {
           onFechar={() => setPedidoCancelando(null)}
           onConfirmar={async (motivo) => {
             if (!pedidoCancelando) return
+            if (MODO_MOCK_COZINHA) {
+              cancelarPedidoLocal(pedidoCancelando)
+              return
+            }
             try {
               await cancelarPedido(pedidoCancelando.id, motivo)
-              setFila((atual) => atual.filter((item) => item.id !== pedidoCancelando.id))
-              setPedidoCancelando(null)
+              cancelarPedidoLocal(pedidoCancelando)
             } catch {
               setErro('Nao foi possivel cancelar o pedido agora.')
             }
@@ -449,53 +681,70 @@ export default function Cozinha() {
         />
       )}
 
-      <BarraDeNavegacaoAdmin>
-        <nav className="flex items-center justify-center gap-8 font-barlow-condensed text-lg font-black uppercase">
-          <button
-            className={`transition-colors ${aba === 'fila' ? 'text-amarelo' : 'text-branco/45 hover:text-branco'}`}
-            onClick={() => setAba('fila')}
-            type="button"
-          >
-            Fila de pedidos
-          </button>
-          <button
-            className={`transition-colors ${aba === 'entregues' ? 'text-amarelo' : 'text-branco/45 hover:text-branco'}`}
-            onClick={() => setAba('entregues')}
-            type="button"
-          >
-            Entregues
-          </button>
-          <button
-            className={`transition-colors ${aba === 'cancelados' ? 'text-amarelo' : 'text-branco/45 hover:text-branco'}`}
-            onClick={() => {
-              setAba('cancelados')
-              void carregarCancelados()
-            }}
-            type="button"
-          >
-            Cancelados
-          </button>
-        </nav>
-      </BarraDeNavegacaoAdmin>
+      <BarraDeNavegacaoAdmin />
 
       <section className="min-h-[calc(100vh-4rem)] bg-branco px-6 py-8 lg:px-16 lg:py-12">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center lg:mx-auto lg:mb-8 lg:max-w-3xl">
+          <div className="min-w-0 flex-1">
+            <SeletorAbaCozinha
+              aba={aba}
+              onChange={(novaAba) => {
+                setAba(novaAba)
+                if (novaAba === 'cancelados') void carregarCancelados()
+              }}
+            />
+          </div>
+          <label className="flex h-[52px] w-full shrink-0 items-center gap-3 rounded-lg border border-gray-300 bg-white px-4 shadow-sm transition-colors focus-within:border-gray-400 sm:max-w-xs">
+            <Search size={18} className="shrink-0 text-gray-400" aria-hidden />
+            <input
+              type="search"
+              value={busca}
+              onChange={(event) => setBusca(event.target.value)}
+              className="min-w-0 flex-1 bg-transparent font-barlow text-sm text-preto-v1 outline-none placeholder:text-gray-400"
+              placeholder="Buscar pedido..."
+              aria-label="Buscar pedido"
+            />
+          </label>
+        </div>
+
+        {!loading && (
+          <p className="mb-4 font-barlow text-sm text-[#666666] lg:mx-auto lg:max-w-3xl">
+            {textoContagem}
+          </p>
+        )}
+
+        {MODO_MOCK_COZINHA && !loading && (
+          <p className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 font-barlow text-xs font-semibold text-amber-800">
+            Modo demonstracao — pedidos ficticios para testar a interface localmente.
+          </p>
+        )}
         {(loading || erro) && (
           <p className="mb-5 min-h-6 font-barlow text-xs font-bold text-[#777]">
             {loading ? 'Carregando pedidos...' : erro}
           </p>
         )}
 
-        <div className="flex flex-wrap items-start gap-4 sm:gap-6">
-          {pedidosVisiveis.map((pedido) => (
-            <PedidoCard
-              disabled={updatingKey === `${pedido.id}-${pedido.lote}`}
-              key={`${pedido.id}-${pedido.lote}-${pedido.hora}`}
-              onCancelar={aba === 'cancelados' ? undefined : (item) => setPedidoCancelando(item)}
-              onEntregar={aba === 'cancelados' ? undefined : (item) => mudarStatus(item, 'entregue')}
-              onPreparar={aba === 'cancelados' ? undefined : (item) => mudarStatus(item, 'preparando')}
-              pedido={pedido}
-            />
-          ))}
+        <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] md:gap-6 lg:mx-auto lg:max-w-6xl lg:flex-wrap lg:justify-center lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden">
+          {pedidosFiltrados.length > 0 ? (
+            pedidosFiltrados.map((pedido) => (
+              <PedidoCard
+                disabled={updatingKey === `${pedido.id}-${pedido.lote}`}
+                key={`${pedido.id}-${pedido.lote}-${pedido.hora}`}
+                onCancelar={aba === 'cancelados' ? undefined : (item) => setPedidoCancelando(item)}
+                onEntregar={aba === 'cancelados' ? undefined : (item) => mudarStatus(item, 'entregue')}
+                onPreparar={aba === 'cancelados' ? undefined : (item) => mudarStatus(item, 'preparando')}
+                pedido={pedido}
+              />
+            ))
+          ) : (
+            !loading && (
+              <p className="w-full py-8 text-center font-barlow text-sm text-[#777]">
+                {busca.trim()
+                  ? 'Nenhum pedido encontrado para essa busca.'
+                  : 'Nenhum pedido nesta visualizacao.'}
+              </p>
+            )
+          )}
         </div>
       </section>
     </main>
