@@ -96,6 +96,35 @@ button {
   }
 }
 
+@keyframes carrossel-dogs-grupos {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(var(--carrossel-shift, -50%));
+  }
+}
+
+.carrossel-nossos-dogs-faixa {
+  --carrossel-visiveis: 2;
+  width: calc((var(--carrossel-total) / var(--carrossel-visiveis)) * 100%);
+}
+
+@media (min-width: 490px) {
+  .carrossel-nossos-dogs-faixa {
+    --carrossel-visiveis: 4;
+  }
+}
+
+.carrossel-nossos-dogs-card {
+  width: calc(100% / var(--carrossel-total));
+}
+
+@utility animacao-carrossel-dogs-grupos {
+  animation: carrossel-dogs-grupos 56s linear infinite;
+}
+
 @utility animacao-smash-home {
   animation: smash-home-float 4.5s ease-in-out infinite;
 }
