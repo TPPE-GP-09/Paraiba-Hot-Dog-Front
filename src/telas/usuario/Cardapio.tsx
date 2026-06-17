@@ -97,7 +97,7 @@ function CardProduto({
     <button
       type="button"
       onClick={() => onSelect(produto)}
-      className="group flex w-full flex-col overflow-hidden rounded-[12px] bg-zinc-800 text-left shadow-[0_12px_24px_rgba(0,0,0,0.28)] outline-none transition-transform duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-amarelo min-[640px]:h-44 min-[640px]:flex-row"
+      className="group flex w-full flex-col overflow-hidden rounded-[12px] bg-zinc-700 text-left shadow-[0_12px_24px_rgba(0,0,0,0.28)] outline-none transition-transform duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-amarelo min-[640px]:h-44 min-[640px]:flex-row"
       aria-label={`Ver detalhes de ${produto.nome}`}
     >
       <div className="order-2 grid min-h-[12rem] flex-1 grid-rows-[minmax(0,1fr)_3.25rem] gap-2 px-3 py-3 text-branco min-[640px]:order-1 min-[640px]:min-h-0 min-[640px]:py-4">
@@ -128,7 +128,7 @@ function CardProduto({
         </div>
       </div>
 
-      <div className="order-1 h-44 w-full overflow-hidden border-b border-preto-v1 bg-preto-v3 min-[640px]:order-3 min-[640px]:h-full min-[640px]:w-48 min-[640px]:border-b-0 min-[640px]:border-l">
+      <div className="order-1 h-44 w-full overflow-hidden border-b border-zinc-800 bg-zinc-600 min-[640px]:order-3 min-[640px]:h-full min-[640px]:w-48 min-[640px]:border-b-0 min-[640px]:border-l">
         {imagem ? (
           <img
             src={imagem}
@@ -137,7 +137,7 @@ function CardProduto({
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-preto-v3 font-barlow-condensed text-2xl font-black uppercase text-amarelo">
+          <div className="flex h-full items-center justify-center bg-zinc-600 font-barlow-condensed text-2xl font-black uppercase text-amarelo">
             Paraíba
           </div>
         )}
@@ -164,11 +164,11 @@ function DetalheProduto({
       onClick={onClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[5px] bg-[#222] text-branco shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
+        className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[5px] bg-zinc-800 text-branco shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="grid min-[768px]:grid-cols-[minmax(0,0.95fr)_minmax(20rem,1fr)]">
-          <div className="aspect-square overflow-hidden bg-preto-v3 min-[768px]:aspect-auto min-[768px]:h-[28rem]">
+          <div className="aspect-square overflow-hidden bg-zinc-600 min-[768px]:aspect-auto min-[768px]:h-[28rem]">
             {imagem ? (
               <img
                 src={imagem}
@@ -270,11 +270,11 @@ function NavegacaoCategorias({
   return (
     <nav
       aria-label="Categorias do cardápio"
-      className="sticky top-16 z-[40] mt-10 bg-preto-v1/95 backdrop-blur"
+      className="sticky top-16 z-[40] mt-10 bg-zinc-950 py-4"
     >
       <div className="pagina-container py-0">
         <div className="flex justify-start overflow-x-auto min-[900px]:justify-center">
-          <ul className="inline-flex w-max min-w-max snap-x snap-mandatory items-center gap-1.5 overflow-x-auto rounded-2xl border border-branco/10 bg-[#171717] px-2 py-2 shadow-[0_10px_24px_rgba(0,0,0,0.22)] [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch] select-none">
+          <ul className="inline-flex w-max min-w-max snap-x snap-mandatory items-center gap-1.5 overflow-x-auto rounded-2xl border border-branco/10 bg-zinc-800 px-2 py-2 shadow-[0_10px_24px_rgba(0,0,0,0.22)] [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch] select-none">
             {secoes.map((secao) => (
               <li key={secao.id} className="snap-start flex-none">
                 <a
@@ -306,7 +306,7 @@ function SecaoProdutos({
   ativa: boolean;
 }) {
   return (
-    <section id={secao.id} className="scroll-mt-36 pt-14 first:pt-12">
+    <section id={secao.id} className="scroll-mt-44 pt-14 first:pt-12">
       <h2
         className={`font-barlow-condensed text-[clamp(2rem,8vw,3.5rem)] font-black uppercase leading-none transition-colors ${
           ativa ? "text-amarelo" : "text-branco"
@@ -326,7 +326,7 @@ function SecaoProdutos({
           ))}
         </div>
       ) : (
-        <div className="mt-6 rounded-[12px] border border-branco/10 bg-[#222] px-4 py-5 font-barlow text-sm text-branco/60">
+        <div className="mt-6 rounded-[12px] border border-branco/10 bg-zinc-800 px-4 py-5 font-barlow text-sm text-branco/60">
           Categoria cadastrada. Os itens dessa seção ainda não foram
           adicionados.
         </div>
@@ -453,7 +453,7 @@ export default function Cardapio() {
     <>
       <BarraDeNavegacao />
 
-      <main className="min-h-screen overflow-x-clip bg-preto-v1 pt-[8.75rem] text-branco">
+      <main className="min-h-screen overflow-x-clip bg-zinc-950 pt-[8.75rem] text-branco">
         <section className="pagina-container pt-12 pb-16 min-[768px]:pt-16">
           <div className="max-w-4xl">
             <p className="font-barlow text-sm font-semibold uppercase text-amarelo">
@@ -486,7 +486,7 @@ export default function Cardapio() {
                   event.target.value ? Number(event.target.value) : "",
                 );
               }}
-              className="mt-2 h-12 w-full rounded-[5px] border border-branco/15 bg-[#222] px-4 font-barlow text-base font-semibold text-branco outline-none transition-colors focus:border-amarelo focus:ring-2 focus:ring-amarelo/30 disabled:cursor-not-allowed disabled:text-branco/45"
+              className="mt-2 h-12 w-full rounded-[5px] border border-branco/15 bg-zinc-800 px-4 font-barlow text-base font-semibold text-branco outline-none transition-colors focus:border-amarelo focus:ring-2 focus:ring-amarelo/30 disabled:cursor-not-allowed disabled:text-branco/45"
             >
               <option value="">
                 {carregandoUnidades
@@ -515,16 +515,16 @@ export default function Cardapio() {
           )}
 
           {carregando ? (
-            <div className="mt-12 rounded-[5px] border border-branco/10 bg-[#222] px-5 py-8 font-barlow text-branco/80">
+            <div className="mt-12 rounded-[5px] border border-branco/10 bg-zinc-800 px-5 py-8 font-barlow text-branco/80">
               Carregando cardápio...
             </div>
           ) : erroCarregamento ? (
-            <div className="mt-12 rounded-[5px] border border-branco/10 bg-[#222] px-5 py-8 font-barlow text-branco/80">
+            <div className="mt-12 rounded-[5px] border border-branco/10 bg-zinc-800 px-5 py-8 font-barlow text-branco/80">
               Não foi possível carregar o cardápio no momento.
             </div>
           ) : (
             <>
-              <p className="mt-6 font-barlow text-sm text-branco/60">
+              <p className="font-barlow text-sm text-branco/60">
                 {totalProdutos} itens disponíveis
                 {unidadeSelecionada ? ` em ${unidadeSelecionada.nome}` : ""}.
               </p>
