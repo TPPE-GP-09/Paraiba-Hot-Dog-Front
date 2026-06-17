@@ -57,7 +57,7 @@ export default function Painel() {
       <main className="flex flex-1 flex-col items-center px-4 py-10 sm:py-14">
         <div className="flex w-full max-w-2xl flex-1 flex-col items-center">
           <h1 className="text-center font-barlow-condensed text-3xl font-semibold text-preto-v1 sm:text-5xl">
-            Olá, Administrador
+            Bem-vindo(a) ao painel administrativo!
           </h1>
 
           <div className="mt-8 w-full">
