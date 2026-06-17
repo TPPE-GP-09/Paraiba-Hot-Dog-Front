@@ -634,14 +634,22 @@ function CardProduto({ produto, onAdicionar }: { produto: Produto; onAdicionar: 
 }
 
 function ModalConfiguracao({ produto, onFechar, onAdicionar }: { produto: Produto; onFechar: () => void; onAdicionar: (item: Omit<ItemPedido, 'quantidade'>) => void }) {
-  const [variacao, setVariacao] = useState(produto.variacoes?.[0] ?? null)
-  const [combo, setCombo] = useState(false)
+  const temVariacoesMultiplas = Boolean(produto.variacoes && produto.variacoes.length > 1)
+  const [variacao, setVariacao] = useState<VariacaoProduto | null>(
+    temVariacoesMultiplas ? null : (produto.variacoes?.[0] ?? null),
+  )
+  const [comboEscolha, setComboEscolha] = useState<boolean | null>(produto.permiteCombo ? null : false)
   const [bebida, setBebida] = useState(bebidasCombo[0])
   const [observacao, setObservacao] = useState('')
+  const combo = comboEscolha === true
   const precoIndividual = variacao?.preco ?? produto.preco
   const precoFinal = combo ? (variacao?.precoCombo ?? precoIndividual + 13) : precoIndividual
+  const tamanhoRespondido = !temVariacoesMultiplas || variacao !== null
+  const comboRespondido = !produto.permiteCombo || comboEscolha !== null
+  const podeAdicionar = tamanhoRespondido && comboRespondido
 
   function confirmar() {
+    if (!podeAdicionar) return
     const nomeBase = variacao?.nome ?? produto.nome
     const descricaoBase = variacao?.descricao ?? produto.descricao
     onAdicionar({
@@ -661,9 +669,44 @@ function ModalConfiguracao({ produto, onFechar, onAdicionar }: { produto: Produt
       <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
         <div className="relative h-40 overflow-hidden sm:h-48"><img src={produto.imagem} alt={produto.nome} className="h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/10" /><button type="button" onClick={onFechar} className="absolute right-4 top-4 rounded-full bg-white/95 p-2 shadow-md" aria-label="Fechar"><X size={20} /></button><div className="absolute bottom-4 left-5 text-white"><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-amarelo">Configure o item</p><h2 className="font-barlow-condensed text-3xl font-black uppercase">{produto.nome}</h2></div></div>
         <div className="space-y-6 p-5 sm:p-6">
-          {produto.variacoes && produto.variacoes.length > 1 && <GrupoConfiguracao titulo="Escolha o tamanho" descricao="Selecione uma opcao.">{produto.variacoes.map((opcao, index) => <BotaoOpcao key={opcao.id} ativo={variacao?.id === opcao.id} titulo={opcao.nome} descricao={opcao.descricao} preco={opcao.preco} marcador={`${index + 1}x`} onClick={() => setVariacao(opcao)} />)}</GrupoConfiguracao>}
+          {produto.variacoes && produto.variacoes.length > 1 && (
+            <GrupoConfiguracao titulo="Escolha o tamanho" descricao="Selecione uma opcao." obrigatorio>
+              {produto.variacoes.map((opcao, index) => (
+                <BotaoOpcao
+                  key={opcao.id}
+                  ativo={variacao?.id === opcao.id}
+                  titulo={opcao.nome}
+                  descricao={opcao.descricao}
+                  preco={opcao.preco}
+                  marcador={`${index + 1}x`}
+                  onClick={() => setVariacao(opcao)}
+                />
+              ))}
+            </GrupoConfiguracao>
+          )}
 
-          {produto.permiteCombo && <GrupoConfiguracao titulo="Deseja transformar em combo?" descricao="O combo acompanha Paraiba Chips e uma bebida."><BotaoOpcao ativo={!combo} titulo="Somente o lanche" descricao="Sem acompanhamento ou bebida" preco={precoIndividual} onClick={() => setCombo(false)} /><BotaoOpcao ativo={combo} titulo="Quero o combo" descricao="Paraiba Chips + bebida" preco={variacao?.precoCombo ?? precoIndividual + 13} onClick={() => setCombo(true)} /></GrupoConfiguracao>}
+          {produto.permiteCombo && (
+            <GrupoConfiguracao
+              titulo="Deseja transformar em combo?"
+              descricao="O combo acompanha Paraiba Chips e uma bebida."
+              obrigatorio
+            >
+              <BotaoOpcao
+                ativo={comboEscolha === false}
+                titulo="Somente o lanche"
+                descricao="Sem acompanhamento ou bebida"
+                preco={precoIndividual}
+                onClick={() => setComboEscolha(false)}
+              />
+              <BotaoOpcao
+                ativo={comboEscolha === true}
+                titulo="Quero o combo"
+                descricao="Paraiba Chips + bebida"
+                preco={variacao?.precoCombo ?? precoIndividual + 13}
+                onClick={() => setComboEscolha(true)}
+              />
+            </GrupoConfiguracao>
+          )}
 
           {combo && <GrupoConfiguracao titulo="Escolha a bebida" descricao="Selecione a bebida do combo.">{bebidasCombo.map((opcao) => <BotaoOpcao key={opcao} ativo={bebida === opcao} titulo={opcao} onClick={() => setBebida(opcao)} />)}</GrupoConfiguracao>}
 
@@ -672,15 +715,40 @@ function ModalConfiguracao({ produto, onFechar, onAdicionar }: { produto: Produt
             <textarea value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: sem cebola, ponto da carne bem passado..." maxLength={200} rows={3} className="mt-3 w-full resize-none rounded-xl border border-slate-200 p-3 text-sm placeholder:text-slate-300 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400" />
           </section>
 
-          <div className="sticky bottom-0 -mx-5 -mb-5 flex gap-3 border-t border-slate-200 bg-white p-5 sm:-mx-6 sm:-mb-6 sm:p-6"><button type="button" onClick={onFechar} className="rounded-xl border border-slate-200 px-5 py-3 text-xs font-bold uppercase text-slate-500">Cancelar</button><button type="button" onClick={confirmar} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amarelo px-4 py-3 text-xs font-black uppercase"><Plus size={16} /> Adicionar - {moeda(precoFinal)}</button></div>
+          <div className="sticky bottom-0 -mx-5 -mb-5 flex gap-3 border-t border-slate-200 bg-white p-5 sm:-mx-6 sm:-mb-6 sm:p-6"><button type="button" onClick={onFechar} className="rounded-xl border border-slate-200 px-5 py-3 text-xs font-bold uppercase text-slate-500">Cancelar</button><button type="button" disabled={!podeAdicionar} onClick={confirmar} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amarelo px-4 py-3 text-xs font-black uppercase disabled:cursor-not-allowed disabled:opacity-50"><Plus size={16} /> Adicionar - {moeda(precoFinal)}</button></div>
         </div>
       </div>
     </div>
   )
 }
 
-function GrupoConfiguracao({ titulo, descricao, children }: { titulo: string; descricao: string; children: ReactNode }) {
-  return <section><div><h3 className="text-sm font-black">{titulo}</h3><p className="mt-0.5 text-xs text-slate-400">{descricao}</p></div><div className="mt-3 space-y-2">{children}</div></section>
+function GrupoConfiguracao({
+  titulo,
+  descricao,
+  obrigatorio = false,
+  children,
+}: {
+  titulo: string
+  descricao: string
+  obrigatorio?: boolean
+  children: ReactNode
+}) {
+  return (
+    <section>
+      <div>
+        <h3 className="text-sm font-black">
+          {titulo}
+          {obrigatorio && (
+            <span className="ml-1 text-red-600" aria-hidden>
+              *
+            </span>
+          )}
+        </h3>
+        <p className="mt-0.5 text-xs text-slate-400">{descricao}</p>
+      </div>
+      <div className="mt-3 space-y-2">{children}</div>
+    </section>
+  )
 }
 
 function BotaoOpcao({ ativo, titulo, descricao, preco, marcador, onClick }: { ativo: boolean; titulo: string; descricao?: string; preco?: number; marcador?: string; onClick: () => void }) {
