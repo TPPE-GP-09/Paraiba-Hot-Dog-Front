@@ -201,9 +201,9 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
           className={mobileMenuClassName}
           aria-label="Navegação principal"
         >
-          <ul className="flex flex-col gap-5">
+          <ul className="flex flex-col">
             {navLinks.map(({ label, href }) => (
-              <li key={href}>
+              <li key={href} className="border-b border-gray-300 py-3 last:border-b-0">
                 <a
                   href={href}
                   className={
@@ -221,7 +221,7 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
                 </a>
               </li>
             ))}
-            <li>
+            <li className="py-3">
               <a href={ADMIN_HREF} className={linkClassName} onClick={closeMenu}>
                 Acesso restrito
               </a>
