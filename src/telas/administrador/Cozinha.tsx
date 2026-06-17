@@ -55,105 +55,6 @@ type PedidoCozinha = {
   }>
 }
 
-/** Ativo em dev para testar a interface sem pedidos reais. Desative com VITE_MOCK_COZINHA=false */
-const MODO_MOCK_COZINHA =
-  import.meta.env.DEV && import.meta.env.VITE_MOCK_COZINHA !== 'false'
-
-const mockFila: PedidoCozinha[] = [
-  {
-    id: 234,
-    hora: '21:57',
-    mesa: 'Mesa 3',
-    lote: 1,
-    status: 'aberto',
-    itens: [
-      { nome: '1x Arretado', adicionais: ['Molho de Bacon', 'Molho de Ervas', 'Sem milho'], quantidade: 1 },
-      { nome: '2x Tradicional', adicionais: ['Molho de Bacon', 'Molho de Ervas'], quantidade: 2 },
-    ],
-  },
-  {
-    id: 234,
-    hora: '21:57',
-    mesa: 'Mesa 3',
-    lote: 2,
-    status: 'preparando',
-    itens: [
-      { nome: '1x Arretado', adicionais: ['Molho de Bacon', 'Molho de Ervas', 'Sem milho'], quantidade: 1 },
-      { nome: '2x Tradicional', adicionais: ['Molho de Bacon', 'Molho de Ervas'], quantidade: 2 },
-    ],
-  },
-  {
-    id: 234,
-    hora: '21:58',
-    mesa: 'Mesa 3',
-    lote: 3,
-    status: 'aberto',
-    itens: [
-      { nome: '1x Arretado', adicionais: ['Molho de Bacon', 'Molho de Ervas', 'Sem milho'], quantidade: 1 },
-      { nome: '2x Tradicional', adicionais: ['Molho de Bacon', 'Molho de Ervas'], quantidade: 2 },
-      { nome: '2x Smash', adicionais: ['Molho de Bacon', 'Molho de Ervas'], quantidade: 2 },
-      { nome: '2x Coca Cola 500ml', adicionais: [], quantidade: 2 },
-      { nome: '2x Batata', adicionais: [], quantidade: 2 },
-    ],
-  },
-  {
-    id: 236,
-    hora: '21:39',
-    mesa: 'Mesa 3',
-    lote: 1,
-    status: 'aberto',
-    itens: [
-      { nome: '1x Arretado', adicionais: ['Molho de Bacon', 'Molho de Ervas', 'Sem milho'], quantidade: 1 },
-      { nome: '2x Tradicional', adicionais: ['Molho de Bacon', 'Molho de Ervas'], quantidade: 2 },
-      { nome: '2x Coca Cola 500ml', adicionais: [], quantidade: 2 },
-    ],
-  },
-]
-
-const mockEntregues: PedidoCozinha[] = [
-  {
-    id: 228,
-    hora: '20:15',
-    mesa: 'Balcao 2',
-    lote: 1,
-    status: 'entregue',
-    itens: [
-      {
-        nome: '1x Paraibano',
-        adicionais: ['Catupiry', 'Batata palha'],
-        observacao: 'Obs: sem cebola',
-        quantidade: 1,
-      },
-      { nome: '1x Coca Cola 500ml', adicionais: [], quantidade: 1 },
-    ],
-  },
-  {
-    id: 221,
-    hora: '19:48',
-    mesa: 'Mesa 5',
-    lote: 1,
-    status: 'entregue',
-    itens: [
-      { nome: '2x Smash', adicionais: ['Queijo extra'], quantidade: 2 },
-      { nome: '1x Batata', adicionais: [], quantidade: 1 },
-    ],
-  },
-]
-
-const mockCancelados: PedidoCozinha[] = [
-  {
-    id: 215,
-    hora: '19:42',
-    mesa: 'Mesa 7',
-    lote: 1,
-    status: 'cancelado',
-    itens: [
-      { nome: '1x Bixin', adicionais: ['Molho de Ervas'], quantidade: 1 },
-      { nome: '1x Soda Italiana', adicionais: [], quantidade: 1 },
-    ],
-  },
-]
-
 function agruparItens(items: CozinhaItem[]) {
   const grupos = new Map<string, PedidoCozinha>()
 
@@ -545,16 +446,6 @@ export default function Cozinha() {
   const [busca, setBusca] = useState('')
 
   async function carregarCozinha() {
-    if (MODO_MOCK_COZINHA) {
-      setLoading(true)
-      setErro('')
-      setFila(mockFila)
-      setEntregues(mockEntregues)
-      setCancelados(mockCancelados)
-      setLoading(false)
-      return
-    }
-
     try {
       setLoading(true)
       setErro('')
@@ -564,22 +455,14 @@ export default function Cozinha() {
       setEntregues(grupos.filter((p) => p.status === 'entregue'))
     } catch {
       setErro('Nao foi possivel carregar a fila da API.')
-      setFila(mockFila)
-      setEntregues(mockEntregues)
+      setFila([])
+      setEntregues([])
     } finally {
       setLoading(false)
     }
   }
 
   async function carregarCancelados() {
-    if (MODO_MOCK_COZINHA) {
-      setLoading(true)
-      setErro('')
-      setCancelados(mockCancelados)
-      setLoading(false)
-      return
-    }
-
     try {
       setLoading(true)
       setErro('')
@@ -587,7 +470,7 @@ export default function Cozinha() {
       setCancelados(pedidosCanceladosParaCards(pedidos))
     } catch {
       setErro('Nao foi possivel carregar os pedidos cancelados.')
-      setCancelados(mockCancelados)
+      setCancelados([])
     } finally {
       setLoading(false)
     }
@@ -636,18 +519,11 @@ export default function Cozinha() {
     const key = `${pedido.id}-${pedido.lote}`
     setUpdatingKey(key)
 
-    if (MODO_MOCK_COZINHA) {
-      atualizarPedidoLocal(pedido, status)
-      setUpdatingKey(null)
-      return
-    }
-
     try {
       await atualizarStatusCozinha(pedido.id, pedido.lote, status)
       atualizarPedidoLocal(pedido, status)
     } catch {
       setErro('Nao foi possivel atualizar o pedido agora.')
-      atualizarPedidoLocal(pedido, status)
     } finally {
       setUpdatingKey(null)
     }
@@ -667,10 +543,6 @@ export default function Cozinha() {
           onFechar={() => setPedidoCancelando(null)}
           onConfirmar={async (motivo) => {
             if (!pedidoCancelando) return
-            if (MODO_MOCK_COZINHA) {
-              cancelarPedidoLocal(pedidoCancelando)
-              return
-            }
             try {
               await cancelarPedido(pedidoCancelando.id, motivo)
               cancelarPedidoLocal(pedidoCancelando)
@@ -713,11 +585,6 @@ export default function Cozinha() {
           </p>
         )}
 
-        {MODO_MOCK_COZINHA && !loading && (
-          <p className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 font-barlow text-xs font-semibold text-amber-800">
-            Modo demonstracao — pedidos ficticios para testar a interface localmente.
-          </p>
-        )}
         {(loading || erro) && (
           <p className="mb-5 min-h-6 font-barlow text-xs font-bold text-[#777]">
             {loading ? 'Carregando pedidos...' : erro}

@@ -3,71 +3,8 @@ import { ChevronDown, X } from "lucide-react";
 import BarraDeNavegacao from "../../componentes/usuario/BarraDeNavegacaoUsuario";
 import Rodape from "../../componentes/usuario/Rodape";
 import type { ProdutoCardapio, SecaoCardapio } from "../../model/cardapio";
-import { listarSecoesCardapio, produtosFallback, categoriasFallback, subcategoriasFallback } from "../../repository/cardapioRepository";
+import { listarSecoesCardapio } from "../../repository/cardapioRepository";
 import { listarUnidades, type Unidade } from "../../servicos/api";
-
-// TODO: remover mock antes do commit — apenas para inspeção visual local
-const unidadesMock: Unidade[] = [
-  {
-    id: 1,
-    nome: "Asa Norte",
-    imagem: null,
-    abertura: "18:00:00",
-    fechamento: "23:00:00",
-    descricao: null,
-    mapa_url: null,
-    endereco: {
-      id: 1,
-      cep: "70000-000",
-      logradouro: "Av. W3 Norte",
-      numero: "100",
-      complemento: null,
-      bairro: "Asa Norte",
-      cidade: "Brasília",
-      estado: "DF",
-    },
-  },
-  {
-    id: 2,
-    nome: "Taguatinga",
-    imagem: null,
-    abertura: "18:00:00",
-    fechamento: "23:00:00",
-    descricao: null,
-    mapa_url: null,
-    endereco: {
-      id: 2,
-      cep: "72000-000",
-      logradouro: "QNL 10",
-      numero: "5",
-      complemento: null,
-      bairro: "Taguatinga",
-      cidade: "Brasília",
-      estado: "DF",
-    },
-  },
-];
-
-function montarSecoesFallback(): SecaoCardapio[] {
-  const ordem = [1, 2, 3, 4];
-  return categoriasFallback
-    .slice()
-    .sort((a, b) => ordem.indexOf(a.id) - ordem.indexOf(b.id))
-    .map((categoria) => {
-      const idsSubcategorias = subcategoriasFallback
-        .filter((sub) => sub.categoria_id === categoria.id)
-        .map((sub) => sub.id);
-      return {
-        id: categoria.nome.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""),
-        categoria_id: categoria.id,
-        titulo: categoria.nome,
-        produtos: produtosFallback.filter(
-          (p) => p.ativo && idsSubcategorias.includes(p.subcategoria_id),
-        ),
-      };
-    })
-    .filter((secao) => secao.produtos.length > 0);
-}
 
 const formatadorPreco = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -466,14 +403,13 @@ function SecaoProdutos({
 }
 
 export default function Cardapio() {
-  // TODO: remover mock antes do commit — estados iniciais forçados para inspeção visual
-  const [secoes, setSecoes] = useState<SecaoCardapio[]>(montarSecoesFallback());
-  const [unidades, setUnidades] = useState<Unidade[]>(unidadesMock);
+  const [secoes, setSecoes] = useState<SecaoCardapio[]>([]);
+  const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [unidadeSelecionadaId, setUnidadeSelecionadaId] = useState<number | "">(
     "",
   );
-  const [carregando, setCarregando] = useState(false);
-  const [carregandoUnidades, setCarregandoUnidades] = useState(false);
+  const [carregando, setCarregando] = useState(true);
+  const [carregandoUnidades, setCarregandoUnidades] = useState(true);
   const [erroCarregamento, setErroCarregamento] = useState(false);
   const [erroUnidades, setErroUnidades] = useState(false);
   const [produtoSelecionado, setProdutoSelecionado] =
@@ -484,6 +420,7 @@ export default function Cardapio() {
 
   useEffect(() => {
     let ativo = true;
+    setCarregando(true);
 
     listarSecoesCardapio(unidadeSelecionadaId || null, false, true)
       .then((resultado) => {
@@ -492,10 +429,9 @@ export default function Cardapio() {
         setErroCarregamento(false);
       })
       .catch(() => {
-        // TODO: remover mock antes do commit — fallback local para inspeção visual
         if (ativo) {
-          setSecoes(montarSecoesFallback());
-          setErroCarregamento(false);
+          setSecoes([]);
+          setErroCarregamento(true);
         }
       })
       .finally(() => {
@@ -517,10 +453,9 @@ export default function Cardapio() {
         setErroUnidades(false);
       })
       .catch(() => {
-        // TODO: remover mock antes do commit — fallback local para inspeção visual
         if (ativo) {
-          setUnidades(unidadesMock);
-          setErroUnidades(false);
+          setUnidades([]);
+          setErroUnidades(true);
         }
       })
       .finally(() => {
