@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import CabecalhoAdmin from '../../componentes/administrador/BarraDeNavegacaoAdmin'
+import BarraDeNavegacaoAdmin, {
+  CLASSE_OFFSET_BARRA_ADMIN,
+} from '../../componentes/administrador/BarraDeNavegacaoAdmin'
 import ModalConfirmacaoSaida from '../../componentes/administrador/painel/ModalConfirmacaoSaida'
 import OpcoesPainel from '../../componentes/administrador/painel/OpcoesPainel'
 import SeletorUnidade from '../../componentes/administrador/painel/SeletorUnidade'
@@ -49,8 +51,8 @@ export default function Painel() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-branco">
-      <CabecalhoAdmin />
+    <div className={`flex min-h-screen flex-col bg-branco ${CLASSE_OFFSET_BARRA_ADMIN}`}>
+      <BarraDeNavegacaoAdmin />
 
       <main className="flex flex-1 flex-col items-center px-4 py-10 sm:py-14">
         <div className="flex w-full max-w-2xl flex-1 flex-col items-center">
