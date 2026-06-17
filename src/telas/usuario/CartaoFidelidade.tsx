@@ -105,11 +105,17 @@ export default function CartaoFidelidade() {
         <main className="min-h-[calc(100vh-4rem)] bg-preto-v1 pt-16 text-branco">
           <section className="pagina-container flex min-h-[calc(100vh-4rem)] items-center py-10 min-[640px]:py-16">
             <div className="mx-auto w-full max-w-[36rem] text-center">
-              <h1 className="font-barlow-condensed text-[clamp(3.1rem,10vw,6.75rem)] font-black uppercase leading-none text-branco">
-                E ai, <span className="text-amarelo">{resultado.nome}!</span>
+              <h1 className="font-barlow-condensed text-[clamp(2.2rem,7vw,4.5rem)] font-black uppercase leading-none text-branco">
+                <span className="whitespace-nowrap">
+                  OLÁ, <span className="text-amarelo">{resultado.nome}!</span>
+                </span>
               </h1>
 
-              <article className="mx-auto mt-6 w-full max-w-[28rem] rounded-xl bg-[#1c1c1c] px-6 py-7 text-center shadow-[0_16px_40px_rgba(0,0,0,0.35)] min-[640px]:mt-7 min-[640px]:px-10 min-[640px]:py-8">
+              <article
+                className={`mx-auto mt-6 w-full max-w-[28rem] rounded-xl bg-[#1c1c1c] px-6 py-7 text-center shadow-[0_16px_40px_rgba(0,0,0,0.35)] min-[640px]:mt-7 min-[640px]:px-10 min-[640px]:py-8 ${
+                  faltam === 0 ? "animate-pulse" : ""
+                }`}
+              >
                 <h2 className="font-barlow-condensed text-[clamp(1.8rem,6vw,2.8rem)] font-black uppercase text-branco">
                   {faltam > 0 ? (
                     <>
@@ -130,12 +136,15 @@ export default function CartaoFidelidade() {
                   {carimbos.map((preenchido, index) => (
                     <span
                       key={index}
-                      className={`h-[18px] rounded-full border-[5px] ${
+                      aria-hidden
+                      className={`flex items-center justify-center text-2xl transition-all ${
                         preenchido
-                          ? "border-amarelo bg-[#d71920]"
-                          : "border-[#555] bg-[#2b2b2b]"
+                          ? "opacity-100"
+                          : "opacity-30 grayscale"
                       }`}
-                    />
+                    >
+                      🌭
+                    </span>
                   ))}
                 </div>
               </article>
