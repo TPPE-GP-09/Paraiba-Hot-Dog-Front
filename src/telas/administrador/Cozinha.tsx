@@ -485,7 +485,7 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
       setFila(grupos.filter((p) => p.status !== 'entregue' && p.status !== 'cancelado'))
       setEntregues(grupos.filter((p) => p.status === 'entregue'))
     } catch {
-      setErro('Nao foi possivel carregar a fila da API.')
+      setErro('Não foi possível carregar a fila da API.')
       setFila([])
       setEntregues([])
     } finally {
@@ -505,7 +505,7 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
       const pedidos = await listarPedidosCancelados()
       setCancelados(pedidosCanceladosParaCards(pedidos))
     } catch {
-      setErro('Nao foi possivel carregar os pedidos cancelados.')
+      setErro('Não foi possível carregar os pedidos cancelados.')
       setCancelados([])
     } finally {
       setLoading(false)
@@ -563,7 +563,7 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
       }
       atualizarPedidoLocal(pedido, status)
     } catch {
-      setErro('Nao foi possivel atualizar o pedido agora.')
+      setErro('Não foi possível atualizar o pedido agora.')
     } finally {
       setUpdatingKey(null)
     }
@@ -589,7 +589,7 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
               }
               cancelarPedidoLocal(pedidoCancelando)
             } catch {
-              setErro('Nao foi possivel cancelar o pedido agora.')
+              setErro('Não foi possível cancelar o pedido agora.')
             }
           }}
         />
@@ -656,7 +656,7 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
               <p className="w-full min-w-full basis-full py-8 text-center font-barlow text-sm text-[#777]">
                 {busca.trim()
                   ? 'Nenhum pedido encontrado para essa busca.'
-                  : 'Nenhum pedido nesta visualizacao.'}
+                  : 'Nenhum pedido nesta visualização.'}
               </p>
             )
           )}

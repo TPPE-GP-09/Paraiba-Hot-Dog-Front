@@ -189,7 +189,7 @@ export default function GestaoBlog() {
               Admin
             </p>
             <h1 className="font-barlow-condensed text-3xl font-black uppercase text-preto-v1 sm:text-5xl">
-              Noticias e promocoes
+              Notícias e promoções
             </h1>
           </div>
 
@@ -221,7 +221,7 @@ export default function GestaoBlog() {
 
             <form className="mt-5 grid gap-4" onSubmit={salvar}>
               <label className="grid gap-1.5">
-                <span className="text-xs font-black uppercase tracking-[0.14em] text-cinza-base">Titulo</span>
+                <span className="text-xs font-black uppercase tracking-[0.14em] text-cinza-base">Título</span>
                 <div className="flex items-center gap-2 rounded-xl border border-[#d8dee8] bg-white px-3">
                   <Type size={16} className="text-cinza-base" />
                   <input
@@ -234,7 +234,7 @@ export default function GestaoBlog() {
               </label>
 
               <label className="grid gap-1.5">
-                <span className="text-xs font-black uppercase tracking-[0.14em] text-cinza-base">Descricao</span>
+                <span className="text-xs font-black uppercase tracking-[0.14em] text-cinza-base">Descrição</span>
                 <textarea
                   value={formulario.descricao}
                   onChange={(event) => atualizarCampo('descricao', event.target.value)}
@@ -251,8 +251,8 @@ export default function GestaoBlog() {
                     onChange={(event) => atualizarCampo('tipo', event.target.value as TipoBlogApi)}
                     className="h-11 rounded-xl border border-[#d8dee8] bg-white px-3 outline-none"
                   >
-                    <option value="noticia">Noticia</option>
-                    <option value="promocao">Promocao</option>
+                    <option value="noticia">Notícia</option>
+                    <option value="promocao">Promoção</option>
                   </select>
                 </label>
 
@@ -480,5 +480,5 @@ function mapearPostParaFormulario(post: BlogPostApi): FormularioBlog {
 }
 
 function mensagemErro(error: unknown) {
-  return error instanceof Error ? error.message : 'Nao foi possivel concluir a operacao.'
+  return error instanceof Error ? error.message : 'Não foi possível concluir a operação.'
 }
