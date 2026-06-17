@@ -61,9 +61,25 @@ type UnidadeAraucariasProps = {
   slug: string
 }
 
+// TODO: remover mock antes do commit — apenas para inspeção visual local
+const unidadeMock: ReturnType<typeof mapearUnidade> = {
+  nome: "Asa Norte",
+  subtitulo: "Av. W3 Norte",
+  imagem: null,
+  abertura: "18:00",
+  fechamento: "23:00",
+  endereco: "Av. W3 Norte, 100, Asa Norte, Brasília - DF, 70000-000",
+  referencia: "Próximo ao Conic",
+  mapsUrl: "https://www.google.com/maps/search/?api=1&query=Asa+Norte+Brasilia",
+  mapsEmbedUrl: "https://www.google.com/maps?q=-15.7801,-47.9292&output=embed",
+  ifoodUrl: IFOOD_URL,
+  cardapioUrl: "/cardapio",
+}
+
 export default function UnidadeAraucarias({ slug }: UnidadeAraucariasProps) {
+  // TODO: remover mock antes do commit — forçando estado inicial para inspeção visual
   const [unidade, setUnidade] = useState<ReturnType<typeof mapearUnidade> | null>(
-    null,
+    unidadeMock,
   )
   const [erro, setErro] = useState(false)
 
@@ -75,13 +91,15 @@ export default function UnidadeAraucarias({ slug }: UnidadeAraucariasProps) {
         )
 
         if (!unidadeApi) {
-          setErro(true)
+          // TODO: remover mock — mantém mock se API falhar
           return
         }
 
         setUnidade(mapearUnidade(unidadeApi))
       })
-      .catch(() => setErro(true))
+      .catch(() => {
+        // TODO: remover mock — mantém mock se API falhar
+      })
   }, [slug])
 
   if (!unidade) {
@@ -111,9 +129,9 @@ export default function UnidadeAraucarias({ slug }: UnidadeAraucariasProps) {
               Unidade
             </p>
 
-            <h1 className="mt-2 font-barlow-condensed text-[clamp(3rem,13vw,4.75rem)] font-black uppercase leading-[0.92] text-branco">
-              {unidade.nome}
-              <br />
+            <h1 className="mt-2 flex flex-wrap items-center gap-x-2 font-barlow-condensed text-[clamp(1.6rem,5vw,2.5rem)] font-black uppercase leading-tight text-branco">
+              <span>{unidade.nome}</span>
+              <span className="text-branco/50">—</span>
               <span className="text-amarelo">{unidade.subtitulo}</span>
             </h1>
 

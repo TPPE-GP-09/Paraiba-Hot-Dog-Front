@@ -518,7 +518,7 @@ function CardProdutoAdm({
   const imagem = produto.imagemLocal ?? produto.imagem_url ?? "";
 
   return (
-    <article className="group relative flex w-full flex-col overflow-hidden rounded-[12px] bg-[#222] text-left shadow-[0_12px_24px_rgba(0,0,0,0.28)] outline-none transition-transform duration-300 hover:-translate-y-0.5 min-[640px]:h-44 min-[640px]:flex-row">
+    <article className="group relative flex w-full flex-col overflow-hidden rounded-[12px] bg-zinc-800 text-left shadow-[0_12px_24px_rgba(0,0,0,0.28)] outline-none transition-transform duration-300 hover:-translate-y-0.5 min-[640px]:h-44 min-[640px]:flex-row">
       <div className="order-3 flex gap-2 border-t border-branco/10 p-3 min-[640px]:absolute min-[640px]:right-2 min-[640px]:top-2 min-[640px]:z-10 min-[640px]:order-none min-[640px]:border-0 min-[640px]:p-0">
         <button
           type="button"

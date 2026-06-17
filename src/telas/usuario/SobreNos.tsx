@@ -227,42 +227,42 @@ export default function SobreNos() {
             </p>
           </div>
 
-          <div className="mt-8 flex justify-start overflow-x-auto min-[900px]:justify-center">
-            <ul className="inline-flex w-max min-w-max snap-x snap-mandatory items-stretch gap-0 overflow-x-auto rounded-[14px] border border-branco/10 bg-[#171717] px-1 shadow-[0_10px_24px_rgba(0,0,0,0.22)] [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch] select-none">
-              <li className="min-w-[7.25rem] snap-start flex-none min-[640px]:min-w-40">
+          <div className="mt-8 flex justify-center">
+            <ul className="flex w-full max-w-sm items-center gap-1.5 rounded-2xl border border-branco/10 bg-[#171717] px-2 py-2 shadow-[0_10px_24px_rgba(0,0,0,0.22)] select-none min-[640px]:max-w-md">
+              <li className="flex-1 text-center">
                 <button
                   type="button"
                   onClick={() => atualizarFiltro('todos')}
-                  className={`relative flex w-full items-center justify-center whitespace-nowrap border-b-2 px-4 py-4 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-6 min-[640px]:text-xl ${
+                  className={`w-full whitespace-nowrap rounded-xl px-4 py-2 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-5 min-[640px]:py-2.5 min-[640px]:text-base ${
                     filtro === 'todos'
-                      ? 'border-amarelo text-amarelo'
-                      : 'border-transparent text-branco/75 hover:border-branco/50 hover:text-branco'
+                      ? 'bg-amarelo text-preto-v1'
+                      : 'bg-transparent text-branco/75 hover:bg-branco/10 hover:text-branco'
                   }`}
                 >
                   Todos
                 </button>
               </li>
-              <li className="min-w-[7.25rem] snap-start flex-none min-[640px]:min-w-40">
+              <li className="flex-1 text-center">
                 <button
                   type="button"
                   onClick={() => atualizarFiltro('noticia')}
-                  className={`relative flex w-full items-center justify-center whitespace-nowrap border-b-2 px-4 py-4 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-6 min-[640px]:text-xl ${
+                  className={`w-full whitespace-nowrap rounded-xl px-4 py-2 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-5 min-[640px]:py-2.5 min-[640px]:text-base ${
                     filtro === 'noticia'
-                      ? 'border-amarelo text-amarelo'
-                      : 'border-transparent text-branco/75 hover:border-branco/50 hover:text-branco'
+                      ? 'bg-amarelo text-preto-v1'
+                      : 'bg-transparent text-branco/75 hover:bg-branco/10 hover:text-branco'
                   }`}
                 >
                   Notícias
                 </button>
               </li>
-              <li className="min-w-[7.25rem] snap-start flex-none min-[640px]:min-w-40">
+              <li className="flex-1 text-center">
                 <button
                   type="button"
                   onClick={() => atualizarFiltro('promocao')}
-                  className={`relative flex w-full items-center justify-center whitespace-nowrap border-b-2 px-4 py-4 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-6 min-[640px]:text-xl ${
+                  className={`w-full whitespace-nowrap rounded-xl px-4 py-2 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-5 min-[640px]:py-2.5 min-[640px]:text-base ${
                     filtro === 'promocao'
-                      ? 'border-amarelo text-amarelo'
-                      : 'border-transparent text-branco/75 hover:border-branco/50 hover:text-branco'
+                      ? 'bg-amarelo text-preto-v1'
+                      : 'bg-transparent text-branco/75 hover:bg-branco/10 hover:text-branco'
                   }`}
                 >
                   Promoções

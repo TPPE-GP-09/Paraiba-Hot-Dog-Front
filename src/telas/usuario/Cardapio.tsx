@@ -3,8 +3,71 @@ import { X } from "lucide-react";
 import BarraDeNavegacao from "../../componentes/usuario/BarraDeNavegacaoUsuario";
 import Rodape from "../../componentes/usuario/Rodape";
 import type { ProdutoCardapio, SecaoCardapio } from "../../model/cardapio";
-import { listarSecoesCardapio } from "../../repository/cardapioRepository";
+import { listarSecoesCardapio, produtosFallback, categoriasFallback, subcategoriasFallback } from "../../repository/cardapioRepository";
 import { listarUnidades, type Unidade } from "../../servicos/api";
+
+// TODO: remover mock antes do commit — apenas para inspeção visual local
+const unidadesMock: Unidade[] = [
+  {
+    id: 1,
+    nome: "Asa Norte",
+    imagem: null,
+    abertura: "18:00:00",
+    fechamento: "23:00:00",
+    descricao: null,
+    mapa_url: null,
+    endereco: {
+      id: 1,
+      cep: "70000-000",
+      logradouro: "Av. W3 Norte",
+      numero: "100",
+      complemento: null,
+      bairro: "Asa Norte",
+      cidade: "Brasília",
+      estado: "DF",
+    },
+  },
+  {
+    id: 2,
+    nome: "Taguatinga",
+    imagem: null,
+    abertura: "18:00:00",
+    fechamento: "23:00:00",
+    descricao: null,
+    mapa_url: null,
+    endereco: {
+      id: 2,
+      cep: "72000-000",
+      logradouro: "QNL 10",
+      numero: "5",
+      complemento: null,
+      bairro: "Taguatinga",
+      cidade: "Brasília",
+      estado: "DF",
+    },
+  },
+];
+
+function montarSecoesFallback(): SecaoCardapio[] {
+  const ordem = [1, 2, 3, 4];
+  return categoriasFallback
+    .slice()
+    .sort((a, b) => ordem.indexOf(a.id) - ordem.indexOf(b.id))
+    .map((categoria) => {
+      const idsSubcategorias = subcategoriasFallback
+        .filter((sub) => sub.categoria_id === categoria.id)
+        .map((sub) => sub.id);
+      return {
+        id: categoria.nome.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""),
+        categoria_id: categoria.id,
+        titulo: categoria.nome,
+        produtos: produtosFallback.filter(
+          (p) => p.ativo && idsSubcategorias.includes(p.subcategoria_id),
+        ),
+      };
+    })
+    .filter((secao) => secao.produtos.length > 0);
+}
 
 const formatadorPreco = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -34,7 +97,7 @@ function CardProduto({
     <button
       type="button"
       onClick={() => onSelect(produto)}
-      className="group flex w-full flex-col overflow-hidden rounded-[12px] bg-[#222] text-left shadow-[0_12px_24px_rgba(0,0,0,0.28)] outline-none transition-transform duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-amarelo min-[640px]:h-44 min-[640px]:flex-row"
+      className="group flex w-full flex-col overflow-hidden rounded-[12px] bg-zinc-800 text-left shadow-[0_12px_24px_rgba(0,0,0,0.28)] outline-none transition-transform duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-amarelo min-[640px]:h-44 min-[640px]:flex-row"
       aria-label={`Ver detalhes de ${produto.nome}`}
     >
       <div className="order-2 grid min-h-[12rem] flex-1 grid-rows-[minmax(0,1fr)_3.25rem] gap-2 px-3 py-3 text-branco min-[640px]:order-1 min-[640px]:min-h-0 min-[640px]:py-4">
@@ -211,18 +274,15 @@ function NavegacaoCategorias({
     >
       <div className="pagina-container py-0">
         <div className="flex justify-start overflow-x-auto min-[900px]:justify-center">
-          <ul className="inline-flex w-max min-w-max snap-x snap-mandatory items-stretch gap-0 overflow-x-auto rounded-[14px] border border-branco/10 bg-[#171717] px-1 shadow-[0_10px_24px_rgba(0,0,0,0.22)] [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch] select-none">
+          <ul className="inline-flex w-max min-w-max snap-x snap-mandatory items-center gap-1.5 overflow-x-auto rounded-2xl border border-branco/10 bg-[#171717] px-2 py-2 shadow-[0_10px_24px_rgba(0,0,0,0.22)] [scroll-behavior:smooth] [-webkit-overflow-scrolling:touch] select-none">
             {secoes.map((secao) => (
-              <li
-                key={secao.id}
-                className="min-w-[7.25rem] snap-start flex-none min-[640px]:min-w-40"
-              >
+              <li key={secao.id} className="snap-start flex-none">
                 <a
                   href={`#${secao.id}`}
-                  className={`relative flex items-center justify-center whitespace-nowrap border-b-2 px-4 py-4 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-6 min-[640px]:text-xl ${
+                  className={`flex items-center justify-center whitespace-nowrap rounded-xl px-4 py-2 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-5 min-[640px]:py-2.5 min-[640px]:text-base ${
                     secaoAtivaId === secao.id
-                      ? "border-amarelo text-amarelo"
-                      : "border-transparent text-branco/75 hover:border-branco/50 hover:text-branco"
+                      ? "bg-amarelo text-preto-v1"
+                      : "bg-transparent text-branco/75 hover:bg-branco/10 hover:text-branco"
                   }`}
                 >
                   {secao.titulo}
@@ -276,13 +336,14 @@ function SecaoProdutos({
 }
 
 export default function Cardapio() {
-  const [secoes, setSecoes] = useState<SecaoCardapio[]>([]);
-  const [unidades, setUnidades] = useState<Unidade[]>([]);
+  // TODO: remover mock antes do commit — estados iniciais forçados para inspeção visual
+  const [secoes, setSecoes] = useState<SecaoCardapio[]>(montarSecoesFallback());
+  const [unidades, setUnidades] = useState<Unidade[]>(unidadesMock);
   const [unidadeSelecionadaId, setUnidadeSelecionadaId] = useState<number | "">(
     "",
   );
-  const [carregando, setCarregando] = useState(true);
-  const [carregandoUnidades, setCarregandoUnidades] = useState(true);
+  const [carregando, setCarregando] = useState(false);
+  const [carregandoUnidades, setCarregandoUnidades] = useState(false);
   const [erroCarregamento, setErroCarregamento] = useState(false);
   const [erroUnidades, setErroUnidades] = useState(false);
   const [produtoSelecionado, setProdutoSelecionado] =
@@ -301,7 +362,11 @@ export default function Cardapio() {
         setErroCarregamento(false);
       })
       .catch(() => {
-        if (ativo) setErroCarregamento(true);
+        // TODO: remover mock antes do commit — fallback local para inspeção visual
+        if (ativo) {
+          setSecoes(montarSecoesFallback());
+          setErroCarregamento(false);
+        }
       })
       .finally(() => {
         if (ativo) setCarregando(false);
@@ -322,7 +387,11 @@ export default function Cardapio() {
         setErroUnidades(false);
       })
       .catch(() => {
-        if (ativo) setErroUnidades(true);
+        // TODO: remover mock antes do commit — fallback local para inspeção visual
+        if (ativo) {
+          setUnidades(unidadesMock);
+          setErroUnidades(false);
+        }
       })
       .finally(() => {
         if (ativo) setCarregandoUnidades(false);
