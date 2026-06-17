@@ -1080,6 +1080,7 @@ function mapearCardapioApi(
 function mapearProdutoApi(produto: ProdutoCardapioApi): Produto {
   const normais = produto.variacoes.filter((variacao) => variacao.ativo && variacao.tipo === 'normal')
   const combos = produto.variacoes.filter((variacao) => variacao.ativo && variacao.tipo === 'combo')
+  const permiteComboSemVariacao = ehSmashdog(produto.nome)
   const variacoesBase = normais.length ? normais : produto.variacoes.filter((variacao) => variacao.ativo)
   const variacoes = variacoesBase.map((variacao) => ({
     id: String(variacao.id),
@@ -1101,8 +1102,18 @@ function mapearProdutoApi(produto: ProdutoCardapioApi): Produto {
     preco: Math.min(...variacoes.map((variacao) => variacao.preco)),
     imagem: imagemApi ?? imagemProdutoLocal(produto.nome),
     variacoes,
-    permiteCombo: combos.length > 0,
+    permiteCombo: combos.length > 0 || permiteComboSemVariacao,
   }
+}
+
+function ehSmashdog(nome: string) {
+  const nomeNormalizado = normalizarTexto(nome)
+  return (
+    nomeNormalizado.includes('facheiro')
+    || nomeNormalizado.includes('mandacaru')
+    || nomeNormalizado.includes('xique-xique')
+    || nomeNormalizado.includes('xiquexique')
+  )
 }
 
 function encontrarCombo(variacao: VariacaoProdutoApi, combos: VariacaoProdutoApi[]) {

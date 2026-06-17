@@ -65,6 +65,22 @@ Gera a build de produção.
 
 ---
 
+## Deploy no Netlify
+
+O arquivo `netlify.toml` configura o build com `npm run build`, publica a pasta `dist` e redireciona rotas do React para `index.html`.
+
+No Netlify, configure a variável de ambiente:
+
+```bash
+VITE_API_BASE_URL=https://sua-api.onrender.com
+```
+
+Se usar Keycloak em produção, configure também `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM` e `VITE_KEYCLOAK_CLIENT_ID`.
+
+Depois do deploy, copie a URL final do Netlify para `CORS_ORIGINS` e `FRONTEND_BASE_URL` no Render.
+
+---
+
 ## Preview da build
 
 ```bash

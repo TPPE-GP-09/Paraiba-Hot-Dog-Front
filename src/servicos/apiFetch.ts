@@ -1,4 +1,8 @@
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000'
+const apiBaseUrl = (
+  import.meta.env.VITE_API_BASE_URL ??
+  import.meta.env.VITE_API_URL ??
+  'http://127.0.0.1:8000'
+).replace(/\/$/, '')
 const tokenKeys = ['token', 'access_token', 'auth_token', 'kc_token'] as const
 
 type QueryParams = Record<string, string | number | boolean | null | undefined>
