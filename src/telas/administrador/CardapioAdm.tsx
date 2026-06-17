@@ -14,7 +14,9 @@ import {
   useState,
 } from "react";
 
-import BarraDeNavegacao from "../../componentes/usuario/BarraDeNavegacaoUsuario";
+import BarraDeNavegacaoAdmin, {
+  CLASSE_OFFSET_BARRA_ADMIN,
+} from "../../componentes/administrador/BarraDeNavegacaoAdmin";
 import Rodape from "../../componentes/usuario/Rodape";
 import {
   listarCategoriasCardapio,
@@ -2092,9 +2094,11 @@ export default function CardapioAdm() {
 
   return (
     <>
-      <BarraDeNavegacao />
+      <BarraDeNavegacaoAdmin />
 
-      <main className="min-h-screen overflow-x-clip bg-preto-v1 pt-[8.75rem] text-branco">
+      <main
+        className={`${CLASSE_OFFSET_BARRA_ADMIN} min-h-screen overflow-x-clip bg-preto-v1 text-branco`}
+      >
         <section className="pagina-container pt-12 pb-16 min-[768px]:pt-16">
           <div className="max-w-4xl">
             <p className="font-barlow text-sm font-semibold uppercase text-amarelo">
