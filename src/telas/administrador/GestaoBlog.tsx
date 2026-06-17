@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react'
-import { CalendarDays, ImagePlus, LoaderCircle, Pencil, Plus, Save, Trash2, Type } from 'lucide-react'
-import CabecalhoAdmin from '../../componentes/administrador/BarraDeNavegacaoAdmin'
+import { CalendarDays, CheckCircle2, ImagePlus, LoaderCircle, Pencil, Plus, Save, Trash2, Type } from 'lucide-react'
+import BarraDeNavegacaoAdmin, {
+  CLASSE_OFFSET_BARRA_ADMIN,
+} from '../../componentes/administrador/BarraDeNavegacaoAdmin'
 import {
   criarPostBlogApi,
   excluirPostBlogApi,
@@ -36,7 +38,7 @@ export default function GestaoBlog() {
   const [excluindoId, setExcluindoId] = useState<number | null>(null)
   const [postParaExcluir, setPostParaExcluir] = useState<BlogPostApi | null>(null)
   const [erro, setErro] = useState('')
-  const [mensagem, setMensagem] = useState('')
+  const [notificacao, setNotificacao] = useState<string | null>(null)
 
   useEffect(() => {
     let ativo = true
@@ -133,14 +135,14 @@ export default function GestaoBlog() {
         const criado = await criarPostBlogApi(payload)
         setPosts((atuais) => [criado, ...atuais])
         setFormulario(mapearPostParaFormulario(criado))
-        setMensagem('Post criado com sucesso.')
+        setNotificacao('Post criado com sucesso.')
       } else {
         const atualizado = await atualizarPostBlogApi(formulario.id, payload)
         setPosts((atuais) =>
           atuais.map((post) => (post.id === atualizado.id ? atualizado : post)),
         )
         setFormulario(mapearPostParaFormulario(atualizado))
-        setMensagem('Post atualizado com sucesso.')
+        setNotificacao('Post atualizado com sucesso.')
       }
     } catch (error) {
       setErro(mensagemErro(error))
@@ -163,7 +165,7 @@ export default function GestaoBlog() {
       await excluirPostBlogApi(post.id)
       setPosts((atuais) => atuais.filter((item) => item.id !== post.id))
       if (formulario.id === post.id) setFormulario(formularioVazio)
-      setMensagem('Post removido com sucesso.')
+      setNotificacao('Post removido com sucesso.')
     } catch (error) {
       setErro(mensagemErro(error))
     } finally {
@@ -174,12 +176,11 @@ export default function GestaoBlog() {
 
   function limparAvisos() {
     setErro('')
-    setMensagem('')
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f6fb]">
-      <CabecalhoAdmin />
+    <div className={`min-h-screen bg-[#f4f6fb] ${CLASSE_OFFSET_BARRA_ADMIN}`}>
+      <BarraDeNavegacaoAdmin />
 
       <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
@@ -191,14 +192,20 @@ export default function GestaoBlog() {
               Noticias e promocoes
             </h1>
           </div>
-          <button
-            type="button"
-            onClick={iniciarCadastro}
-            className="inline-flex items-center gap-2 rounded-xl bg-amarelo px-4 py-3 font-barlow-condensed text-sm font-black uppercase text-preto-v1 shadow-sm transition hover:brightness-95"
-          >
-            <Plus size={18} />
-            Novo post
-          </button>
+
+          <div className="flex shrink-0 items-center gap-4">
+            {notificacao && (
+              <Notificacao mensagem={notificacao} onFechar={() => setNotificacao(null)} />
+            )}
+            <button
+              type="button"
+              onClick={iniciarCadastro}
+              className="inline-flex items-center gap-2 rounded-xl bg-amarelo px-4 py-3 font-barlow-condensed text-sm font-black uppercase text-preto-v1 shadow-sm transition hover:brightness-95"
+            >
+              <Plus size={18} />
+              Novo post
+            </button>
+          </div>
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -297,7 +304,6 @@ export default function GestaoBlog() {
               )}
 
               {erro && <p className="text-sm font-semibold text-red-600">{erro}</p>}
-              {mensagem && <p className="text-sm font-semibold text-emerald-700">{mensagem}</p>}
 
               <div className="flex items-center gap-3">
                 <button
@@ -391,51 +397,71 @@ export default function GestaoBlog() {
 
       {postParaExcluir && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="confirmar-exclusao-titulo"
           onClick={() => setPostParaExcluir(null)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+            className="w-full max-w-sm rounded-lg bg-branco px-8 py-10 text-center shadow-lg"
             onClick={(event) => event.stopPropagation()}
           >
-            <h2
+            <p
               id="confirmar-exclusao-titulo"
-              className="font-barlow-condensed text-2xl font-black uppercase text-preto-v1"
+              className="font-barlow text-lg font-bold text-preto-v1"
             >
-              Confirmar exclusao
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-cinza-base">
-              Tem certeza que deseja excluir o post{' '}
-              <strong className="text-preto-v1">"{postParaExcluir.titulo}"</strong>?
+              Tem certeza que deseja excluir este post?
             </p>
-            <p className="mt-2 text-xs text-red-600">
-              Essa acao nao pode ser desfeita.
+            <p className="mt-2 font-barlow text-sm text-preto-v1">
+              O post &quot;{postParaExcluir.titulo}&quot; será removido permanentemente.
             </p>
 
-            <div className="mt-6 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setPostParaExcluir(null)}
-                className="rounded-xl border border-[#d8dee8] px-4 py-3 text-sm font-black uppercase text-cinza-base"
-              >
-                Cancelar
-              </button>
+            <div className="mt-8 flex flex-col gap-2">
               <button
                 type="button"
                 onClick={confirmarExclusao}
                 disabled={excluindoId === postParaExcluir.id}
-                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-black uppercase text-white disabled:opacity-60"
+                className="w-full rounded-md bg-red-600 py-2 font-barlow text-base font-semibold text-branco transition-colors hover:bg-red-400 disabled:opacity-60"
               >
-                <Trash2 size={16} />
-                {excluindoId === postParaExcluir.id ? 'Excluindo...' : 'Excluir'}
+                {excluindoId === postParaExcluir.id ? 'Excluindo...' : 'Sim, excluir post'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPostParaExcluir(null)}
+                disabled={excluindoId === postParaExcluir.id}
+                className="w-full rounded-md border border-gray-400 bg-gray-100 py-2 font-barlow text-base font-semibold text-preto-v1 transition-colors hover:bg-gray-200 disabled:opacity-60"
+              >
+                Não, manter post
               </button>
             </div>
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function Notificacao({
+  mensagem,
+  onFechar,
+}: {
+  mensagem: string
+  onFechar: () => void
+}) {
+  useEffect(() => {
+    const timer = window.setTimeout(onFechar, 2500)
+    return () => window.clearTimeout(timer)
+  }, [mensagem, onFechar])
+
+  return (
+    <div
+      className="flex items-center gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50 px-6 py-4 font-barlow text-sm font-medium text-emerald-800 shadow-[0_4px_16px_rgba(16,185,129,0.1)] sm:text-base"
+      role="status"
+      aria-live="polite"
+    >
+      <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 sm:h-6 sm:w-6" aria-hidden />
+      <span className="whitespace-nowrap">{mensagem}</span>
     </div>
   )
 }

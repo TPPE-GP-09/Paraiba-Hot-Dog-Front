@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Pencil, Plus, Search, Trash2, Users, X } from 'lucide-react'
-import CabecalhoAdmin from '../../componentes/administrador/BarraDeNavegacaoAdmin'
+import BarraDeNavegacaoAdmin, {
+  CLASSE_OFFSET_BARRA_ADMIN,
+} from '../../componentes/administrador/BarraDeNavegacaoAdmin'
 import { listarUnidades, type Unidade } from '../../servicos/api'
 import {
   atualizarUsuarioApi,
@@ -208,8 +210,8 @@ export default function GestaoUsuarios() {
   }
 
   return (
-    <div className="min-h-screen bg-[#edf2f8] text-preto-v1">
-      <CabecalhoAdmin />
+    <div className={`min-h-screen bg-[#edf2f8] text-preto-v1 ${CLASSE_OFFSET_BARRA_ADMIN}`}>
+      <BarraDeNavegacaoAdmin />
 
       <main className="mx-auto w-full max-w-[82rem] px-4 py-7 sm:px-6 lg:px-8">
         {erro && (

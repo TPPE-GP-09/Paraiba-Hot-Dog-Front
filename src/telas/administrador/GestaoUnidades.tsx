@@ -10,6 +10,7 @@ import {
 import {
   Building2,
   Camera,
+  CheckCircle2,
   ChevronRight,
   Clock3,
   ImagePlus,
@@ -22,7 +23,9 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
-import CabecalhoAdmin from '../../componentes/administrador/BarraDeNavegacaoAdmin'
+import BarraDeNavegacaoAdmin, {
+  CLASSE_OFFSET_BARRA_ADMIN,
+} from '../../componentes/administrador/BarraDeNavegacaoAdmin'
 import {
   resolverUrlImagem,
   resolverUrlMapaEmbed,
@@ -78,7 +81,7 @@ export default function GestaoUnidades() {
   const [salvando, setSalvando] = useState(false)
   const [excluindo, setExcluindo] = useState(false)
   const [erro, setErro] = useState('')
-  const [mensagem, setMensagem] = useState('')
+  const [notificacao, setNotificacao] = useState<string | null>(null)
   const [unidadeParaExcluir, setUnidadeParaExcluir] = useState<Unidade | null>(null)
   const inputImagemRef = useRef<HTMLInputElement>(null)
 
@@ -154,6 +157,7 @@ export default function GestaoUnidades() {
 
   function escolherImagem(evento: ChangeEvent<HTMLInputElement>) {
     const arquivo = evento.target.files?.[0]
+    evento.target.value = ''
     if (!arquivo) return
     setFormulario((atual) => ({ ...atual, imagemArquivo: arquivo }))
     limparAvisos()
@@ -188,7 +192,7 @@ export default function GestaoUnidades() {
         })
         setUnidades((atuais) => [...atuais, criada])
         setFormulario(mapearUnidade(criada))
-        setMensagem('Unidade cadastrada com sucesso.')
+        setNotificacao('Unidade cadastrada com sucesso.')
       } else if (formulario.id !== null) {
         const atualizada = await atualizarUnidadeApi(formulario.id, {
           nome: formulario.nome.trim(),
@@ -211,7 +215,7 @@ export default function GestaoUnidades() {
           ),
         )
         setFormulario(mapearUnidade(atualizada))
-        setMensagem('Unidade atualizada com sucesso.')
+        setNotificacao('Unidade atualizada com sucesso.')
       }
     } catch (error) {
       setErro(mensagemErro(error))
@@ -227,11 +231,11 @@ export default function GestaoUnidades() {
 
     try {
       await excluirUnidadeApi(unidadeParaExcluir.id)
-      const restantes = unidades.filter((unidade) => unidade.id !== unidadeParaExcluir.id)
+      const restantes = await listarUnidadesApi()
       setUnidades(restantes)
       setFormulario(restantes[0] ? mapearUnidade(restantes[0]) : { ...unidadeVazia })
       setUnidadeParaExcluir(null)
-      setMensagem('Unidade excluída com sucesso.')
+      setNotificacao('Unidade excluída com sucesso.')
     } catch (error) {
       setErro(mensagemErro(error))
     } finally {
@@ -241,28 +245,32 @@ export default function GestaoUnidades() {
 
   function limparAvisos() {
     setErro('')
-    setMensagem('')
   }
 
   return (
-    <div className="min-h-screen bg-[#edf2f8] text-preto-v1">
-      <CabecalhoAdmin />
+    <div className={`min-h-screen bg-[#edf2f8] text-preto-v1 ${CLASSE_OFFSET_BARRA_ADMIN}`}>
+      <BarraDeNavegacaoAdmin />
 
       <main className="mx-auto grid w-full max-w-[90rem] gap-5 px-4 py-6 sm:px-6 lg:grid-cols-[19rem_minmax(0,1fr)] lg:px-8 lg:py-8">
         <aside className="h-fit overflow-hidden rounded-2xl border border-[#d8dee7] bg-white shadow-sm lg:sticky lg:top-6">
           <div className="border-b border-[#e2e6ec] p-5">
-            <div className="flex items-center gap-3">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-amarelo/20">
-                <MapPin className="h-6 w-6" aria-hidden />
-              </span>
-              <div>
-                <h1 className="font-barlow-condensed text-2xl font-bold uppercase">
-                  Gestão de unidades
-                </h1>
-                <p className="font-barlow text-sm text-cinza-base/70">
-                  Cadastre e edite no mesmo lugar
-                </p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-amarelo/20">
+                  <MapPin className="h-6 w-6" aria-hidden />
+                </span>
+                <div>
+                  <h1 className="font-barlow-condensed text-2xl font-bold uppercase">
+                    Gestão de unidades
+                  </h1>
+                  <p className="font-barlow text-sm text-cinza-base/70">
+                    Cadastre e edite no mesmo lugar
+                  </p>
+                </div>
               </div>
+              {notificacao && (
+                <Notificacao mensagem={notificacao} onFechar={() => setNotificacao(null)} />
+              )}
             </div>
             <button
               type="button"
@@ -334,7 +342,7 @@ export default function GestaoUnidades() {
                 </h2>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {!criando && (
                 <button
                   type="button"
@@ -342,6 +350,15 @@ export default function GestaoUnidades() {
                   className="flex items-center justify-center gap-2 rounded-xl border border-red-200 px-4 py-2.5 font-barlow-condensed font-semibold uppercase text-red-600 transition hover:bg-red-50"
                 >
                   <Trash2 className="h-4 w-4" aria-hidden /> Excluir
+                </button>
+              )}
+              {criando && unidades[0] && (
+                <button
+                  type="button"
+                  onClick={() => selecionarUnidade(unidades[0])}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-[#cfd5de] px-4 py-2.5 font-barlow-condensed font-semibold uppercase transition hover:bg-[#f5f7fa]"
+                >
+                  <X className="h-4 w-4" aria-hidden /> Cancelar
                 </button>
               )}
               <button
@@ -356,7 +373,6 @@ export default function GestaoUnidades() {
           </section>
 
           {erro && <Aviso tipo="erro">{erro}</Aviso>}
-          {mensagem && <Aviso tipo="sucesso">{mensagem}</Aviso>}
 
           <SecaoFormulario icone={<Building2 aria-hidden />} titulo="Informações principais" descricao="Dados usados para identificar e exibir a unidade.">
             <div className="grid gap-4 md:grid-cols-2">
@@ -400,62 +416,110 @@ export default function GestaoUnidades() {
             </SecaoFormulario>
 
             <SecaoFormulario icone={<Camera aria-hidden />} titulo="Foto da unidade" descricao={criando ? 'A imagem é obrigatória para cadastrar.' : 'Você pode manter ou substituir a imagem atual.'}>
-              <input ref={inputImagemRef} type="file" accept="image/*" onChange={escolherImagem} className="hidden" />
+              <input
+                ref={inputImagemRef}
+                id="unidade-foto-input"
+                type="file"
+                accept="image/*"
+                onChange={escolherImagem}
+                className="sr-only"
+              />
               {imagemPreview ? (
                 <div className="relative h-48 overflow-hidden rounded-xl bg-[#edf2f8]">
                   <img src={imagemPreview} alt="Prévia da unidade" className="h-full w-full object-cover" />
-                  <button type="button" onClick={() => inputImagemRef.current?.click()} className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-lg bg-white shadow-md transition hover:bg-amarelo" aria-label="Trocar imagem">
-                    <Pencil className="h-4 w-4" aria-hidden />
-                  </button>
+                  <label
+                    htmlFor="unidade-foto-input"
+                    className="absolute right-3 top-3 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-white shadow-md transition hover:bg-amarelo"
+                    aria-label="Trocar imagem"
+                  >
+                    <Camera className="h-4 w-4" aria-hidden />
+                  </label>
                 </div>
-              ) : criando ? (
-                <button type="button" onClick={() => inputImagemRef.current?.click()} className="flex h-48 w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#cfd5de] bg-[#f7f9fc] font-barlow text-cinza-base/70 transition hover:border-amarelo hover:bg-amarelo/5">
-                  <ImagePlus className="mb-2 h-8 w-8" aria-hidden /><strong>Adicionar foto</strong><span className="text-sm">PNG, JPG ou WEBP</span>
-                </button>
               ) : (
-                <div className="flex h-48 flex-col items-center justify-center rounded-xl bg-[#f7f9fc] font-barlow text-cinza-base/60">
-                  <Camera className="mb-2 h-8 w-8" aria-hidden /> Esta unidade não possui imagem.
-                </div>
+                <label
+                  htmlFor="unidade-foto-input"
+                  className="flex h-48 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#cfd5de] bg-[#f7f9fc] font-barlow text-cinza-base/70 transition hover:border-amarelo hover:bg-amarelo/5"
+                >
+                  <ImagePlus className="mb-2 h-8 w-8" aria-hidden />
+                  <strong>Adicionar foto</strong>
+                  <span className="text-sm">PNG, JPG ou WEBP</span>
+                </label>
               )}
               {!criando && formulario.imagemArquivo && (
                 <p className="mt-3 font-barlow text-xs text-green-700">Nova imagem selecionada. Ela será enviada ao salvar.</p>
               )}
             </SecaoFormulario>
           </div>
-
-          <section className="flex flex-col gap-3 rounded-2xl border border-[#d8dee7] bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-            <p className="font-barlow text-sm text-cinza-base/70">
-              {criando ? 'A nova unidade será salva diretamente no banco.' : 'As alterações serão aplicadas à unidade selecionada.'}
-            </p>
-            <div className="flex gap-2">
-              {criando && unidades[0] && (
-                <button type="button" onClick={() => selecionarUnidade(unidades[0])} className="flex items-center justify-center gap-2 rounded-xl border border-[#cfd5de] px-4 py-3 font-barlow-condensed font-semibold uppercase transition hover:bg-[#f5f7fa]">
-                  <X className="h-4 w-4" aria-hidden /> Cancelar
-                </button>
-              )}
-              <button type="submit" disabled={salvando || carregando} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-preto-v1 px-6 py-3 font-barlow-condensed font-bold uppercase text-white transition hover:bg-cinza-botao disabled:cursor-not-allowed disabled:opacity-60 sm:flex-none">
-                {salvando ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> : <Save className="h-4 w-4" aria-hidden />}
-                {criando ? 'Criar unidade' : 'Salvar alterações'}
-              </button>
-            </div>
-          </section>
         </form>
       </main>
 
       {unidadeParaExcluir && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4" role="dialog" aria-modal="true" aria-labelledby="titulo-excluir-unidade">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 text-center shadow-2xl">
-            <h2 id="titulo-excluir-unidade" className="font-barlow text-xl font-bold">Tem certeza que deseja excluir esta unidade?</h2>
-            <p className="mt-2 font-barlow text-sm text-cinza-base/70">{unidadeParaExcluir.nome}</p>
-            <div className="mt-6 grid gap-2">
-              <button type="button" onClick={confirmarExclusao} disabled={excluindo} className="flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-3 font-barlow font-semibold text-white transition hover:bg-red-700 disabled:opacity-60">
-                {excluindo && <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden />} Sim, excluir
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-excluir-unidade"
+          onClick={() => setUnidadeParaExcluir(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-lg bg-branco px-8 py-10 text-center shadow-lg"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <p
+              id="titulo-excluir-unidade"
+              className="font-barlow text-lg font-bold text-preto-v1"
+            >
+              Tem certeza que deseja excluir esta unidade?
+            </p>
+            <p className="mt-2 font-barlow text-sm text-preto-v1">
+              A unidade &quot;{unidadeParaExcluir.nome}&quot; será removida permanentemente.
+            </p>
+
+            <div className="mt-8 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={confirmarExclusao}
+                disabled={excluindo}
+                className="w-full rounded-md bg-red-600 py-2 font-barlow text-base font-semibold text-branco transition-colors hover:bg-red-400 disabled:opacity-60"
+              >
+                {excluindo ? 'Excluindo...' : 'Sim, excluir unidade'}
               </button>
-              <button type="button" onClick={() => setUnidadeParaExcluir(null)} disabled={excluindo} className="rounded-lg border border-[#bfc8d5] px-4 py-3 font-barlow transition hover:bg-[#f5f7fa]">Não</button>
+              <button
+                type="button"
+                onClick={() => setUnidadeParaExcluir(null)}
+                disabled={excluindo}
+                className="w-full rounded-md border border-gray-400 bg-gray-100 py-2 font-barlow text-base font-semibold text-preto-v1 transition-colors hover:bg-gray-200 disabled:opacity-60"
+              >
+                Não, manter unidade
+              </button>
             </div>
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function Notificacao({
+  mensagem,
+  onFechar,
+}: {
+  mensagem: string
+  onFechar: () => void
+}) {
+  useEffect(() => {
+    const timer = window.setTimeout(onFechar, 2500)
+    return () => window.clearTimeout(timer)
+  }, [mensagem, onFechar])
+
+  return (
+    <div
+      className="flex items-center gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50 px-6 py-4 font-barlow text-sm font-medium text-emerald-800 shadow-[0_4px_16px_rgba(16,185,129,0.1)] sm:text-base"
+      role="status"
+      aria-live="polite"
+    >
+      <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 sm:h-6 sm:w-6" aria-hidden />
+      <span className="whitespace-nowrap">{mensagem}</span>
     </div>
   )
 }
