@@ -16,7 +16,7 @@ export default function RedefinirSenha() {
     setSucesso(false)
 
     if (!token) {
-      setMensagem('Link de recuperacao invalido ou incompleto.')
+      setMensagem('Link de recuperação inválido ou incompleto.')
       return
     }
 
@@ -26,7 +26,7 @@ export default function RedefinirSenha() {
     }
 
     if (senha !== confirmacao) {
-      setMensagem('As senhas informadas nao conferem.')
+      setMensagem('As senhas informadas não conferem.')
       return
     }
 
@@ -34,12 +34,12 @@ export default function RedefinirSenha() {
       setLoading(true)
       await redefinirSenha(token, senha)
       setSucesso(true)
-      setMensagem('Senha redefinida com sucesso. Voce ja pode acessar sua conta.')
+      setMensagem('Senha redefinida com sucesso. Você já pode acessar sua conta.')
       setSenha('')
       setConfirmacao('')
     } catch (error) {
       console.error('Password reset error:', error)
-      setMensagem('Nao foi possivel redefinir a senha. O link pode estar expirado ou ja ter sido usado.')
+      setMensagem('Não foi possível redefinir a senha. O link pode estar expirado ou já ter sido usado.')
     } finally {
       setLoading(false)
     }

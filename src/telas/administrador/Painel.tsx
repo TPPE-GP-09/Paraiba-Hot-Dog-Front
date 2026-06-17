@@ -69,7 +69,7 @@ export default function Painel() {
 
             {!carregandoUnidades && erroUnidades && (
               <p className="text-center font-barlow text-red-600">
-                Nao foi possivel carregar as unidades.
+                Não foi possível carregar as unidades.
               </p>
             )}
 

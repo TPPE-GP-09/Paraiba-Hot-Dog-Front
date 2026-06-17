@@ -200,13 +200,13 @@ export default function Dashboard() {
       featured: true,
     },
     {
-      label: 'Lucro Liquido',
+      label: 'Lucro líquido',
       value: formatCurrency(dashboard.kpis.lucro_liquido),
       change: formatPercentage(dashboard.kpis.variacao_lucro_liquido),
       tone: variationTone(dashboard.kpis.variacao_lucro_liquido),
     },
     {
-      label: 'Ticket Medio',
+      label: 'Ticket médio',
       value: formatCurrency(dashboard.kpis.ticket_medio),
       change: formatPercentage(dashboard.kpis.variacao_ticket_medio),
       tone: variationTone(dashboard.kpis.variacao_ticket_medio),
@@ -224,13 +224,17 @@ export default function Dashboard() {
       <BarraDeNavegacaoAdmin />
 
       <main
-        className={`${CLASSE_OFFSET_BARRA_ADMIN} min-h-screen bg-[#edf2f8] text-[#243247]`}
+        className={`${CLASSE_OFFSET_BARRA_ADMIN} min-h-screen overflow-x-hidden bg-[#edf2f8] text-[#243247]`}
       >
         <section className="min-h-[calc(100vh-4rem)] w-full bg-[#edf2f8]" aria-label="Dashboard BI Paraiba Hot Dog">
           <div className="min-h-[calc(100vh-4rem)] px-[6vw] py-7 max-[900px]:px-3.5 max-[900px]:py-4">
-            <div className="mb-5 flex items-end justify-between gap-4 max-[900px]:grid">
-              <span className="text-xs font-black uppercase text-[#7d8ea4]">Tela do BI</span>
-              <h1 className="m-0 text-2xl font-black text-[#172033]">Resumo operacional</h1>
+            <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <span className="text-[11px] font-black uppercase tracking-[0.24em] text-[#7d8ea4] max-[900px]:text-xs sm:text-sm">
+                Tela do BI
+              </span>
+              <h1 className="m-0 text-3xl font-black tracking-tight text-[#172033] sm:text-4xl xl:text-5xl">
+                Resumo operacional
+              </h1>
             </div>
 
             {(isLoading || error) && (
@@ -245,48 +249,60 @@ export default function Dashboard() {
               </div>
             )}
 
-            <section className="mb-3.5 grid grid-cols-4 gap-3 max-[900px]:grid-cols-1" aria-label="Indicadores principais">
+            <section className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Indicadores principais">
               {kpis.map((kpi) => (
                 <article
-                  className={`min-h-[98px] rounded-md border bg-white p-3.5 ${
-                    kpi.featured ? 'border-[3px] border-[#1597ff] p-3' : 'border-[#d8e1ed]'
+                  className={`min-h-[108px] rounded-xl border bg-white p-4 shadow-sm ${
+                    kpi.featured ? 'border-[3px] border-[#1597ff]' : 'border-[#d8e1ed]'
                   }`}
                   key={kpi.label}
                 >
-                  <span className="mb-2 block text-xs font-extrabold text-[#8799af]">{kpi.label}</span>
-                  <strong className="block text-xl font-black text-[#223149]">{kpi.value}</strong>
-                  <div className="mt-3 flex items-center gap-2">
+                  <span className="mb-2 block text-xs font-extrabold uppercase tracking-[0.14em] text-[#8799af] max-[900px]:text-sm sm:text-sm">
+                    {kpi.label}
+                  </span>
+                  <strong className="block text-2xl font-black tracking-tight text-[#223149] max-[900px]:text-[2.05rem] sm:text-[1.9rem]">
+                    {kpi.value}
+                  </strong>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
                     <b
-                      className={`rounded px-1.5 py-1 text-[10px] font-black ${
+                      className={`rounded px-1.5 py-1 text-[11px] font-black max-[900px]:text-xs ${
                         kpi.tone === 'negative' ? 'bg-[#ffe0e4] text-[#d71920]' : 'bg-[#d8fff4] text-[#078669]'
                       }`}
                     >
                       {kpi.change}
                     </b>
-                    <small className="text-[10px] font-bold text-[#9cadbf]">vs. mes passado</small>
+                    <small className="text-[11px] font-bold text-[#9cadbf] max-[900px]:text-xs">
+                      vs. mês passado
+                    </small>
                   </div>
                 </article>
               ))}
 
               <article className="min-h-[98px] rounded-md border border-[#ffcc00] bg-[#ffcc00] p-3.5">
-                <span className="mb-2 block text-xs font-extrabold text-[#725d00]">Total de Pedidos</span>
+                <span className="mb-2 block text-xs font-extrabold uppercase tracking-[0.14em] text-[#725d00] max-[900px]:text-sm">
+                  Total de Pedidos
+                </span>
                 <strong className="block text-xl font-black text-[#223149]">{dashboard.kpis.total_pedidos}</strong>
                 <div className="mt-3 flex items-center gap-2">
-                  <b className="rounded bg-black px-1.5 py-1 text-[10px] font-black text-white">
+                  <b className="rounded bg-black px-1.5 py-1 text-[11px] font-black text-white max-[900px]:text-xs">
                     {formatPercentage(dashboard.kpis.variacao_total_pedidos)}
                   </b>
-                  <small className="text-[10px] font-bold text-[#725d00]">vs. mes passado</small>
+                  <small className="text-[11px] font-bold text-[#725d00] max-[900px]:text-xs">
+                    vs. mês passado
+                  </small>
                 </div>
               </article>
             </section>
 
-            <div className="grid grid-cols-[minmax(0,1fr)_258px] gap-3 max-[900px]:grid-cols-1">
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_320px]">
               <section className="grid gap-3">
-                <article className="min-h-[204px] rounded-md border border-[#d8e1ed] bg-white p-4">
-                  <h2 className="m-0 text-sm font-black text-[#314259]">Volume de vendas por hora</h2>
+                <article className="min-h-[204px] rounded-xl border border-[#d8e1ed] bg-white p-4 shadow-sm">
+                  <h2 className="m-0 text-base font-black text-[#314259] max-[900px]:text-lg sm:text-lg">
+                    Volume de vendas por hora
+                  </h2>
                   <div className="mt-5 flex h-[122px] items-end gap-3 overflow-x-auto pr-3 max-[900px]:gap-2" aria-label="Grafico de volume de vendas por hora">
                     {dashboard.vendas_por_hora.map((sale) => (
-                      <div className="flex h-full w-7 shrink-0 flex-col items-center justify-end gap-2 text-[9px] font-extrabold text-[#a1afc0]" key={sale.hora}>
+                      <div className="flex h-full w-7 shrink-0 flex-col items-center justify-end gap-2 text-[10px] font-extrabold text-[#a1afc0] max-[900px]:text-xs" key={sale.hora}>
                         <div
                           className={`min-h-[18px] w-full rounded-[5px] ${
                             sale.destaque ? 'bg-[#ffcc00]' : 'bg-[#dde4ee]'
@@ -298,23 +314,25 @@ export default function Dashboard() {
                       </div>
                     ))}
                   </div>
-                  <div className="ml-1.5 flex gap-7 text-[10px] font-bold text-[#9caabd]">
-                    <span>Pico do almoco: 13h</span>
+                  <div className="ml-1.5 flex gap-7 text-[11px] font-bold text-[#9caabd] max-[900px]:text-xs">
+                    <span>Pico do almoço: 13h</span>
                     <span>Pico da janta: 19h</span>
                   </div>
                 </article>
 
-                <article className="min-h-[304px] rounded-md border border-[#d8e1ed] bg-white p-4">
-                  <h2 className="m-0 text-sm font-black text-[#314259]">Top 10 produtos mais vendidos</h2>
+                <article className="min-h-[304px] rounded-xl border border-[#d8e1ed] bg-white p-4 shadow-sm">
+                  <h2 className="m-0 text-base font-black text-[#314259] max-[900px]:text-lg sm:text-lg">
+                    Top 10 produtos mais vendidos
+                  </h2>
                   <div className="overflow-x-auto">
-                    <table className="mt-3.5 w-full min-w-[620px] border-collapse text-[11px]">
+                    <table className="mt-3.5 w-full min-w-[760px] border-collapse text-xs max-[900px]:text-sm sm:text-sm">
                       <thead>
                         <tr>
                           <th className="border-b border-[#edf1f6] py-3 text-left font-black text-[#9badc1]">Rank</th>
                           <th className="border-b border-[#edf1f6] py-3 text-left font-black text-[#9badc1]">Produto</th>
                           <th className="border-b border-[#edf1f6] py-3 text-left font-black text-[#9badc1]">Qtd.</th>
                           <th className="border-b border-[#edf1f6] py-3 text-left font-black text-[#9badc1]">Receita</th>
-                          <th className="border-b border-[#edf1f6] py-3 text-left font-black text-[#9badc1]">Variacao</th>
+                          <th className="border-b border-[#edf1f6] py-3 text-left font-black text-[#9badc1]">Variação</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -337,8 +355,8 @@ export default function Dashboard() {
                         ))}
                         {!dashboard.top_produtos.length && (
                           <tr>
-                            <td colSpan={5} className="h-20 border-b border-[#edf1f6] text-center font-bold text-[#53657a]">
-                              Nenhum produto vendido no periodo.
+                            <td colSpan={5} className="h-20 border-b border-[#edf1f6] text-center text-sm font-bold text-[#53657a] max-[900px]:text-base">
+                              Nenhum produto vendido no período.
                             </td>
                           </tr>
                         )}
@@ -347,24 +365,13 @@ export default function Dashboard() {
                   </div>
                 </article>
 
-                <ControlesDashboard
-                  ano={yearFilter}
-                  anoAtual={currentYear}
-                  exportando={isExporting}
-                  fechamentoMes={fechamentoMesFilter}
-                  filtrando={isLoading}
-                  mes={monthFilter}
-                  onAnoChange={setYearFilter}
-                  onExportarPdf={exportDashboardPdf}
-                  onFechamentoMesChange={setFechamentoMesFilter}
-                  onFiltrar={applyFilters}
-                  onMesChange={setMonthFilter}
-                />
               </section>
 
-              <aside className="grid gap-3" aria-label="Resumo lateral">
-                <article className="min-h-[204px] rounded-md border border-[#d8e1ed] bg-white p-4">
-                  <h2 className="m-0 text-sm font-black text-[#314259]">Mix de produtos</h2>
+              <aside className="grid gap-3 self-start" aria-label="Resumo lateral">
+                <article className="min-h-[204px] rounded-xl border border-[#d8e1ed] bg-white p-4 shadow-sm">
+                  <h2 className="m-0 text-base font-black text-[#314259] max-[900px]:text-lg sm:text-lg">
+                    Mix de produtos
+                  </h2>
                   <div
                     className="relative mx-auto mt-4 mb-3 grid h-[104px] w-[104px] place-items-center content-center rounded-full after:absolute after:h-[60px] after:w-[60px] after:rounded-full after:bg-[#f8fbff]"
                     aria-label={`${formatPercentage(mixPrincipal)} do produto principal`}
@@ -374,13 +381,17 @@ export default function Dashboard() {
                       } as CSSProperties
                     }
                   >
-                    <span className="relative z-10 text-base font-black text-[#1d2b40]">{formatPercentage(mixPrincipal).replace('+', '')}</span>
-                    <small className="relative z-10 text-[8px] font-extrabold text-[#9badc1]">principal</small>
+                    <span className="relative z-10 text-lg font-black text-[#1d2b40] max-[900px]:text-xl">
+                      {formatPercentage(mixPrincipal).replace('+', '')}
+                    </span>
+                    <small className="relative z-10 text-[10px] font-extrabold text-[#9badc1] max-[900px]:text-xs">
+                      principal
+                    </small>
                   </div>
 
                   <div className="grid gap-1.5">
                     {dashboard.mix_produtos.map((item, index) => (
-                      <div className="flex items-center justify-between text-[9px] font-extrabold text-[#7d8ea4]" key={item.nome}>
+                      <div className="flex items-center justify-between text-[10px] font-extrabold text-[#7d8ea4] max-[900px]:text-xs sm:text-[11px]" key={item.nome}>
                         <span className="flex items-center gap-2">
                           <i className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: mixColors[index] ?? '#9ba9b8' }} />
                           {item.nome}
@@ -388,38 +399,66 @@ export default function Dashboard() {
                         <strong className="text-[#1e2d42]">{formatPercentage(item.percentual).replace('+', '')}</strong>
                       </div>
                     ))}
-                    {!dashboard.mix_produtos.length && <span className="text-[9px] font-extrabold text-[#9badc1]">Sem vendas registradas</span>}
+                    {!dashboard.mix_produtos.length && (
+                      <span className="text-[10px] font-extrabold text-[#9badc1] max-[900px]:text-xs">
+                        Sem vendas registradas
+                      </span>
+                    )}
                   </div>
                 </article>
 
-                <article className="min-h-[104px] rounded-md bg-[#ffcc00] p-4">
-                  <span className="block text-[10px] font-black uppercase text-[#796300]">Vendas totais</span>
+                <article className="min-h-[104px] rounded-xl bg-[#ffcc00] p-4 shadow-sm">
+                  <span className="block text-[11px] font-black uppercase tracking-[0.14em] text-[#796300] max-[900px]:text-xs">
+                    Vendas totais
+                  </span>
                   <strong className="my-2 block text-[22px] font-black text-black">{formatCurrency(dashboard.vendas_totais)}</strong>
-                  <div className="flex items-center justify-between text-[9px] font-extrabold text-[#796300]">
+                  <div className="flex items-center justify-between text-[10px] font-extrabold text-[#796300] max-[900px]:text-xs">
                     <small>{dashboard.pedidos_registrados} pedidos registrados</small>
                     <b className="rounded bg-black px-2.5 py-1.5 text-[8px] uppercase text-white">Live</b>
                   </div>
                 </article>
 
-                <article className="min-h-[188px] rounded-md bg-[#c91521] p-4 text-white">
-                  <span className="block w-36 rounded bg-white/20 px-2.5 py-1.5 text-[10px] font-black uppercase">
-                    Destaque do portfolio
+                <article className="min-h-[188px] rounded-xl bg-[#c91521] p-4 text-white shadow-sm">
+                  <span className="block w-36 rounded bg-white/20 px-2.5 py-1.5 text-[11px] font-black uppercase max-[900px]:text-xs">
+                    Destaque do portfólio
                   </span>
-                  <h2 className="mt-3.5 mb-1 text-base font-black text-white">{dashboard.destaque?.nome ?? 'Sem vendas'}</h2>
-                  <p className="mb-6 text-[10px] font-bold text-white/70">Produto com maior receita registrada.</p>
+                  <h2 className="mt-3.5 mb-1 text-lg font-black text-white max-[900px]:text-xl">
+                    {dashboard.destaque?.nome ?? 'Sem vendas'}
+                  </h2>
+                  <p className="mb-6 text-[11px] font-bold text-white/70 max-[900px]:text-xs">
+                    Produto com maior receita registrada.
+                  </p>
                   <div className="grid grid-cols-2 gap-5">
                     <div>
-                      <small className="mb-2 block text-[9px] font-extrabold text-white/70">Margem de ganho</small>
+                      <small className="mb-2 block text-[10px] font-extrabold text-white/70 max-[900px]:text-xs">
+                        Margem de ganho
+                      </small>
                       <strong className="text-[26px] font-black">{formatPercentage(dashboard.destaque?.margem_ganho ?? 0).replace('+', '')}</strong>
                     </div>
                     <div>
-                      <small className="mb-2 block text-[9px] font-extrabold text-white/70">Margem liquida</small>
+                      <small className="mb-2 block text-[10px] font-extrabold text-white/70 max-[900px]:text-xs">
+                        Margem líquida
+                      </small>
                       <strong className="text-[26px] font-black">{formatPercentage(dashboard.destaque?.margem_liquida ?? 0).replace('+', '')}</strong>
                     </div>
                   </div>
                 </article>
               </aside>
             </div>
+
+            <ControlesDashboard
+              ano={yearFilter}
+              anoAtual={currentYear}
+              exportando={isExporting}
+              fechamentoMes={fechamentoMesFilter}
+              filtrando={isLoading}
+              mes={monthFilter}
+              onAnoChange={setYearFilter}
+              onExportarPdf={exportDashboardPdf}
+              onFechamentoMesChange={setFechamentoMesFilter}
+              onFiltrar={applyFilters}
+              onMesChange={setMonthFilter}
+            />
           </div>
         </section>
       </main>

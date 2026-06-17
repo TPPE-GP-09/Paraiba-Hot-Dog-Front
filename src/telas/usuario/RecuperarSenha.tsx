@@ -17,7 +17,7 @@ export default function RecuperarSenha() {
       setMensagem(response.message)
     } catch (error) {
       console.error('Password recovery error:', error)
-      setMensagem('Nao foi possivel enviar o e-mail. Verifique se este e-mail esta cadastrado como usuario no sistema.')
+      setMensagem('Não foi possível enviar o e-mail. Verifique se este e-mail está cadastrado como usuário no sistema.')
     } finally {
       setLoading(false)
     }
@@ -41,7 +41,7 @@ export default function RecuperarSenha() {
             Recuperar senha
           </h1>
           <p className="mb-8 font-barlow text-sm leading-relaxed text-cinza-base">
-            Informe o e-mail cadastrado para receber as instrucoes de acesso.
+            Informe o e-mail cadastrado para receber as instruções de acesso.
           </p>
 
           <form onSubmit={handleRecuperarSenha} noValidate className="flex flex-col gap-5">
@@ -70,7 +70,7 @@ export default function RecuperarSenha() {
               disabled={loading}
               className="mt-1 w-full rounded-xl bg-amarelo py-3 font-barlow-condensed text-base font-bold uppercase tracking-widest text-preto-v1 shadow-md transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? 'ENVIANDO...' : 'ENVIAR INSTRUCOES'}
+              {loading ? 'ENVIANDO...' : 'ENVIAR INSTRUÇÕES'}
             </button>
           </form>
 
