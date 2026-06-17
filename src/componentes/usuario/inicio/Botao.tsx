@@ -55,7 +55,7 @@ export default function Botao({
     'min-[490px]:px-[clamp(2rem,2rem+(100vw-30.625rem)*0.009,3.5rem)]',
     'min-[490px]:py-[clamp(0.5rem,0.5rem+(100vw-30.625rem)*0.0008,0.625rem)]',
     'min-[490px]:text-[clamp(1rem,1rem+(100vw-30.625rem)*0.0011,1.125rem)]',
-    'font-barlow-condensed font-bold text-preto-v1',
+    'font-barlow-condensed font-semibold text-preto-v1',
     'shadow-[inset_0_0_0_2px_rgba(255,255,255,0.7),inset_0_-2px_6px_rgba(0,0,0,0.25)]',
     'contrast-125 saturate-150',
     'transition-opacity hover:opacity-90 active:opacity-80',

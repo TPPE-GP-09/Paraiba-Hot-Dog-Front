@@ -177,10 +177,10 @@ export default function Inicio() {
           <CarrosselNossosDogs cards={cards} />
 
           <Botao
-            className="mt-10 font-black"
-            onClick={() => {
-              window.location.href = "/cardapio";
-            }}
+            href="/cardapio"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-10 font-semibold"
           >
             VER CARDÁPIO COMPLETO
           </Botao>

@@ -161,9 +161,9 @@ export default function CartaoFidelidade() {
               <span className="text-amarelo">Pontos</span>
             </h1>
 
-            <p className="mt-6 max-w-[32rem] font-barlow text-[clamp(1rem,3.5vw,1.2rem)] leading-snug text-branco/85 min-[640px]:mt-8 min-[640px]:font-barlow-condensed min-[640px]:text-[clamp(1.25rem,4vw,1.75rem)] min-[640px]:font-semibold">
-              Acumule pontos a cada pedido e ganhe um Hot Dog gratis ao
-              completar 10 carimbos. Consulte seu saldo pelo telefone ou e-mail
+            <p className="mt-6 max-w-[32rem] font-barlow text-[clamp(1rem,3.5vw,1.2rem)] font-normal leading-snug text-branco/85 min-[640px]:mt-8 min-[640px]:font-barlow-condensed min-[640px]:text-[clamp(1.25rem,4vw,1.75rem)] min-[640px]:font-medium">
+              Acumule pontos a cada pedido e ganhe um Hot Dog gratis ao{' '}
+              <strong className="font-bold text-branco">completar 10 carimbos</strong>. Consulte seu saldo pelo telefone ou e-mail
               cadastrado.
             </p>
 
@@ -173,9 +173,9 @@ export default function CartaoFidelidade() {
             >
               <label
                 htmlFor="cadastro-fidelidade"
-                className="font-barlow text-base font-bold text-branco min-[640px]:text-xl"
+                className="font-barlow text-base font-semibold text-branco min-[640px]:text-xl"
               >
-                Acesse seu cadastro
+                Confira seu cadastro:
               </label>
 
               <input
