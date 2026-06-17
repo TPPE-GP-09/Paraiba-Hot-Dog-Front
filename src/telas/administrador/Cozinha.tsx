@@ -41,6 +41,22 @@ function textoQuantidadePedidos(
 const acaoBotaoBase =
   'flex h-11 min-w-0 items-center justify-center rounded-[6px] border-2 px-2 font-barlow text-xs font-semibold tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm'
 
+const modalOverlayClass =
+  'fixed inset-0 z-[60] flex items-start justify-center bg-black/45 px-4 pb-6 pt-24 backdrop-blur-sm lg:items-center lg:pt-6'
+const modalPanelClass =
+  'w-full max-w-md rounded-[12px] border border-[#DADEE3] bg-white px-6 py-7 text-[#121212] shadow-[0_18px_45px_rgba(0,0,0,0.28)] sm:px-8 sm:py-8'
+const modalTitleClass =
+  'font-barlow-condensed text-[1.7rem] font-bold uppercase leading-none tracking-wide text-[#121212]'
+const modalDescriptionClass = 'mt-2 font-barlow text-sm leading-6 text-[#444444]'
+const modalLabelClass =
+  'mt-6 block text-left font-barlow text-sm font-semibold text-[#121212]'
+const modalTextareaClass =
+  'mt-2 w-full resize-none rounded-[6px] border border-[#DADEE3] bg-[rgba(244,246,248,0.4)] px-3 py-2.5 font-barlow text-sm text-[#121212] outline-none transition placeholder:text-[#8b8b8b] focus:border-amarelo focus:ring-2 focus:ring-amarelo/25'
+const modalDangerButtonClass =
+  'w-full rounded-[6px] border-2 border-[#D92B2B] bg-[#D92B2B] px-5 py-3 font-barlow-condensed text-lg font-semibold uppercase tracking-wide text-white transition-colors hover:border-red-700 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50'
+const modalSecondaryButtonClass =
+  'w-full rounded-[6px] border-2 border-[#CCCCCC] bg-white px-5 py-3 font-barlow-condensed text-lg font-semibold uppercase tracking-wide text-[#666666] transition-colors hover:border-[#0A0A0A] hover:text-[#0A0A0A] disabled:cursor-not-allowed disabled:opacity-50'
+
 type PedidoCozinha = {
   id: number
   hora: string
@@ -257,7 +273,7 @@ function CancelarModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm"
+      className={modalOverlayClass}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-cancelar-titulo"
@@ -265,23 +281,25 @@ function CancelarModal({
       onClick={onFechar}
     >
       <div
-        className="w-full max-w-sm rounded-lg bg-branco px-8 py-10 text-center shadow-lg"
+        className={modalPanelClass}
         onClick={(e) => e.stopPropagation()}
       >
-        <p id="modal-cancelar-titulo" className="font-barlow text-lg font-bold text-preto-v1">
+        <p id="modal-cancelar-titulo" className={modalTitleClass}>
           Cancelar pedido #{pedido.id}?
         </p>
-        <p id="modal-cancelar-descricao" className="mt-2 font-barlow text-sm text-preto-v1">
+        <p id="modal-cancelar-descricao" className={modalDescriptionClass}>
           O pedido da {pedido.mesa} será removido da fila e não poderá reverter essa exclusão.
         </p>
 
-        <label className="mt-6 block text-left font-barlow text-sm font-semibold text-preto-v1">
-          Motivo do cancelamento
-          <span className="ml-1 text-red-600" aria-hidden>
-            *
+        <label className={modalLabelClass}>
+          <span className="inline-flex items-center gap-1">
+            Motivo do cancelamento
+            <span className="text-red-600" aria-hidden>
+              *
+            </span>
           </span>
           <textarea
-            className="mt-2 w-full resize-none rounded-md border border-gray-300 bg-white px-3 py-2 font-barlow text-sm text-preto-v1 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-1 focus:ring-gray-300"
+            className={modalTextareaClass}
             placeholder="Descreva o motivo"
             rows={4}
             value={motivo}
@@ -291,19 +309,19 @@ function CancelarModal({
           />
         </label>
 
-        <div className="mt-8 flex flex-col gap-2">
+        <div className="mt-8 flex flex-col gap-3">
           <button
             type="button"
             disabled={!motivoValido}
             onClick={() => onConfirmar(motivo.trim())}
-            className="w-full rounded-md bg-red-600 py-2 font-barlow text-base font-semibold text-branco transition-colors hover:bg-red-400 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:hover:bg-gray-300"
+            className={modalDangerButtonClass}
           >
             Sim, cancelar pedido
           </button>
           <button
             type="button"
             onClick={onFechar}
-            className="w-full rounded-md border border-gray-400 bg-gray-100 py-2 font-barlow text-base font-semibold text-preto-v1 transition-colors hover:bg-gray-200"
+            className={modalSecondaryButtonClass}
           >
             Não, manter pedido
           </button>
@@ -340,10 +358,10 @@ function PedidoCard({
 
   return (
     <article
-      className={`w-[min(100%,300px)] shrink-0 snap-start overflow-hidden rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] sm:w-[300px] ${cardSurface}`}
+      className={`mx-auto w-full max-w-[420px] overflow-hidden rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] md:max-w-[320px] md:shrink ${cardSurface}`}
     >
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
-        <span className="font-barlow-condensed text-sm font-black tracking-wider text-preto-v1">
+        <span className="font-barlow-condensed text-sm font-black uppercase tracking-wider text-preto-v1">
           Pedido #{pedido.id}
         </span>
         <time className="font-barlow-condensed text-sm font-black tracking-wider text-amarelo">
@@ -353,16 +371,16 @@ function PedidoCard({
 
       <div className="mx-4 mb-4 h-px bg-[#e8e8e8]" />
 
-      <div className="min-h-[180px] px-4 pb-4">
+      <div className="min-h-[160px] px-4 pb-4 sm:min-h-[180px]">
         <p className="mb-3 text-xs font-bold tracking-widest uppercase text-[#999]">{pedido.mesa}</p>
         <div className="space-y-4">
           {pedido.itens.map((item, index) => (
             <section key={`${item.nome}-${index}`}>
-              <h3 className="font-barlow-condensed text-[15px] font-black uppercase leading-none tracking-wider text-preto-v1">
+              <h3 className="font-barlow-condensed text-[15px] font-black uppercase leading-none tracking-wider text-preto-v1 sm:text-base">
                 {item.nome} <span aria-hidden>{emojiProduto(item.nome)}</span>
               </h3>
               {!!item.adicionais.length && (
-                <ul className="mt-1.5 space-y-0.5 text-[11px] font-semibold leading-tight tracking-wide text-[#888]">
+                <ul className="mt-1.5 space-y-0.5 text-[11px] font-semibold leading-tight tracking-wide text-[#888] sm:text-xs">
                   {item.adicionais.map((adicional) => (
                     <li key={adicional}>• {adicional}</li>
                   ))}
@@ -370,11 +388,11 @@ function PedidoCard({
               )}
               {item.observacao && item.observacao.split('\n').map((linha, i) =>
                 linha.startsWith('Obs: ') ? (
-                  <p key={i} className="mt-1.5 text-[13px] font-bold leading-tight tracking-wide text-[#d71920]">
+                  <p key={i} className="mt-1.5 text-[13px] font-bold leading-tight tracking-wide text-[#d71920] sm:text-sm">
                     observação: {linha.slice(5)}
                   </p>
                 ) : (
-                  <p key={i} className="mt-1.5 text-[11px] font-bold leading-tight tracking-wide text-[#d71920]">
+                  <p key={i} className="mt-1.5 text-[11px] font-bold leading-tight tracking-wide text-[#d71920] sm:text-xs">
                     {linha}
                   </p>
                 )
@@ -389,7 +407,7 @@ function PedidoCard({
       {entregue || cancelado ? (
         <div className="px-4 py-3">
           <div
-            className={`flex min-h-11 items-center justify-center rounded-[6px] px-3 py-2 text-center font-barlow text-sm font-semibold leading-snug tracking-wide sm:text-base ${
+            className={`flex min-h-11 items-center justify-center rounded-[6px] px-3 py-2 text-center font-barlow-condensed text-sm font-semibold uppercase leading-snug tracking-wide sm:text-base ${
               cancelado
                 ? 'bg-[#ffe8e8] text-[#d71920]'
                 : 'bg-emerald-600 text-white shadow-sm'
@@ -403,8 +421,8 @@ function PedidoCard({
           <button
             className={`${acaoBotaoBase} ${
               preparando
-                ? 'border-amarelo bg-amarelo/30 text-preto-v1'
-                : 'border-amarelo bg-amarelo/15 text-preto-v1 hover:bg-amarelo/25'
+                ? 'border-[#c99d00] bg-amarelo text-preto-v1 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.22)]'
+                : 'border-amarelo bg-amarelo/15 text-preto-v1 hover:bg-amarelo/25 active:border-amarelo active:bg-amarelo active:text-preto-v1'
             }`}
             disabled={disabled || preparando}
             onClick={() => onPreparar?.(pedido)}
@@ -555,8 +573,8 @@ export default function Cozinha() {
 
       <BarraDeNavegacaoAdmin />
 
-      <section className="min-h-[calc(100vh-4rem)] bg-branco px-6 py-8 lg:px-16 lg:py-12">
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center lg:mx-auto lg:mb-8 lg:max-w-3xl">
+      <section className="min-h-[calc(100vh-4rem)] bg-branco px-3 py-4 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 lg:mx-auto lg:mb-8 lg:max-w-4xl">
           <div className="min-w-0 flex-1">
             <SeletorAbaCozinha
               aba={aba}
@@ -566,7 +584,7 @@ export default function Cozinha() {
               }}
             />
           </div>
-          <label className="flex h-[52px] w-full shrink-0 items-center gap-3 rounded-lg border border-gray-300 bg-white px-4 shadow-sm transition-colors focus-within:border-gray-400 sm:max-w-xs">
+          <label className="flex h-12 w-full shrink-0 items-center gap-3 rounded-lg border border-gray-300 bg-white px-4 shadow-sm transition-colors focus-within:border-gray-400 sm:max-w-xs">
             <Search size={18} className="shrink-0 text-gray-400" aria-hidden />
             <input
               type="search"
@@ -591,7 +609,7 @@ export default function Cozinha() {
           </p>
         )}
 
-        <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none] md:gap-6 lg:mx-auto lg:max-w-6xl lg:flex-wrap lg:justify-center lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden">
+        <div className="flex flex-col gap-4 pb-2 md:grid md:grid-cols-[repeat(auto-fit,minmax(280px,320px))] md:justify-center md:justify-items-center md:gap-6 md:overflow-visible md:pb-0 lg:mx-auto lg:max-w-7xl">
           {pedidosFiltrados.length > 0 ? (
             pedidosFiltrados.map((pedido) => (
               <PedidoCard
