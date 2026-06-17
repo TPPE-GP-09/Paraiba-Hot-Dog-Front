@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   Banknote,
   CheckCircle2,
+  ChevronDown,
   CircleDollarSign,
   ClipboardPen,
   CreditCard,
@@ -598,6 +599,17 @@ export default function AnotarPedidos() {
         <ResumoPedido key={resumoKey} pedido={pedido} subtotal={subtotal} pagamento={pagamento} fidelidade={fidelidade} unidades={unidades} unidadeId={unidadeId} nomeComanda={nomeComanda} clientePedido={clientePedido} pedidosAbertos={pedidosAbertos} pedidoAbertoId={pedidoAbertoId} usarDescontoFidelidade={usarDescontoFidelidade} finalizando={finalizando} editandoItemId={editandoItemId} mensagemPedido={mensagemPedido} onPagamento={setPagamento} onFidelidade={setFidelidade} onQuantidade={alterarQuantidade} onEditarItemRegistrado={editarItemRegistrado} onAtualizarObservacao={atualizarObservacaoItemRegistrado} onUnidade={alterarUnidade} onNomeComanda={setNomeComanda} onCliente={setClientePedido} onUsarDesconto={setUsarDescontoFidelidade} onSalvarAberto={salvarPedidoAberto} onFinalizar={finalizarPedido} />
       </div>
 
+      <button
+        type="button"
+        onClick={() =>
+          document.getElementById('resumo-pedido')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+        className="fixed bottom-5 left-1/2 z-40 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_8px_24px_rgba(5,150,105,0.35)] transition hover:brightness-95 active:scale-95 lg:hidden"
+        aria-label="Ir para o resumo do pedido"
+      >
+        <ChevronDown size={24} strokeWidth={2.5} />
+      </button>
+
       {produtoEmConfiguracao && <ModalConfiguracao produto={produtoEmConfiguracao} onFechar={() => setProdutoEmConfiguracao(null)} onAdicionar={(item) => { adicionarAoPedido(item); setProdutoEmConfiguracao(null) }} />}
     </div>
   )
@@ -746,7 +758,7 @@ function ResumoPedido({ pedido, subtotal, pagamento, fidelidade, unidades, unida
   }
 
   return (
-    <aside className="border-t border-slate-200 bg-white lg:sticky lg:top-16 lg:flex lg:h-[calc(100vh-4rem)] lg:flex-col lg:border-l lg:border-t-0">
+    <aside id="resumo-pedido" className="scroll-mt-20 border-t border-slate-200 bg-white lg:sticky lg:top-16 lg:flex lg:h-[calc(100vh-4rem)] lg:flex-col lg:border-l lg:border-t-0 lg:scroll-mt-0">
       <div className="border-b border-slate-200 px-6 py-6">
         <h2 className="font-barlow-condensed text-xl font-black uppercase">Resumo do pedido</h2>
         <p className="mt-1 text-xs text-slate-400">Confira os itens antes de finalizar.</p>
