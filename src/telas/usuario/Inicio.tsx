@@ -5,13 +5,10 @@ import BotaoUnidade from "../../componentes/usuario/inicio/BotaoUnidade";
 import DuvidasFrequentes from "../../componentes/usuario/inicio/DuvidasFrequentes";
 import RedesSociais from "../../componentes/usuario/RedesSociais";
 import Rodape from "../../componentes/usuario/Rodape";
-import CarrosselNossosDogs, {
-  type HotDogCard,
-} from "../../componentes/usuario/inicio/CarrosselNossosDogs";
+import CarrosselNossosDogs from "../../componentes/usuario/inicio/CarrosselNossosDogs";
 import imgSmashHome from "../../imagens/logos/img-smash-home.svg";
 import {
   criarSlugUnidade,
-  listarProdutos,
   listarUnidades,
   resolverUrlImagem,
   type Unidade,
@@ -22,47 +19,54 @@ const IFOOD_URL =
 
 const hotDogsCards = [
   {
+    image: resolverUrlImagem("/uploads/produtos/smash-facheiro.jpeg")!,
+    title: "Smash Facheiro",
+    alt: "Smash Facheiro",
+  },
+  {
     image: resolverUrlImagem("/uploads/produtos/smash-mandacaru.jpeg")!,
-    title: "Smash Dogs",
-    alt: "Smash Dogs",
+    title: "Smash Mandacaru",
+    alt: "Smash Mandacaru",
+  },
+  {
+    image: resolverUrlImagem("/uploads/produtos/smash-xiquexique.jpeg")!,
+    title: "Smash Xique-Xique",
+    alt: "Smash Xique-Xique",
+  },
+  {
+    image: resolverUrlImagem("/uploads/produtos/dog-arretado.jpeg")!,
+    title: "Dog Arretado",
+    alt: "Hot Dog Arretado",
+  },
+  {
+    image: resolverUrlImagem("/uploads/produtos/dog-paraibano.jpeg")!,
+    title: "Dog Paraibano",
+    alt: "Hot Dog Paraibano",
+  },
+  {
+    image: resolverUrlImagem("/uploads/produtos/dog-tradicional.jpeg")!,
+    title: "Dog Tradicional",
+    alt: "Hot Dog Tradicional",
   },
   {
     image: resolverUrlImagem("/uploads/produtos/quatro-dogs.jpeg")!,
-    title: "Hot Dogs",
-    alt: "Hot Dogs",
+    title: "Combo da Casa",
+    alt: "Combo com quatro hot dogs",
   },
   {
     image: resolverUrlImagem("/uploads/produtos/bedida-soda.jpeg")!,
     title: "Soda Italiana",
-    alt: "Soda Italiana",
+    alt: "Soda Italiana Paraíba Refrescante",
   },
 ] as const;
 
 export default function Inicio() {
-  const [cards, setCards] = useState<readonly HotDogCard[]>(hotDogsCards);
   const [unidades, setUnidades] = useState<
     { href: string; cidade: string; endereco: string }[]
   >([]);
   const [showHomeSocials, setShowHomeSocials] = useState(true);
 
   useEffect(() => {
-    listarProdutos()
-      .then((produtos) => {
-        const produtosComImagem = produtos
-          .filter((produto) => produto.ativo && produto.imagem_url)
-          .slice(0, 3)
-          .map((produto) => ({
-            image: resolverUrlImagem(produto.imagem_url)!,
-            title: produto.nome,
-            alt: produto.nome,
-          }));
-
-        if (produtosComImagem.length === 3) {
-          setCards(produtosComImagem);
-        }
-      })
-      .catch(() => undefined);
-
     listarUnidades()
       .then((unidadesApi) => {
         setUnidades(unidadesApi.map(mapearUnidade));
@@ -115,13 +119,13 @@ export default function Inicio() {
           aria-hidden={!showHomeSocials}
           className={`pointer-events-none absolute inset-y-0 right-0 z-40 w-24 min-[768px]:w-28 transition-all duration-500 ease-out motion-reduce:transition-none ${
             showHomeSocials
-              ? "translate-x-0 opacity-100 drop-shadow-[0_0_18px_rgba(255,255,255,0.28)]"
+              ? "translate-x-0 opacity-100 drop-shadow-[0_0_12px_rgba(255,255,255,0.14)]"
               : "translate-x-4 opacity-0 drop-shadow-none"
           }`}
         >
           <RedesSociais
             variant="home"
-            className="pointer-events-auto sticky top-[calc(100svh-11rem)] ml-auto mr-4 flex-col gap-3 min-[490px]:top-[calc(100svh-11.5rem)] min-[490px]:mr-6 min-[768px]:mr-8"
+            className="pointer-events-auto sticky top-[calc(100svh-11rem)] ml-auto mr-4 flex-col gap-2.5 min-[490px]:top-[calc(100svh-11.5rem)] min-[490px]:gap-3 min-[490px]:mr-6 min-[768px]:mr-8"
           />
         </div>
 
@@ -169,12 +173,11 @@ export default function Inicio() {
             Nossos <span className="text-amarelo">Hot Dogs</span>
           </h2>
 
-          <p className="mt-6 max-w-3xl px-1 font-barlow-condensed text-[clamp(1.25rem,4.5vw,1.875rem)] leading-snug text-branco min-[490px]:max-w-4xl min-[490px]:text-3xl">
-            Cada dog é uma experiência. Ingredientes premium com o tempero que
-            só Paraíba tem!
+          <p className="mt-6 max-w-3xl px-3 font-barlow-condensed text-[clamp(0.95rem,3.6vw,1.875rem)] leading-snug text-branco min-[490px]:max-w-4xl min-[490px]:px-1 min-[490px]:text-2xl min-[490px]:leading-snug xl:whitespace-nowrap xl:text-3xl">
+            Cada dog é uma experiência. Ingredientes premium com o tempero que só Paraíba tem!
           </p>
 
-          <CarrosselNossosDogs cards={cards} />
+          <CarrosselNossosDogs cards={hotDogsCards} />
 
           <Botao
             href="/cardapio"

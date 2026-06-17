@@ -8,10 +8,20 @@ const linksAcessoRapido = [
   { label: 'Cartão fidelidade', href: '/cartao-fidelidade' },
 ] as const
 
-function LinksAcessoRapidoHorizontal({ className = '' }: { className?: string }) {
+function LinksAcessoRapidoHorizontal({
+  className = '',
+  alinharInicio = false,
+}: {
+  className?: string
+  alinharInicio?: boolean
+}) {
   return (
     <nav aria-label="Acesso rápido" className={className}>
-      <ul className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+      <ul
+        className={`mx-auto flex w-fit flex-wrap items-center gap-x-2 gap-y-1 ${
+          alinharInicio ? 'justify-start' : 'justify-center'
+        }`}
+      >
         {linksAcessoRapido.map(({ label, href }, index) => (
           <li key={href} className="flex items-center gap-2">
             {index > 0 && (
@@ -35,42 +45,64 @@ function LinksAcessoRapidoHorizontal({ className = '' }: { className?: string })
 export default function Rodape() {
   return (
     <footer className="bg-branco">
-      <div className="pagina-container py-8 min-[490px]:py-12 lg:py-14">
+      <div className="pagina-container pt-2 pb-2 min-[490px]:pt-6 min-[490px]:pb-4 lg:pt-8 lg:pb-6">
         <div className="min-[490px]:hidden">
-          <div className="flex flex-col items-center gap-4 text-center">
-            <div className="flex items-center justify-center gap-3">
-              <a href="/" aria-label="Paraíba Hot Dog — início" className="block shrink-0 leading-none">
-                <img
-                  src={logo}
-                  alt="Paraíba Hot Dog"
-                  className="block h-16 w-auto object-contain object-top"
-                />
-              </a>
+          <div className="flex items-center justify-center gap-3" data-footer-socials>
+            <RedesSociais
+              variant="plain"
+              mostrar="ifood"
+              className="justify-center [&_img]:h-7 [&_a]:min-h-7 [&_a]:min-w-7"
+            />
 
-              <div data-footer-socials className="shrink-0">
-                <RedesSociais
-                  variant="plain"
-                  className="justify-center !gap-3 [&_img]:h-7 [&_a]:min-h-7 [&_a]:min-w-7"
-                />
-              </div>
-            </div>
+            <span className="font-barlow text-base text-cinza-base" aria-hidden>
+              •
+            </span>
 
-            <p className="whitespace-nowrap font-barlow-condensed text-[clamp(0.92rem,3.9vw,1.2rem)] font-black uppercase leading-none text-preto-v1">
-              O DOG MAIS <span className="text-amarelo">ARRETADO</span> DE BRASÍLIA
-            </p>
+            <a href="/" aria-label="Paraíba Hot Dog — início" className="block shrink-0 leading-none">
+              <img
+                src={logo}
+                alt="Paraíba Hot Dog"
+                className="block h-16 w-auto object-contain object-top"
+              />
+            </a>
+
+            <span className="font-barlow text-base text-cinza-base" aria-hidden>
+              •
+            </span>
+
+            <RedesSociais
+              variant="plain"
+              mostrar="instagram"
+              className="justify-center [&_img]:h-7 [&_a]:min-h-7 [&_a]:min-w-7"
+            />
           </div>
 
-          <LinksAcessoRapidoHorizontal className="mt-7" />
+          <div className="flex w-full justify-center">
+            <div className="inline-grid w-fit max-w-full justify-items-stretch">
+              <div
+                className="invisible col-start-1 row-start-1 pointer-events-none select-none"
+                aria-hidden
+              >
+                <LinksAcessoRapidoHorizontal />
+              </div>
+
+              <p className="col-start-1 row-start-1 w-full whitespace-nowrap text-justify font-barlow-condensed text-[clamp(1.05rem,5.2vw,1.45rem)] font-black uppercase leading-none text-preto-v1 [text-align-last:justify]">
+                O DOG MAIS <span className="text-amarelo">ARRETADO</span> DE BRASÍLIA
+              </p>
+
+              <LinksAcessoRapidoHorizontal className="col-start-1 row-start-2 mt-7" />
+            </div>
+          </div>
         </div>
 
-        <div className="hidden w-full min-w-0 flex-col items-center gap-10 min-[490px]:flex min-[490px]:flex-row min-[490px]:items-center min-[490px]:justify-between min-[490px]:gap-8 lg:gap-12 xl:gap-16">
-          <div className="flex w-full min-w-0 flex-row items-center gap-5 lg:gap-10">
-            <div className="flex items-center gap-4 lg:gap-6">
+        <div className="hidden w-full min-w-0 flex-col items-center gap-6 min-[490px]:flex min-[490px]:flex-row min-[490px]:items-center min-[490px]:justify-between min-[490px]:gap-6 lg:gap-10 xl:gap-12">
+          <div className="flex w-full min-w-0 flex-row items-center gap-4 lg:gap-8">
+            <div className="flex items-center gap-3 lg:gap-5">
               <a href="/" aria-label="Paraíba Hot Dog — início">
                 <img
                   src={logo}
                   alt="Paraíba Hot Dog"
-                  className="h-36 w-auto object-contain lg:h-44"
+                  className="h-20 w-auto object-contain lg:h-24"
                 />
               </a>
 
@@ -114,8 +146,8 @@ export default function Rodape() {
           </div>
         </div>
 
-        <hr className="mt-8 h-px border-0 bg-gradient-to-r from-transparent via-preto-v3/30 to-transparent min-[490px]:mt-6" />
-        <p className="mt-3 text-center font-barlow text-sm text-cinza-botao min-[490px]:text-base">
+        <hr className="mt-4 h-px border-0 bg-gradient-to-r from-transparent via-preto-v3/20 to-transparent min-[490px]:mt-5" />
+        <p className="mt-2 text-center font-barlow text-sm text-cinza-botao min-[490px]:text-base">
           © 2026 Paraíba Hot Dog. Todos os direitos reservados.
         </p>
       </div>

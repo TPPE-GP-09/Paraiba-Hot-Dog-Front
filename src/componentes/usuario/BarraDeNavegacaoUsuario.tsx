@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Menu, User, X } from 'lucide-react'
 import logoBranca from '../../imagens/logos/logo-branca.png'
 import logoPreta from '../../imagens/logos/logo-preta.png'
@@ -57,8 +57,26 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
   const activeLinkClassName = `${linkBaseClassName} text-amarelo`
   const iconClassName = isDark ? 'text-branco hover:text-amarelo' : 'text-preto-v1 hover:text-amarelo'
   const mobileMenuClassName = isDark
-    ? 'border-t border-branco/10 bg-preto-v1 px-6 py-5'
-    : 'border-t border-preto-v1/10 bg-branco px-6 py-5'
+    ? 'bg-preto-v1 px-6 py-5'
+    : 'bg-branco px-6 py-5'
+  const linhaGradienteClassName = isDark
+    ? 'h-px w-full shrink-0 bg-[linear-gradient(to_right,transparent_0%,rgba(255,255,255,0.28)_4%,rgba(255,255,255,0.28)_96%,transparent_100%)]'
+    : 'h-px w-full shrink-0 bg-[linear-gradient(to_right,transparent_0%,rgba(26,26,26,0.12)_4%,rgba(26,26,26,0.12)_96%,transparent_100%)]'
+
+  function LinhaDivisor({ className = '' }: { className?: string }) {
+    return (
+      <div
+        role="separator"
+        aria-hidden
+        className={`${linhaGradienteClassName} ${className}`.trim()}
+      />
+    )
+  }
+
+  const mobileLinks = [
+    ...navLinks,
+    { label: 'Acesso restrito', href: ADMIN_HREF },
+  ] as const
 
   const barRef = useRef<HTMLDivElement>(null)
   const logoRef = useRef<HTMLAnchorElement>(null)
@@ -101,13 +119,37 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
     }
   }, [checkLayout])
 
+  useEffect(() => {
+    if (!isOpen || !useMobileMenu) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isOpen, useMobileMenu])
+
   const toggleMenu = () => setIsOpen((open) => !open)
   const closeMenu = () => setIsOpen(false)
+  const menuMobileAberto = isOpen && useMobileMenu
 
   return (
-    <header
-      className={`fixed top-0 left-0 z-50 w-full ${headerClassName} ${isOpen ? '' : 'h-16'}`}
-    >
+    <>
+      {menuMobileAberto ? (
+        <button
+          type="button"
+          className={`fixed inset-0 z-[49] backdrop-blur-sm motion-reduce:backdrop-blur-none ${
+            isDark ? 'bg-black/35' : 'bg-black/15'
+          }`}
+          onClick={closeMenu}
+          aria-label="Fechar menu"
+        />
+      ) : null}
+
+      <header
+        className={`fixed top-0 left-0 z-50 w-full ${headerClassName} ${isOpen ? '' : 'h-16'}`}
+      >
       <div
         ref={barRef}
         className="pagina-container relative flex h-16 items-center"
@@ -195,40 +237,40 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
         )}
       </div>
 
-      {isOpen && useMobileMenu && (
+      {menuMobileAberto && (
         <nav
           id="mobile-menu"
           className={mobileMenuClassName}
           aria-label="Navegação principal"
         >
+          <LinhaDivisor />
           <ul className="flex flex-col">
-            {navLinks.map(({ label, href }) => (
-              <li key={href} className="border-b border-gray-300 py-3 last:border-b-0">
-                <a
-                  href={href}
-                  className={
-                    href === '/#unidades'
-                      ? currentLocation === '/#unidades' || currentLocation.startsWith('/unidades/')
-                        ? activeLinkClassName
-                        : linkClassName
-                      : currentLocation === href
-                        ? activeLinkClassName
-                        : linkClassName
-                  }
-                  onClick={closeMenu}
-                >
-                  {label}
-                </a>
-              </li>
+            {mobileLinks.map(({ label, href }, index) => (
+              <Fragment key={href}>
+                {index > 0 ? <LinhaDivisor className="my-3" /> : null}
+                <li className="py-3">
+                  <a
+                    href={href}
+                    className={
+                      href === '/#unidades'
+                        ? currentLocation === '/#unidades' || currentLocation.startsWith('/unidades/')
+                          ? activeLinkClassName
+                          : linkClassName
+                        : currentLocation === href
+                          ? activeLinkClassName
+                          : linkClassName
+                    }
+                    onClick={closeMenu}
+                  >
+                    {label}
+                  </a>
+                </li>
+              </Fragment>
             ))}
-            <li className="py-3">
-              <a href={ADMIN_HREF} className={linkClassName} onClick={closeMenu}>
-                Acesso restrito
-              </a>
-            </li>
           </ul>
         </nav>
       )}
     </header>
+    </>
   )
 }
