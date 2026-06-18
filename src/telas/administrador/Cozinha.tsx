@@ -491,7 +491,15 @@ export default function Cozinha() {
 
         return (entreguesRecentesRef.current[`${p.id}-${p.lote}`] ?? 0) > agora
       }))
-      setEntregues(grupos.filter((p) => p.status === 'entregue'))
+      setEntregues((atuais) => {
+        const daApi = grupos.filter((p) => p.status === 'entregue')
+        const chavesDaApi = new Set(daApi.map((p) => `${p.id}-${p.lote}`))
+        const locaisRecentes = atuais.filter((p) => {
+          const key = `${p.id}-${p.lote}`
+          return !chavesDaApi.has(key) && (entreguesRecentesRef.current[key] ?? 0) > agora
+        })
+        return [...locaisRecentes, ...daApi]
+      })
     } catch {
       setErro('Não foi possível carregar a fila da API.')
       setFila([])

@@ -55,6 +55,12 @@ type VariacaoProduto = {
   produtoVariacaoComboId?: number
 }
 
+type Adicional = {
+  id: number
+  nome: string
+  preco: number
+}
+
 type Produto = {
   id: string
   nome: string
@@ -63,6 +69,7 @@ type Produto = {
   imagem: string
   variacoes?: VariacaoProduto[]
   permiteCombo?: boolean
+  adicionais?: Adicional[]
 }
 
 type ItemPedido = {
@@ -73,6 +80,7 @@ type ItemPedido = {
   quantidade: number
   produtoVariacaoId?: number
   observacao?: string | null
+  adicionalIds?: number[]
 }
 
 type ClienteVinculado = {
@@ -351,7 +359,7 @@ export default function AnotarPedidos() {
   }, [busca, cardapio])
 
   function adicionar(produto: Produto) {
-    if (produto.variacoes?.length || produto.permiteCombo) {
+    if (produto.variacoes?.length || produto.permiteCombo || produto.adicionais?.length) {
       setProdutoEmConfiguracao(produto)
       return
     }
@@ -400,7 +408,7 @@ export default function AnotarPedidos() {
       produto_variacao_id: item.produtoVariacaoId as number,
       quantidade: item.quantidade,
       observacao: item.observacao ?? null,
-      adicional_ids: [],
+      adicional_ids: item.adicionalIds ?? [],
     }))
   }
 
@@ -685,26 +693,42 @@ function ModalConfiguracao({ produto, onFechar, onAdicionar }: { produto: Produt
   const [comboEscolha, setComboEscolha] = useState<boolean | null>(produto.permiteCombo ? null : false)
   const [bebida, setBebida] = useState(bebidasCombo[0])
   const [observacao, setObservacao] = useState('')
+  const [adicionaisSelecionados, setAdicionaisSelecionados] = useState<number[]>([])
   const combo = comboEscolha === true
   const precoIndividual = variacao?.preco ?? produto.preco
-  const precoFinal = combo ? (variacao?.precoCombo ?? precoIndividual + 13) : precoIndividual
+  const precoAdicionais = adicionaisSelecionados.reduce(
+    (total, id) => total + (produto.adicionais?.find((a) => a.id === id)?.preco ?? 0),
+    0,
+  )
+  const precoFinal = (combo ? (variacao?.precoCombo ?? precoIndividual + 13) : precoIndividual) + precoAdicionais
   const tamanhoRespondido = !temVariacoesMultiplas || variacao !== null
   const comboRespondido = !produto.permiteCombo || comboEscolha !== null
   const podeAdicionar = tamanhoRespondido && comboRespondido
+
+  function toggleAdicional(id: number) {
+    setAdicionaisSelecionados((prev) =>
+      prev.includes(id) ? prev.filter((a) => a !== id) : [...prev, id],
+    )
+  }
 
   function confirmar() {
     if (!podeAdicionar) return
     const nomeBase = variacao?.nome ?? produto.nome
     const descricaoBase = variacao?.descricao ?? produto.descricao
+    const nomesAdicionais = adicionaisSelecionados
+      .map((id) => produto.adicionais?.find((a) => a.id === id)?.nome)
+      .filter(Boolean)
+      .join(', ')
     onAdicionar({
-      id: [produto.id, variacao?.id, combo ? 'combo' : 'individual', combo ? bebida : ''].filter(Boolean).join(':'),
+      id: [produto.id, variacao?.id, combo ? 'combo' : 'individual', combo ? bebida : '', adicionaisSelecionados.sort().join(',')].filter(Boolean).join(':'),
       nome: combo ? `Combo ${nomeBase}` : nomeBase,
-      descricao: combo ? `${descricaoBase} | Paraiba Chips + ${bebida}` : descricaoBase,
+      descricao: [combo ? `${descricaoBase} | Paraiba Chips + ${bebida}` : descricaoBase, nomesAdicionais ? `+ ${nomesAdicionais}` : null].filter(Boolean).join(' '),
       preco: precoFinal,
       observacao: [combo ? `Bebida do combo: ${bebida}` : null, observacao.trim() ? `Obs: ${observacao.trim()}` : null].filter(Boolean).join('\n') || null,
       produtoVariacaoId: combo
         ? variacao?.produtoVariacaoComboId ?? variacao?.produtoVariacaoId
         : variacao?.produtoVariacaoId,
+      adicionalIds: adicionaisSelecionados,
     })
   }
 
@@ -753,6 +777,20 @@ function ModalConfiguracao({ produto, onFechar, onAdicionar }: { produto: Produt
           )}
 
           {combo && <GrupoConfiguracao titulo="Escolha a bebida" descricao="Selecione a bebida do combo.">{bebidasCombo.map((opcao) => <BotaoOpcao key={opcao} ativo={bebida === opcao} titulo={opcao} onClick={() => setBebida(opcao)} />)}</GrupoConfiguracao>}
+
+          {produto.adicionais && produto.adicionais.length > 0 && (
+            <GrupoConfiguracao titulo="Adicionais" descricao="Opcional. Personalize o seu pedido.">
+              {produto.adicionais.map((adicional) => (
+                <BotaoOpcao
+                  key={adicional.id}
+                  ativo={adicionaisSelecionados.includes(adicional.id)}
+                  titulo={adicional.nome}
+                  preco={adicional.preco}
+                  onClick={() => toggleAdicional(adicional.id)}
+                />
+              ))}
+            </GrupoConfiguracao>
+          )}
 
           <section>
             <div><h3 className="text-sm font-black">Alguma observação?</h3><p className="mt-0.5 text-xs text-slate-400">Opcional. Aparece para a cozinha.</p></div>
@@ -1147,6 +1185,7 @@ function mapearProdutoApi(produto: ProdutoCardapioApi): Produto {
     imagem: imagemApi ?? imagemProdutoLocal(produto.nome),
     variacoes,
     permiteCombo: combos.length > 0 || permiteComboSemVariacao,
+    adicionais: produto.adicionais.map((a) => ({ id: a.id, nome: a.nome, preco: Number(a.preco) })),
   }
 }
 
