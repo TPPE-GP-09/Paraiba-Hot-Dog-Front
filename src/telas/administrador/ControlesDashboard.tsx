@@ -20,12 +20,10 @@ type ControlesDashboardProps = {
   ano: string
   anoAtual: number
   exportando: boolean
-  fechamentoMes: boolean
   filtrando: boolean
   mes: string
   onAnoChange: (ano: string) => void
   onExportarPdf: () => void
-  onFechamentoMesChange: (v: boolean) => void
   onFiltrar: () => void
   onMesChange: (mes: string) => void
 }
@@ -34,12 +32,10 @@ export default function ControlesDashboard({
   ano,
   anoAtual,
   exportando,
-  fechamentoMes,
   filtrando,
   mes,
   onAnoChange,
   onExportarPdf,
-  onFechamentoMesChange,
   onFiltrar,
   onMesChange,
 }: ControlesDashboardProps) {
@@ -49,10 +45,7 @@ export default function ControlesDashboard({
     <section className="mt-5 rounded-2xl border border-[#d8e1ed] bg-white p-4 shadow-sm sm:p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#7d8ea4] max-[900px]:text-xs">
-            Fechamento do mês
-          </p>
-          <h2 className="mt-1 text-xl font-black text-[#172033] max-[900px]:text-2xl">
+          <h2 className="text-xl font-black text-[#172033] max-[900px]:text-2xl">
             Controles do dashboard
           </h2>
         </div>
@@ -74,24 +67,11 @@ export default function ControlesDashboard({
         id="painel-controles-dashboard"
         className={`${menuAberto ? 'mt-4 block' : 'hidden'} xl:mt-4 xl:block`}
       >
-        <div className="grid gap-3 lg:grid-cols-[auto_140px_160px_auto_auto] lg:items-end">
-          <button
-            className={`h-11 w-full rounded-xl border-2 px-4 text-sm font-black uppercase transition-colors lg:w-auto ${
-              fechamentoMes
-                ? 'border-[#1597ff] bg-[#1597ff] text-white'
-                : 'border-[#d8e1ed] bg-white text-[#243247] hover:border-[#1597ff]'
-            }`}
-            onClick={() => onFechamentoMesChange(!fechamentoMes)}
-            type="button"
-          >
-            {fechamentoMes ? '✓ Fechamento do mês' : 'Fechamento do mês'}
-          </button>
-
+        <div className="grid gap-3 lg:grid-cols-[140px_160px_auto_auto] lg:items-end">
           <label className="grid gap-1.5 text-[11px] font-black uppercase text-[#7d8ea4] max-[900px]:text-xs">
             Ano
             <input
-              className="h-11 w-full rounded-xl border border-[#d8e1ed] bg-white px-3 text-base font-black text-[#243247] outline-none focus:border-[#1597ff] disabled:cursor-not-allowed disabled:opacity-50 max-[900px]:text-lg"
-              disabled={fechamentoMes}
+              className="h-11 w-full rounded-xl border border-[#d8e1ed] bg-white px-3 text-base font-black text-[#243247] outline-none focus:border-[#1597ff] max-[900px]:text-lg"
               inputMode="numeric"
               max={anoAtual}
               min="2000"
@@ -105,8 +85,7 @@ export default function ControlesDashboard({
           <label className="grid gap-1.5 text-[11px] font-black uppercase text-[#7d8ea4] max-[900px]:text-xs">
             Mês
             <select
-              className="h-11 w-full rounded-xl border border-[#d8e1ed] bg-white px-3 text-base font-black text-[#243247] outline-none focus:border-[#1597ff] disabled:cursor-not-allowed disabled:opacity-50 max-[900px]:text-lg"
-              disabled={fechamentoMes}
+              className="h-11 w-full rounded-xl border border-[#d8e1ed] bg-white px-3 text-base font-black text-[#243247] outline-none focus:border-[#1597ff] max-[900px]:text-lg"
               onChange={(e) => onMesChange(e.target.value)}
               value={mes}
             >

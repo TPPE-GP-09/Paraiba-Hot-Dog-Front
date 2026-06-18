@@ -82,40 +82,120 @@ function escapePdfText(text: string) {
 }
 
 function createLocalDashboardPdf(dashboard: DashboardApi, year?: string) {
-  const lines = [
-    'Relatorio BI - Paraiba Hot Dog',
-    `Ano: ${year || 'Todos'}`,
-    `Receita bruta: ${formatCurrency(dashboard.kpis.receita_bruta)}`,
-    `Lucro liquido: ${formatCurrency(dashboard.kpis.lucro_liquido)}`,
-    `Ticket medio: ${formatCurrency(dashboard.kpis.ticket_medio)}`,
-    `Total de pedidos: ${dashboard.kpis.total_pedidos}`,
-    `Vendas totais: ${formatCurrency(dashboard.vendas_totais)}`,
-    '',
-    'Top produtos:',
-    ...(dashboard.top_produtos.length
-      ? dashboard.top_produtos.map(
-          (product) =>
-            `${product.rank}. ${product.nome} - ${product.quantidade} un. - ${formatCurrency(product.receita)}`,
-        )
-      : ['Nenhum produto vendido no periodo.']),
+  const esc = escapePdfText
+  const W = 612
+  const H = 792
+  const ML = 48
+  const MR = 564
+
+  const navy   = '0.141 0.196 0.278'
+  const yellow = '1.0 0.8 0.0'
+  const muted  = '0.44 0.53 0.64'
+  const silver = '0.55 0.65 0.74'
+  const white  = '1 1 1'
+  const pale   = '0.96 0.97 0.99'
+  const border = '0.86 0.88 0.93'
+  const amber  = '0.54 0.43 0.0'
+
+  const parts: string[] = []
+
+  // Header bar
+  parts.push(`q ${navy} rg 0 ${H - 44} ${W} 44 re f Q`)
+  parts.push(`q ${yellow} rg 0 ${H - 47} ${W} 3 re f Q`)
+  parts.push(`BT /F2 16 Tf ${white} rg ${ML} ${H - 28} Td (${esc('PARAIBA HOT DOG')}) Tj ET`)
+  parts.push(`BT /F1 9 Tf 0.65 0.76 0.88 rg ${ML + 190} ${H - 27} Td (${esc('Relatorio Operacional de BI')}) Tj ET`)
+
+  // Period info
+  parts.push(`BT /F2 13 Tf ${navy} rg ${ML} ${H - 72} Td (${esc('Relatorio de BI')}) Tj ET`)
+  const periodo = year ? `Ano: ${year}` : 'Todos os periodos'
+  parts.push(`BT /F1 10 Tf ${muted} rg ${ML} ${H - 89} Td (${esc(periodo)}) Tj ET`)
+  parts.push(`q 0.85 0.85 0.85 RG 0.5 w ${ML} ${H - 100} m ${MR} ${H - 100} l S Q`)
+
+  // KPI section
+  parts.push(`BT /F2 7 Tf ${silver} rg ${ML} ${H - 116} Td (${esc('INDICADORES PRINCIPAIS')}) Tj ET`)
+
+  const kpiGap = 8
+  const kpiW = Math.floor((MR - ML - 3 * kpiGap) / 4)
+  const kpiH = 52
+  const kpiY = H - 178
+
+  const kpiList = [
+    { label: 'Receita Bruta',    value: formatCurrency(dashboard.kpis.receita_bruta) },
+    { label: 'Lucro Liquido',    value: formatCurrency(dashboard.kpis.lucro_liquido) },
+    { label: 'Ticket Medio',     value: formatCurrency(dashboard.kpis.ticket_medio) },
+    { label: 'Total de Pedidos', value: String(dashboard.kpis.total_pedidos) },
   ]
 
-  const content = lines.map((line, index) => `BT /F1 12 Tf 48 ${792 - 64 - index * 18} Td (${escapePdfText(line)}) Tj ET`).join('\n')
+  kpiList.forEach((kpi, i) => {
+    const bx = ML + i * (kpiW + kpiGap)
+    parts.push(`q ${pale} rg ${border} RG 0.5 w ${bx} ${kpiY} ${kpiW} ${kpiH} re B Q`)
+    parts.push(`BT /F1 7 Tf ${silver} rg ${bx + 8} ${kpiY + kpiH - 15} Td (${esc(kpi.label)}) Tj ET`)
+    parts.push(`BT /F2 11 Tf ${navy} rg ${bx + 8} ${kpiY + 11} Td (${esc(kpi.value)}) Tj ET`)
+  })
+
+  // Vendas totais + pedidos
+  parts.push(`q 0.85 0.85 0.85 RG 0.5 w ${ML} ${kpiY - 14} m ${MR} ${kpiY - 14} l S Q`)
+  const vendasY = kpiY - 28
+  parts.push(`BT /F1 9 Tf ${muted} rg ${ML} ${vendasY} Td (${esc('Vendas totais:')}) Tj ET`)
+  parts.push(`BT /F2 9 Tf ${navy} rg ${ML + 82} ${vendasY} Td (${esc(formatCurrency(dashboard.vendas_totais))}) Tj ET`)
+  parts.push(`BT /F1 9 Tf ${muted} rg ${ML + 270} ${vendasY} Td (${esc('Pedidos registrados:')}) Tj ET`)
+  parts.push(`BT /F2 9 Tf ${navy} rg ${ML + 390} ${vendasY} Td (${esc(String(dashboard.pedidos_registrados))}) Tj ET`)
+
+  // Top produtos header
+  const beforeTopY = vendasY - 20
+  parts.push(`q 0.85 0.85 0.85 RG 0.5 w ${ML} ${beforeTopY} m ${MR} ${beforeTopY} l S Q`)
+  const topLabelY = beforeTopY - 14
+  parts.push(`BT /F2 7 Tf ${silver} rg ${ML} ${topLabelY} Td (${esc('TOP PRODUTOS MAIS VENDIDOS')}) Tj ET`)
+
+  // Table header bar
+  const thY = topLabelY - 20
+  parts.push(`q ${navy} rg ${ML} ${thY} ${MR - ML} 16 re f Q`)
+  parts.push(`BT /F2 7 Tf ${white} rg ${ML + 4}   ${thY + 5} Td (${esc('Rank')})    Tj ET`)
+  parts.push(`BT /F2 7 Tf ${white} rg ${ML + 44}  ${thY + 5} Td (${esc('Produto')}) Tj ET`)
+  parts.push(`BT /F2 7 Tf ${white} rg ${ML + 300} ${thY + 5} Td (${esc('Qtd.')})    Tj ET`)
+  parts.push(`BT /F2 7 Tf ${white} rg ${ML + 376} ${thY + 5} Td (${esc('Receita')}) Tj ET`)
+
+  // Table rows
+  let rowY = thY
+  dashboard.top_produtos.slice(0, 10).forEach((product, i) => {
+    rowY -= 16
+    if (i % 2 === 1) parts.push(`q ${pale} rg ${ML} ${rowY} ${MR - ML} 16 re f Q`)
+    const rank = `#${String(product.rank).padStart(2, '0')}`
+    const nome = esc(product.nome.length > 38 ? `${product.nome.slice(0, 38)}.` : product.nome)
+    parts.push(`BT /F2 8 Tf ${amber} rg ${ML + 4}   ${rowY + 4} Td (${esc(rank)}) Tj ET`)
+    parts.push(`BT /F1 8 Tf ${navy} rg ${ML + 44}  ${rowY + 4} Td (${nome}) Tj ET`)
+    parts.push(`BT /F1 8 Tf ${muted} rg ${ML + 300} ${rowY + 4} Td (${esc(`${product.quantidade} un.`)}) Tj ET`)
+    parts.push(`BT /F1 8 Tf ${muted} rg ${ML + 376} ${rowY + 4} Td (${esc(formatCurrency(product.receita))}) Tj ET`)
+    parts.push(`q 0.92 0.93 0.95 RG 0.5 w ${ML} ${rowY} m ${MR} ${rowY} l S Q`)
+  })
+
+  if (!dashboard.top_produtos.length) {
+    rowY -= 18
+    parts.push(`BT /F1 9 Tf ${muted} rg ${ML + 4} ${rowY + 5} Td (${esc('Nenhum produto vendido no periodo.')}) Tj ET`)
+  }
+
+  // Footer
+  parts.push(`q 0.94 0.96 0.98 rg 0 0 ${W} 24 re f Q`)
+  parts.push(`q ${border} RG 0.5 w 0 24 m ${W} 24 l S Q`)
+  parts.push(`BT /F1 7 Tf ${silver} rg ${ML} 8 Td (${esc('Paraiba Hot Dog  |  Relatorio gerado automaticamente')}) Tj ET`)
+
+  const content = parts.join('\n')
+
   const objects = [
     '<< /Type /Catalog /Pages 2 0 R >>',
     '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
-    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${W} ${H}] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>`,
     '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>',
     `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
   ]
+
   let pdf = '%PDF-1.4\n'
   const offsets = [0]
-
   objects.forEach((object, index) => {
     offsets.push(pdf.length)
     pdf += `${index + 1} 0 obj\n${object}\nendobj\n`
   })
-
   const xrefOffset = pdf.length
   pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`
   offsets.slice(1).forEach((offset) => {
@@ -134,10 +214,8 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null)
   const [yearFilter, setYearFilter] = useState(String(currentYear))
   const [monthFilter, setMonthFilter] = useState('')
-  const [fechamentoMesFilter, setFechamentoMesFilter] = useState(false)
   const [appliedYear, setAppliedYear] = useState(String(currentYear))
   const [appliedMonth, setAppliedMonth] = useState('')
-  const [appliedFechamento, setAppliedFechamento] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -147,7 +225,7 @@ export default function Dashboard() {
         setIsLoading(true)
         setError(null)
 
-        setDashboard(await getDashboard(appliedYear, appliedMonth, appliedFechamento, controller.signal))
+        setDashboard(await getDashboard(appliedYear, appliedMonth, false, controller.signal))
       } catch (requestError) {
         if (requestError instanceof DOMException && requestError.name === 'AbortError') {
           return
@@ -163,7 +241,7 @@ export default function Dashboard() {
     loadDashboard()
 
     return () => controller.abort()
-  }, [appliedYear, appliedMonth, appliedFechamento])
+  }, [appliedYear, appliedMonth])
 
   async function exportDashboardPdf() {
     try {
@@ -181,14 +259,8 @@ export default function Dashboard() {
   }
 
   function applyFilters() {
-    setAppliedFechamento(fechamentoMesFilter)
-    if (fechamentoMesFilter) {
-      setAppliedYear('')
-      setAppliedMonth('')
-    } else {
-      setAppliedYear(sanitizeYear(yearFilter))
-      setAppliedMonth(monthFilter)
-    }
+    setAppliedYear(sanitizeYear(yearFilter))
+    setAppliedMonth(monthFilter)
   }
 
   const kpis = [
@@ -480,12 +552,10 @@ export default function Dashboard() {
               ano={yearFilter}
               anoAtual={currentYear}
               exportando={isExporting}
-              fechamentoMes={fechamentoMesFilter}
               filtrando={isLoading}
               mes={monthFilter}
               onAnoChange={setYearFilter}
               onExportarPdf={exportDashboardPdf}
-              onFechamentoMesChange={setFechamentoMesFilter}
               onFiltrar={applyFilters}
               onMesChange={setMonthFilter}
             />
