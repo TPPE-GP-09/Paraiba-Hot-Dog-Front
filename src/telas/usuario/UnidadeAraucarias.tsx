@@ -61,28 +61,16 @@ type UnidadeAraucariasProps = {
   slug: string
 }
 
-// TODO: remover mock antes do commit — apenas para inspeção visual local
-const unidadeMock: ReturnType<typeof mapearUnidade> = {
-  nome: "Asa Norte",
-  subtitulo: "Av. W3 Norte",
-  imagem: null,
-  abertura: "18:00",
-  fechamento: "23:00",
-  endereco: "Av. W3 Norte, 100, Asa Norte, Brasília - DF, 70000-000",
-  referencia: "Próximo ao Conic",
-  mapsUrl: "https://www.google.com/maps/search/?api=1&query=Asa+Norte+Brasilia",
-  mapsEmbedUrl: "https://www.google.com/maps?q=-15.7801,-47.9292&output=embed",
-  ifoodUrl: IFOOD_URL,
-  cardapioUrl: "/cardapio",
-}
-
 export default function UnidadeAraucarias({ slug }: UnidadeAraucariasProps) {
-  // TODO: remover mock antes do commit — forçando estado inicial para inspeção visual
   const [unidade, setUnidade] = useState<ReturnType<typeof mapearUnidade> | null>(
-    unidadeMock,
+    null,
   )
+  const [erro, setErro] = useState(false)
 
   useEffect(() => {
+    setErro(false)
+    setUnidade(null)
+
     listarUnidades()
       .then((unidades) => {
         const unidadeApi = unidades.find(
@@ -90,15 +78,13 @@ export default function UnidadeAraucarias({ slug }: UnidadeAraucariasProps) {
         )
 
         if (!unidadeApi) {
-          // TODO: remover mock — mantém mock se API falhar
+          setErro(true)
           return
         }
 
         setUnidade(mapearUnidade(unidadeApi))
       })
-      .catch(() => {
-        // TODO: remover mock — mantém mock se API falhar
-      })
+      .catch(() => setErro(true))
   }, [slug])
 
   if (!unidade) {
@@ -107,7 +93,7 @@ export default function UnidadeAraucarias({ slug }: UnidadeAraucariasProps) {
         <BarraDeNavegacao />
         <main className="flex min-h-screen items-center justify-center bg-preto-v1 px-6 pt-16 text-center text-branco">
           <p className="font-barlow-condensed text-2xl font-bold uppercase">
-            Carregando unidade...
+            {erro ? 'Unidade não encontrada' : 'Carregando unidade...'}
           </p>
         </main>
         <Rodape />
