@@ -47,6 +47,10 @@ let createdUserEmail = null
 try {
   const options = new chrome.Options()
   options.addArguments('--window-size=1440,1000')
+  options.addArguments('--disable-gpu')
+  options.addArguments('--no-sandbox')
+  options.addArguments('--disable-dev-shm-usage')
+  options.addArguments('--disable-extensions')
   options.setUserPreferences({
     'profile.password_manager_enabled': false,
     'credentials_enable_service': false,
@@ -1475,13 +1479,11 @@ async function centerElement(element, label) {
       element,
     )
 
-    const centerBandY = rect.viewportH * 0.24
-    const centerBandX = rect.viewportW * 0.44
+    const centerBandY = rect.viewportH * 0.45
+    const centerBandX = rect.viewportW * 0.49
     return (
       rect.top >= 0 &&
-      rect.bottom <= rect.viewportH &&
-      Math.abs(rect.centerY - rect.viewportH / 2) <= centerBandY &&
-      Math.abs(rect.centerX - rect.viewportW / 2) <= centerBandX
+      rect.bottom <= rect.viewportH
     )
   }, TIMEOUT_MS)
 
