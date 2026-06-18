@@ -232,7 +232,7 @@ export default function Dashboard() {
               <span className="text-[11px] font-black uppercase tracking-[0.24em] text-[#7d8ea4] max-[900px]:text-xs sm:text-sm">
                 Tela do BI
               </span>
-              <h1 className="m-0 text-3xl font-black tracking-tight text-[#172033] sm:text-4xl xl:text-5xl">
+              <h1 className="m-0 font-barlow-condensed text-3xl font-black uppercase tracking-wide text-[#172033] sm:text-4xl xl:text-5xl">
                 Resumo operacional
               </h1>
             </div>
