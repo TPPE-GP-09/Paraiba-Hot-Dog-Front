@@ -4,6 +4,7 @@ const apiBaseUrl = (
   'http://127.0.0.1:8000'
 ).replace(/\/$/, '')
 const tokenKeys = ['token', 'access_token', 'auth_token', 'kc_token'] as const
+const extraTokenKeys = ['refresh_token', 'id_token', 'token_type', 'expires_in', 'refresh_expires_in', 'logged_user_email'] as const
 
 type QueryParams = Record<string, string | number | boolean | null | undefined>
 
@@ -20,6 +21,13 @@ export function getStoredToken() {
   }
 
   return null
+}
+
+export function clearAuthTokens() {
+  for (const key of [...tokenKeys, ...extraTokenKeys]) {
+    localStorage.removeItem(key)
+    document.cookie = `${key}=; Max-Age=0; path=/`
+  }
 }
 
 export function saveAuthTokens(tokens: {
@@ -65,8 +73,18 @@ export async function apiFetch(path: string, { auth = true, baseUrl, params, hea
     requestHeaders.set('Authorization', `Bearer ${token}`)
   }
 
-  return fetch(buildApiUrl(path, params, baseUrl), {
+  const response = await fetch(buildApiUrl(path, params, baseUrl), {
     ...options,
     headers: requestHeaders,
   })
+
+  if (auth && response.status === 401) {
+    clearAuthTokens()
+
+    if (!window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login'
+    }
+  }
+
+  return response
 }
