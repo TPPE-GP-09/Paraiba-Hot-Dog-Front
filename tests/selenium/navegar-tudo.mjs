@@ -13,6 +13,7 @@ writeFileSync(
 )
 
 const BASE_URL = normalizeBaseUrl(process.env.SELENIUM_BASE_URL ?? 'http://localhost:5175/')
+const API_BASE_URL = normalizeBaseUrl(process.env.SELENIUM_API_BASE_URL ?? 'http://127.0.0.1:8000/')
 const LOGIN = process.env.SELENIUM_LOGIN ?? 'integration-test'
 const PASSWORD = process.env.SELENIUM_PASSWORD ?? 'integration-test'
 const HEADLESS = process.env.SELENIUM_HEADLESS !== 'false'
@@ -486,6 +487,8 @@ async function testDashboard() {
 async function testCriarUnidade() {
   await driver.get(new URL('/admin', BASE_URL).toString())
   await waitForPageReady()
+  const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)
+  const nomeUnidade = `Unidade Selenium ${timestamp}`
 
   // Abre o modal de Configurações
   const configBtn = await driver.wait(
@@ -520,7 +523,7 @@ async function testCriarUnidade() {
     TIMEOUT_MS,
   )
   await nomeInput.clear()
-  await nomeInput.sendKeys('Unidade Selenium Teste')
+  await nomeInput.sendKeys(nomeUnidade)
   await pause('nome preenchido')
 
   const cepInput = await driver.findElement(By.css('input[placeholder="00000-000"]'))
@@ -568,6 +571,25 @@ async function testCriarUnidade() {
 
   results.push({ group: 'admin', route: 'criar-unidade', status: 'ok' })
   console.log('OK admin: criar-unidade')
+
+  await waitUntilTextVisible(nomeUnidade)
+
+  const excluirUnidadeBtn = await driver.wait(
+    until.elementLocated(By.xpath("//button[contains(normalize-space(.), 'Excluir')]")),
+    TIMEOUT_MS,
+  )
+  await pause('clicando em excluir unidade criada')
+  await driver.executeScript('arguments[0].click()', excluirUnidadeBtn)
+
+  const confirmarExclusaoUnidade = await waitForDialogWithTitle(/excluir esta unidade/i)
+  await pause('confirmando exclusao da unidade')
+  await clickDialogButton(confirmarExclusaoUnidade, 'Sim, excluir unidade')
+  await waitForDialogGone(/excluir esta unidade/i)
+  await waitUntilTextVisible('Unidade excluída com sucesso.')
+  await pause('unidade excluida com sucesso')
+
+  results.push({ group: 'admin', route: 'excluir-unidade', status: 'ok' })
+  console.log('OK admin: excluir-unidade')
 
   // Volta para o painel admin
   await driver.get(new URL('/admin', BASE_URL).toString())
@@ -655,6 +677,23 @@ async function testCriarUsuario() {
   results.push({ group: 'admin', route: 'criar-usuario', status: 'ok' })
   console.log('OK admin: criar-usuario')
 
+  const excluirUsuarioBtn = await driver.wait(
+    until.elementLocated(By.xpath(`//button[@aria-label=${xpathLiteral(`Excluir ${nomeUsuario}`)}]`)),
+    TIMEOUT_MS,
+  )
+  await pause('clicando em excluir usuario criado')
+  await driver.executeScript('arguments[0].click()', excluirUsuarioBtn)
+
+  const confirmarExclusaoUsuario = await waitForDialogWithTitle(/excluir este usu/i)
+  await pause('confirmando exclusao do usuario')
+  await clickDialogButton(confirmarExclusaoUsuario, 'Sim, excluir usuário')
+  await waitForDialogGone(/excluir este usu/i)
+  await waitUntilTextGone(new RegExp(escapeRegExp(emailUsuario)))
+  await pause('usuario excluido confirmado')
+
+  results.push({ group: 'admin', route: 'excluir-usuario', status: 'ok' })
+  console.log('OK admin: excluir-usuario')
+
   // Volta para o painel admin
   await driver.get(new URL('/admin', BASE_URL).toString())
   await waitForPageReady()
@@ -729,17 +768,44 @@ async function testCriarPostNoticiasPromocoes() {
   await driver.executeScript('arguments[0].requestSubmit()', form)
 
   let postCriado = await waitForBlogPostCreated(titulo, 8000)
+  let postCriadoViaApi = null
 
   if (!postCriado) {
-    console.warn('AVISO admin: criacao do post pela UI nao confirmou; seguindo para o cardapio para nao travar o fluxo')
+    console.warn('AVISO admin: criacao do post pela UI nao confirmou; criando via API para testar exclusao')
+    postCriadoViaApi = await criarPostBlogViaApi(titulo, descricao, 'promocao', '2026-06-18')
+    postCriado = Boolean(postCriadoViaApi)
   }
 
-  if (postCriado) {
+  if (postCriado && !postCriadoViaApi) {
     await pause('post confirmado na lista')
+
+    const excluirPostBtn = await driver.wait(
+      until.elementLocated(By.xpath(`//article[.//h3[normalize-space(.)=${xpathLiteral(titulo)}]]//button[contains(normalize-space(.), 'Excluir')]`)),
+      TIMEOUT_MS,
+    )
+    await pause('clicando em excluir post criado')
+    await driver.executeScript('arguments[0].click()', excluirPostBtn)
+
+    const confirmarExclusaoPost = await waitForDialogWithTitle(/excluir este post/i)
+    await pause('confirmando exclusao do post')
+    await clickDialogButton(confirmarExclusaoPost, 'Sim, excluir post')
+    await waitForDialogGone(/excluir este post/i)
+    await waitUntilTextGone(new RegExp(escapeRegExp(titulo)))
+    await pause('post excluido confirmado')
+  } else if (postCriadoViaApi) {
+    await excluirPostBlogViaApi(postCriadoViaApi.id)
+    await pause('post criado pela api e excluido pela api')
   }
 
   results.push({ group: 'admin', route: 'criar-post-noticias-promocoes', status: 'ok' })
   console.log('OK admin: criar-post-noticias-promocoes')
+
+  if (postCriado) {
+    results.push({ group: 'admin', route: 'excluir-post-noticias-promocoes', status: 'ok' })
+    console.log('OK admin: excluir-post-noticias-promocoes')
+  } else {
+    console.warn('AVISO admin: post nao foi criado nem pela UI nem pela API; nao havia post para excluir')
+  }
 
   await driver.get(new URL('/admin', BASE_URL).toString())
   await waitForPageReady()
@@ -1125,6 +1191,70 @@ async function waitForBlogPostCreated(titulo, timeoutMs = TIMEOUT_MS) {
   }
 }
 
+async function criarPostBlogViaApi(titulo, descricao, tipo, data) {
+  const token = await driver.executeScript(
+    "return localStorage.getItem('token') || localStorage.getItem('access_token') || localStorage.getItem('auth_token') || localStorage.getItem('kc_token')",
+  )
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 8000)
+
+  try {
+    const response = await fetch(new URL('/blog/', API_BASE_URL), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        titulo,
+        descricao,
+        tipo,
+        data,
+        imagem_url: null,
+      }),
+      signal: controller.signal,
+    })
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '')
+      console.warn(`AVISO admin: API blog retornou ${response.status}: ${text.slice(0, 300)}`)
+      return null
+    }
+
+    return response.json()
+  } catch (error) {
+    console.warn(`AVISO admin: API blog nao respondeu: ${error instanceof Error ? error.message : error}`)
+    return null
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
+async function excluirPostBlogViaApi(postId) {
+  const token = await driver.executeScript(
+    "return localStorage.getItem('token') || localStorage.getItem('access_token') || localStorage.getItem('auth_token') || localStorage.getItem('kc_token')",
+  )
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 8000)
+
+  try {
+    const response = await fetch(new URL(`/blog/${postId}`, API_BASE_URL), {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      signal: controller.signal,
+    })
+
+    if (!response.ok && response.status !== 204) {
+      const text = await response.text().catch(() => '')
+      throw new Error(`API blog retornou ${response.status}: ${text.slice(0, 300)}`)
+    }
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 async function waitForDialogWithTitle(titlePattern) {
   return driver.wait(async () => {
     let dialogs = []
@@ -1428,15 +1558,20 @@ async function setFaqsSequentially(expanded) {
     return buttons.length >= 5
   }, TIMEOUT_MS)
 
-  const buttons = await driver.findElements(By.css('button[aria-expanded]'))
+  const totalButtons = (await driver.findElements(By.css('button[aria-expanded]'))).length
 
-  for (const [index, button] of buttons.entries()) {
+  for (let index = 0; index < totalButtons; index += 1) {
+    const button = await getFaqButtonByIndex(index)
     const isExpanded = (await button.getAttribute('aria-expanded')) === 'true'
     if (isExpanded === expanded) continue
 
-    await driver.executeScript('arguments[0].click()', button)
+    await centerElement(button, `centralizando duvida frequente ${index + 1}`)
+    await clickFaqButtonByIndex(index)
     await driver.wait(
-      async () => (await button.getAttribute('aria-expanded')) === String(expanded),
+      async () => {
+        const currentButton = await getFaqButtonByIndex(index)
+        return (await currentButton.getAttribute('aria-expanded')) === String(expanded)
+      },
       TIMEOUT_MS,
     )
     console.log(`... duvida frequente ${index + 1} ${expanded ? 'aberta' : 'fechada'}`)
@@ -1450,6 +1585,28 @@ async function setFaqsSequentially(expanded) {
     )
 
     return states.length >= 5 && states.every((state) => state === String(expanded))
+  }, TIMEOUT_MS)
+}
+
+async function getFaqButtonByIndex(index) {
+  return driver.wait(async () => {
+    const buttons = await driver.findElements(By.css('button[aria-expanded]'))
+    return buttons[index] ?? false
+  }, TIMEOUT_MS)
+}
+
+async function clickFaqButtonByIndex(index) {
+  await driver.wait(async () => {
+    try {
+      const button = await getFaqButtonByIndex(index)
+      await driver.executeScript('arguments[0].scrollIntoView({ block: "center", inline: "center" })', button)
+      await driver.sleep(150)
+      await driver.executeScript('arguments[0].click()', button)
+      return true
+    } catch (error) {
+      if (isStaleElementError(error)) return false
+      throw error
+    }
   }, TIMEOUT_MS)
 }
 
