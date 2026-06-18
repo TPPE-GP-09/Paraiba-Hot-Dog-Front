@@ -16,10 +16,6 @@ type ResultadoFidelidade =
     }
   | null;
 
-function formatarMensagemNaoEncontrado() {
-  return "Não encontramos seu cadastro. Confira se digitou corretamente.";
-}
-
 export default function CartaoFidelidade() {
   const [cadastro, setCadastro] = useState("");
   const [consultando, setConsultando] = useState(false);
@@ -53,7 +49,6 @@ export default function CartaoFidelidade() {
       }
 
       if (!fidelidade) {
-        setMensagem(formatarMensagemNaoEncontrado());
         setResultado({ status: "nao-encontrado" });
         return;
       }
@@ -207,7 +202,7 @@ export default function CartaoFidelidade() {
 
               {mensagem && (
                 <p
-                  className="mt-4 font-barlow text-sm font-semibold text-amarelo min-[640px]:text-base"
+                  className="mt-4 rounded-lg border border-white/10 bg-white/5 px-4 py-3 font-barlow text-sm text-branco/75"
                   role="status"
                 >
                   {mensagem}

@@ -81,7 +81,6 @@ export default function UnidadeAraucarias({ slug }: UnidadeAraucariasProps) {
   const [unidade, setUnidade] = useState<ReturnType<typeof mapearUnidade> | null>(
     unidadeMock,
   )
-  const [erro, setErro] = useState(false)
 
   useEffect(() => {
     listarUnidades()
@@ -108,7 +107,7 @@ export default function UnidadeAraucarias({ slug }: UnidadeAraucariasProps) {
         <BarraDeNavegacao />
         <main className="flex min-h-screen items-center justify-center bg-preto-v1 px-6 pt-16 text-center text-branco">
           <p className="font-barlow-condensed text-2xl font-bold uppercase">
-            {erro ? 'Unidade não encontrada' : 'Carregando unidade...'}
+            Carregando unidade...
           </p>
         </main>
         <Rodape />
