@@ -470,6 +470,7 @@ export default function Cozinha() {
   const [unidades, setUnidades] = useState<Unidade[]>([])
   const [unidadeSelecionadaId, setUnidadeSelecionadaId] = useState<number | null>(null)
   const entreguesRecentesRef = useRef<Record<string, number>>({})
+  const savedForUnidadeRef = useRef<number | null>(null)
 
   const unidadeSelecionada = useMemo(
     () => unidades.find((unidade) => unidade.id === unidadeSelecionadaId) ?? null,
@@ -575,6 +576,33 @@ export default function Cozinha() {
       window.clearInterval(intervalo)
     }
   }, [aba, unidadeSelecionadaId])
+
+  useEffect(() => {
+    savedForUnidadeRef.current = null
+    if (!unidadeSelecionadaId) {
+      setEntregues([])
+      return
+    }
+    try {
+      const salvo = localStorage.getItem(`entregues-cozinha-${unidadeSelecionadaId}`)
+      setEntregues(salvo ? (JSON.parse(salvo) as PedidoCozinha[]) : [])
+    } catch {
+      setEntregues([])
+    }
+  }, [unidadeSelecionadaId])
+
+  useEffect(() => {
+    if (!unidadeSelecionadaId) return
+    if (savedForUnidadeRef.current !== unidadeSelecionadaId) {
+      savedForUnidadeRef.current = unidadeSelecionadaId
+      return
+    }
+    try {
+      localStorage.setItem(`entregues-cozinha-${unidadeSelecionadaId}`, JSON.stringify(entregues))
+    } catch {
+      // localStorage indisponível
+    }
+  }, [entregues, unidadeSelecionadaId])
 
   const pedidosVisiveis = useMemo(() => {
     if (aba === 'fila') return fila
