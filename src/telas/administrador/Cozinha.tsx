@@ -494,11 +494,8 @@ export default function Cozinha() {
       setEntregues((atuais) => {
         const daApi = grupos.filter((p) => p.status === 'entregue')
         const chavesDaApi = new Set(daApi.map((p) => `${p.id}-${p.lote}`))
-        const locaisRecentes = atuais.filter((p) => {
-          const key = `${p.id}-${p.lote}`
-          return !chavesDaApi.has(key) && (entreguesRecentesRef.current[key] ?? 0) > agora
-        })
-        return [...locaisRecentes, ...daApi]
+        const locaisNaoNaApi = atuais.filter((p) => !chavesDaApi.has(`${p.id}-${p.lote}`))
+        return [...locaisNaoNaApi, ...daApi]
       })
     } catch {
       setErro('Não foi possível carregar a fila da API.')
@@ -717,9 +714,18 @@ export default function Cozinha() {
         </div>
 
         {!loading && (
-          <p className="mb-4 font-barlow text-sm text-[#666666] lg:mx-auto lg:max-w-3xl">
-            {textoContagem}
-          </p>
+          <div className="mb-4 flex items-center justify-between gap-3 lg:mx-auto lg:max-w-3xl">
+            <p className="font-barlow text-sm text-[#666666]">{textoContagem}</p>
+            {aba === 'entregues' && entregues.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setEntregues([])}
+                className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 font-barlow text-xs font-semibold text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700"
+              >
+                Limpar lista
+              </button>
+            )}
+          </div>
         )}
 
         {(loading || erro) && (
