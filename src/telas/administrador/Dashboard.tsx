@@ -300,21 +300,23 @@ export default function Dashboard() {
                   <h2 className="m-0 text-base font-black text-[#314259] max-[900px]:text-lg sm:text-lg">
                     Volume de vendas por hora
                   </h2>
-                  <div className="mt-5 flex h-[122px] items-end gap-3 overflow-x-auto pr-3 max-[900px]:gap-2" aria-label="Grafico de volume de vendas por hora">
-                    {dashboard.vendas_por_hora.map((sale) => (
-                      <div className="flex h-full w-7 shrink-0 flex-col items-center justify-end gap-2 text-[10px] font-extrabold text-[#a1afc0] max-[900px]:text-xs" key={sale.hora}>
-                        <div
-                          className={`min-h-[18px] w-full rounded-[5px] ${
-                            sale.destaque ? 'bg-[#ffcc00]' : 'bg-[#dde4ee]'
-                          }`}
-                          title={`${sale.hora}: ${sale.quantidade} vendas`}
-                          style={{ height: `${Math.max((sale.quantidade / maxSalesByHour) * 88, 10)}%` }}
-                        />
-                        <span>{sale.hora}</span>
-                      </div>
-                    ))}
+                  <div className="mt-5 max-h-56 overflow-y-auto pr-1">
+                    <div className="grid min-h-[122px] grid-cols-4 items-end gap-3 pb-2 sm:flex sm:min-w-max sm:overflow-x-auto sm:pr-3 max-[900px]:gap-2" aria-label="Grafico de volume de vendas por hora">
+                      {dashboard.vendas_por_hora.map((sale) => (
+                        <div className="flex h-[122px] min-w-0 flex-col items-center justify-end gap-2 text-[10px] font-extrabold text-[#a1afc0] sm:w-8 sm:shrink-0 max-[900px]:text-xs" key={sale.hora}>
+                          <div
+                            className={`min-h-[18px] w-full rounded-[5px] ${
+                              sale.destaque ? 'bg-[#ffcc00]' : 'bg-[#dde4ee]'
+                            }`}
+                            title={`${sale.hora}: ${sale.quantidade} vendas`}
+                            style={{ height: `${Math.max((sale.quantidade / maxSalesByHour) * 88, 10)}%` }}
+                          />
+                          <span>{sale.hora}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="ml-1.5 flex gap-7 text-[11px] font-bold text-[#9caabd] max-[900px]:text-xs">
+                  <div className="ml-1.5 mt-2 flex flex-wrap gap-x-7 gap-y-1 text-[11px] font-bold text-[#9caabd] max-[900px]:text-xs">
                     <span>Pico do almoço: 13h</span>
                     <span>Pico da janta: 19h</span>
                   </div>
@@ -324,15 +326,43 @@ export default function Dashboard() {
                   <h2 className="m-0 text-base font-black text-[#314259] max-[900px]:text-lg sm:text-lg">
                     Top 10 produtos mais vendidos
                   </h2>
-                  <div className="overflow-x-auto">
-                    <table className="mt-3.5 w-full min-w-[760px] border-collapse text-xs max-[900px]:text-sm sm:text-sm">
+                  <div className="mt-3.5 max-h-[30rem] space-y-3 overflow-y-auto pr-1 sm:hidden">
+                    {dashboard.top_produtos.map((product) => (
+                      <article key={product.produto_id} className="rounded-lg border border-[#edf1f6] bg-white p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="text-[11px] font-black text-[#8a6f00]">#{String(product.rank).padStart(2, '0')}</p>
+                            <h3 className="mt-1 break-words text-sm font-black text-[#243349]">{product.nome}</h3>
+                          </div>
+                          <span
+                            className={`shrink-0 text-xs font-black ${
+                              variationTone(product.variacao) === 'negative' ? 'text-[#d71920]' : 'text-[#008768]'
+                            }`}
+                          >
+                            {formatPercentage(product.variacao)}
+                          </span>
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-bold text-[#53657a]">
+                          <span>{product.quantidade} un.</span>
+                          <span className="text-right">{formatCurrency(product.receita)}</span>
+                        </div>
+                      </article>
+                    ))}
+                    {!dashboard.top_produtos.length && (
+                      <p className="rounded-lg border border-[#edf1f6] px-4 py-8 text-center text-sm font-bold text-[#53657a]">
+                        Nenhum produto vendido no período.
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-3.5 hidden max-h-[26rem] overflow-auto pr-1 sm:block">
+                    <table className="w-full min-w-[760px] border-collapse text-xs max-[900px]:text-sm sm:text-sm">
                       <thead>
                         <tr>
-                          <th className="border-b border-[#edf1f6] py-3 text-left font-black text-[#9badc1]">Rank</th>
-                          <th className="border-b border-[#edf1f6] py-3 text-left font-black text-[#9badc1]">Produto</th>
-                          <th className="border-b border-[#edf1f6] py-3 text-left font-black text-[#9badc1]">Qtd.</th>
-                          <th className="border-b border-[#edf1f6] py-3 text-left font-black text-[#9badc1]">Receita</th>
-                          <th className="border-b border-[#edf1f6] py-3 text-left font-black text-[#9badc1]">Variação</th>
+                          <th className="sticky top-0 z-10 border-b border-[#edf1f6] bg-white py-3 text-left font-black text-[#9badc1]">Rank</th>
+                          <th className="sticky top-0 z-10 border-b border-[#edf1f6] bg-white py-3 text-left font-black text-[#9badc1]">Produto</th>
+                          <th className="sticky top-0 z-10 border-b border-[#edf1f6] bg-white py-3 text-left font-black text-[#9badc1]">Qtd.</th>
+                          <th className="sticky top-0 z-10 border-b border-[#edf1f6] bg-white py-3 text-left font-black text-[#9badc1]">Receita</th>
+                          <th className="sticky top-0 z-10 border-b border-[#edf1f6] bg-white py-3 text-left font-black text-[#9badc1]">Variação</th>
                         </tr>
                       </thead>
                       <tbody>

@@ -1420,7 +1420,7 @@ function GerenciadorTaxonomia({
   onExcluirSubcategoria: (subcategoria: SubcategoriaRead) => void;
 }) {
   return (
-    <div className="mt-8 grid gap-4 rounded-[5px] border border-branco/10 bg-[#222] p-4 min-[900px]:grid-cols-2">
+    <div className="mt-8 grid min-w-0 gap-4 rounded-[5px] border border-branco/10 bg-[#222] p-3 min-[420px]:p-4 min-[900px]:grid-cols-2">
       <div>
         <div className="flex items-center justify-between gap-3">
           <h2 className="font-barlow-condensed text-2xl font-black uppercase text-amarelo">
@@ -1440,16 +1440,16 @@ function GerenciadorTaxonomia({
           {categorias.map((categoria, index) => (
             <div
               key={categoria.id}
-              className="flex items-center justify-between gap-3 rounded-[5px] border border-branco/10 bg-preto-v3 px-3 py-2"
+              className="grid min-w-0 gap-3 rounded-[5px] border border-branco/10 bg-preto-v3 px-3 py-2 min-[520px]:grid-cols-[minmax(0,1fr)_auto] min-[520px]:items-center"
             >
-              <span className="min-w-0 font-barlow text-sm font-semibold text-branco">
+              <span className="min-w-0 break-words font-barlow text-sm font-semibold text-branco">
                 {categoria.nome}
               </span>
-              <div className="flex shrink-0 gap-2">
+              <div className="grid grid-cols-4 gap-2 min-[520px]:flex min-[520px]:shrink-0">
                 <button
                   type="button"
                   onClick={() => onMoverCategoria(categoria.id, -1)}
-                  className="flex h-9 w-9 items-center justify-center rounded-[5px] border border-branco/10 text-branco transition-colors hover:border-amarelo hover:text-amarelo disabled:cursor-not-allowed disabled:opacity-35"
+                  className="flex h-9 w-full items-center justify-center rounded-[5px] border border-branco/10 text-branco transition-colors hover:border-amarelo hover:text-amarelo disabled:cursor-not-allowed disabled:opacity-35 min-[520px]:w-9"
                   aria-label={`Mover categoria ${categoria.nome} para cima`}
                   disabled={index === 0}
                 >
@@ -1458,7 +1458,7 @@ function GerenciadorTaxonomia({
                 <button
                   type="button"
                   onClick={() => onMoverCategoria(categoria.id, 1)}
-                  className="flex h-9 w-9 items-center justify-center rounded-[5px] border border-branco/10 text-branco transition-colors hover:border-amarelo hover:text-amarelo disabled:cursor-not-allowed disabled:opacity-35"
+                  className="flex h-9 w-full items-center justify-center rounded-[5px] border border-branco/10 text-branco transition-colors hover:border-amarelo hover:text-amarelo disabled:cursor-not-allowed disabled:opacity-35 min-[520px]:w-9"
                   aria-label={`Mover categoria ${categoria.nome} para baixo`}
                   disabled={index === categorias.length - 1}
                 >
@@ -1471,7 +1471,7 @@ function GerenciadorTaxonomia({
                 <button
                   type="button"
                   onClick={() => onEditarCategoria(categoria)}
-                  className="flex h-9 w-9 items-center justify-center rounded-[5px] bg-branco text-preto-v1 transition-colors hover:bg-amarelo"
+                  className="flex h-9 w-full items-center justify-center rounded-[5px] bg-branco text-preto-v1 transition-colors hover:bg-amarelo min-[520px]:w-9"
                   aria-label={`Editar categoria ${categoria.nome}`}
                 >
                   <Edit2 aria-hidden className="h-4 w-4" strokeWidth={2.5} />
@@ -1479,7 +1479,7 @@ function GerenciadorTaxonomia({
                 <button
                   type="button"
                   onClick={() => onExcluirCategoria(categoria)}
-                  className="flex h-9 w-9 items-center justify-center rounded-[5px] bg-red-600 text-branco transition-opacity hover:opacity-85"
+                  className="flex h-9 w-full items-center justify-center rounded-[5px] bg-red-600 text-branco transition-opacity hover:opacity-85 min-[520px]:w-9"
                   aria-label={`Excluir categoria ${categoria.nome}`}
                 >
                   <Trash2 aria-hidden className="h-4 w-4" strokeWidth={2.5} />
@@ -1513,21 +1513,21 @@ function GerenciadorTaxonomia({
             return (
               <div
                 key={subcategoria.id}
-                className="flex items-center justify-between gap-3 rounded-[5px] border border-branco/10 bg-preto-v3 px-3 py-2"
+                className="grid min-w-0 gap-3 rounded-[5px] border border-branco/10 bg-preto-v3 px-3 py-2 min-[520px]:grid-cols-[minmax(0,1fr)_auto] min-[520px]:items-center"
               >
                 <div className="min-w-0">
-                  <span className="block truncate font-barlow text-sm font-semibold text-branco">
+                  <span className="block break-words font-barlow text-sm font-semibold text-branco">
                     {subcategoria.nome}
                   </span>
-                  <span className="block truncate font-barlow text-xs text-branco/55">
+                  <span className="block break-words font-barlow text-xs text-branco/55">
                     {categoria?.nome ?? "Categoria não encontrada"}
                   </span>
                 </div>
-                <div className="flex shrink-0 gap-2">
+                <div className="grid grid-cols-2 gap-2 min-[520px]:flex min-[520px]:shrink-0">
                   <button
                     type="button"
                     onClick={() => onEditarSubcategoria(subcategoria)}
-                    className="flex h-9 w-9 items-center justify-center rounded-[5px] bg-branco text-preto-v1 transition-colors hover:bg-amarelo"
+                    className="flex h-9 w-full items-center justify-center rounded-[5px] bg-branco text-preto-v1 transition-colors hover:bg-amarelo min-[520px]:w-9"
                     aria-label={`Editar subcategoria ${subcategoria.nome}`}
                   >
                     <Edit2 aria-hidden className="h-4 w-4" strokeWidth={2.5} />
@@ -1535,7 +1535,7 @@ function GerenciadorTaxonomia({
                   <button
                     type="button"
                     onClick={() => onExcluirSubcategoria(subcategoria)}
-                    className="flex h-9 w-9 items-center justify-center rounded-[5px] bg-red-600 text-branco transition-opacity hover:opacity-85"
+                    className="flex h-9 w-full items-center justify-center rounded-[5px] bg-red-600 text-branco transition-opacity hover:opacity-85 min-[520px]:w-9"
                     aria-label={`Excluir subcategoria ${subcategoria.nome}`}
                   >
                     <Trash2 aria-hidden className="h-4 w-4" strokeWidth={2.5} />

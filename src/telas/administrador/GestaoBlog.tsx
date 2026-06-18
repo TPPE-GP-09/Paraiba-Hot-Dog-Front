@@ -182,9 +182,9 @@ export default function GestaoBlog() {
     <div className={`min-h-screen bg-[#f4f6fb] ${CLASSE_OFFSET_BARRA_ADMIN}`}>
       <BarraDeNavegacaoAdmin />
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4">
-          <div>
+      <main className="mx-auto w-full max-w-7xl overflow-x-hidden px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <p className="font-barlow-condensed text-sm font-black uppercase tracking-[0.24em] text-cinza-base">
               Admin
             </p>
@@ -193,14 +193,14 @@ export default function GestaoBlog() {
             </h1>
           </div>
 
-          <div className="flex shrink-0 items-center gap-4">
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
             {notificacao && (
               <Notificacao mensagem={notificacao} onFechar={() => setNotificacao(null)} />
             )}
             <button
               type="button"
               onClick={iniciarCadastro}
-              className="inline-flex items-center gap-2 rounded-xl bg-amarelo px-4 py-3 font-barlow-condensed text-sm font-black uppercase text-preto-v1 shadow-sm transition hover:brightness-95"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amarelo px-4 py-3 font-barlow-condensed text-sm font-black uppercase text-preto-v1 shadow-sm transition hover:brightness-95 sm:w-auto"
             >
               <Plus size={18} />
               Novo post
@@ -208,9 +208,9 @@ export default function GestaoBlog() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <section className="rounded-2xl border border-[#dde2ea] bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between">
+        <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)]">
+          <section className="min-w-0 rounded-2xl border border-[#dde2ea] bg-white p-4 shadow-sm sm:p-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="font-barlow-condensed text-2xl font-black uppercase text-preto-v1">
                 {criando ? 'Cadastrar post' : 'Editar post'}
               </h2>
@@ -222,12 +222,12 @@ export default function GestaoBlog() {
             <form className="mt-5 grid gap-4" onSubmit={salvar}>
               <label className="grid gap-1.5">
                 <span className="text-xs font-black uppercase tracking-[0.14em] text-cinza-base">Título</span>
-                <div className="flex items-center gap-2 rounded-xl border border-[#d8dee8] bg-white px-3">
-                  <Type size={16} className="text-cinza-base" />
+                <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[#d8dee8] bg-white px-3">
+                  <Type size={16} className="shrink-0 text-cinza-base" />
                   <input
                     value={formulario.titulo}
                     onChange={(event) => atualizarCampo('titulo', event.target.value)}
-                    className="h-11 w-full bg-transparent outline-none"
+                    className="h-11 min-w-0 w-full bg-transparent outline-none"
                     placeholder="Ex.: Nova unidade abre no Lago Sul"
                   />
                 </div>
@@ -238,7 +238,7 @@ export default function GestaoBlog() {
                 <textarea
                   value={formulario.descricao}
                   onChange={(event) => atualizarCampo('descricao', event.target.value)}
-                  className="min-h-28 rounded-xl border border-[#d8dee8] bg-white px-3 py-3 outline-none"
+                  className="min-h-28 w-full resize-y rounded-xl border border-[#d8dee8] bg-white px-3 py-3 outline-none"
                   placeholder="Texto que vai aparecer no card do blog"
                 />
               </label>
@@ -258,13 +258,13 @@ export default function GestaoBlog() {
 
                 <label className="grid gap-1.5">
                   <span className="text-xs font-black uppercase tracking-[0.14em] text-cinza-base">Data</span>
-                  <div className="flex items-center gap-2 rounded-xl border border-[#d8dee8] bg-white px-3">
-                    <CalendarDays size={16} className="text-cinza-base" />
+                  <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[#d8dee8] bg-white px-3">
+                    <CalendarDays size={16} className="shrink-0 text-cinza-base" />
                     <input
                       type="date"
                       value={formulario.data}
                       onChange={(event) => atualizarCampo('data', event.target.value)}
-                      className="h-11 w-full bg-transparent outline-none"
+                      className="h-11 min-w-0 w-full bg-transparent outline-none"
                     />
                   </div>
                 </label>
@@ -285,12 +285,12 @@ export default function GestaoBlog() {
                     </p>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 rounded-xl border border-[#d8dee8] bg-white px-3">
-                    <ImagePlus size={16} className="text-cinza-base" />
+                  <div className="flex min-w-0 items-center gap-2 rounded-xl border border-[#d8dee8] bg-white px-3">
+                    <ImagePlus size={16} className="shrink-0 text-cinza-base" />
                     <input
                       value={formulario.imagemUrl ?? ''}
                       onChange={(event) => atualizarCampo('imagemUrl', event.target.value)}
-                      className="h-11 w-full bg-transparent outline-none"
+                      className="h-11 min-w-0 w-full bg-transparent outline-none"
                       placeholder="URL da imagem"
                     />
                   </div>
@@ -305,11 +305,11 @@ export default function GestaoBlog() {
 
               {erro && <p className="text-sm font-semibold text-red-600">{erro}</p>}
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                 <button
                   type="submit"
                   disabled={salvando}
-                  className="inline-flex items-center gap-2 rounded-xl bg-preto-v1 px-5 py-3 font-barlow-condensed text-sm font-black uppercase text-white disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-preto-v1 px-5 py-3 font-barlow-condensed text-sm font-black uppercase text-white disabled:opacity-60"
                 >
                   {salvando ? <LoaderCircle size={16} className="animate-spin" /> : <Save size={16} />}
                   {salvando ? 'Salvando...' : 'Salvar post'}
@@ -327,7 +327,7 @@ export default function GestaoBlog() {
             </form>
           </section>
 
-          <section className="rounded-2xl border border-[#dde2ea] bg-white p-5 shadow-sm">
+          <section className="min-w-0 rounded-2xl border border-[#dde2ea] bg-white p-4 shadow-sm sm:p-5">
             <h2 className="font-barlow-condensed text-2xl font-black uppercase text-preto-v1">
               Posts cadastrados
             </h2>
@@ -335,28 +335,30 @@ export default function GestaoBlog() {
             {carregando ? (
               <p className="mt-6 text-sm text-cinza-base">Carregando posts...</p>
             ) : (
-              <div className="mt-5 space-y-3">
+              <div className="mt-5 max-h-[44rem] space-y-3 overflow-y-auto pr-1">
                 {posts.length === 0 ? (
                   <p className="text-sm text-cinza-base">Nenhum post cadastrado.</p>
                 ) : (
                   posts.map((post) => (
                     <article
                       key={post.id}
-                      className={`rounded-2xl border p-3 transition ${formulario.id === post.id ? 'border-amarelo bg-amarelo/10' : 'border-[#d8dee8] bg-white'}`}
+                      className={`min-w-0 overflow-hidden rounded-2xl border p-3 transition ${formulario.id === post.id ? 'border-amarelo bg-amarelo/10' : 'border-[#d8dee8] bg-white'}`}
                     >
-                      <div className="flex gap-3">
-                        <img
-                          src={resolverImagemBlogApi(post.imagem_url) ?? ''}
-                          alt={post.titulo}
-                          className="h-20 w-28 rounded-xl object-cover"
-                        />
+                      <div className="flex flex-col gap-3 sm:flex-row">
+                        {resolverImagemBlogApi(post.imagem_url) && (
+                          <img
+                            src={resolverImagemBlogApi(post.imagem_url) ?? ''}
+                            alt={post.titulo}
+                            className="h-32 w-full rounded-xl object-cover sm:h-20 sm:w-28 sm:shrink-0"
+                          />
+                        )}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-start justify-between gap-2">
-                            <div>
+                            <div className="min-w-0">
                               <p className="text-[10px] font-black uppercase tracking-[0.16em] text-cinza-base">
                                 {post.tipo}
                               </p>
-                              <h3 className="truncate font-barlow-condensed text-lg font-black uppercase text-preto-v1">
+                              <h3 className="break-words font-barlow-condensed text-lg font-black uppercase leading-5 text-preto-v1">
                                 {post.titulo}
                               </h3>
                             </div>
@@ -364,8 +366,8 @@ export default function GestaoBlog() {
                               #{post.id}
                             </span>
                           </div>
-                          <p className="mt-1 line-clamp-2 text-xs text-cinza-base">{post.descricao}</p>
-                          <div className="mt-3 flex items-center gap-2">
+                          <p className="mt-1 line-clamp-3 break-words text-xs leading-5 text-cinza-base">{post.descricao}</p>
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
                             <button
                               type="button"
                               onClick={() => selecionarPost(post)}

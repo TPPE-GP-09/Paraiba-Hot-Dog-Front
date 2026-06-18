@@ -22,6 +22,7 @@ const ABAS_COZINHA: Array<{ id: AbaCozinha; label: string }> = [
   { id: 'entregues', label: 'Entregues' },
   { id: 'cancelados', label: 'Cancelados' },
 ]
+const TEMPO_PEDIDO_ENTREGUE_NA_FILA_MS = 20000
 
 function textoQuantidadePedidos(
   aba: AbaCozinha,
@@ -468,6 +469,7 @@ export default function Cozinha() {
   const [busca, setBusca] = useState('')
   const [unidades, setUnidades] = useState<Unidade[]>([])
   const [unidadeSelecionadaId, setUnidadeSelecionadaId] = useState<number | null>(null)
+  const entreguesRecentesRef = useRef<Record<string, number>>({})
 
   const unidadeSelecionada = useMemo(
     () => unidades.find((unidade) => unidade.id === unidadeSelecionadaId) ?? null,
@@ -482,7 +484,13 @@ export default function Cozinha() {
       setErro('')
       const items = await listarCozinha(unidadeSelecionadaId)
       const grupos = agruparItens(items)
-      setFila(grupos.filter((p) => p.status !== 'entregue' && p.status !== 'cancelado'))
+      const agora = Date.now()
+      setFila(grupos.filter((p) => {
+        if (p.status === 'cancelado') return false
+        if (p.status !== 'entregue') return true
+
+        return (entreguesRecentesRef.current[`${p.id}-${p.lote}`] ?? 0) > agora
+      }))
       setEntregues(grupos.filter((p) => p.status === 'entregue'))
     } catch {
       setErro('Não foi possível carregar a fila da API.')
@@ -584,8 +592,21 @@ export default function Cozinha() {
 
   function atualizarPedidoLocal(pedido: PedidoCozinha, status: 'preparando' | 'entregue') {
     if (status === 'entregue') {
-      setFila((atual) => atual.filter((item) => !(item.id === pedido.id && item.lote === pedido.lote)))
-      setEntregues((atual) => [{ ...pedido, status: 'entregue' }, ...atual])
+      const key = `${pedido.id}-${pedido.lote}`
+      const pedidoEntregue = { ...pedido, status: 'entregue' as const }
+      entreguesRecentesRef.current[key] = Date.now() + TEMPO_PEDIDO_ENTREGUE_NA_FILA_MS
+
+      setFila((atual) =>
+        atual.map((item) => (item.id === pedido.id && item.lote === pedido.lote ? pedidoEntregue : item)),
+      )
+      setEntregues((atual) => [
+        pedidoEntregue,
+        ...atual.filter((item) => !(item.id === pedido.id && item.lote === pedido.lote)),
+      ])
+      window.setTimeout(() => {
+        delete entreguesRecentesRef.current[key]
+        setFila((atual) => atual.filter((item) => !(item.id === pedido.id && item.lote === pedido.lote)))
+      }, TEMPO_PEDIDO_ENTREGUE_NA_FILA_MS)
       return
     }
 

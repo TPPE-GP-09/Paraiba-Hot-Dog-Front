@@ -72,6 +72,14 @@ const papelClassName: Record<PapelUsuario, string> = {
   Cozinha: 'bg-[#ff674f] text-white',
 }
 
+function rotuloFilial(usuario: UsuarioApi, unidades: Unidade[]) {
+  if (usuario.funcao === 'administrador' && usuario.unidade_id === null) {
+    return 'Todas as unidades'
+  }
+
+  return unidades.find((item) => item.id === usuario.unidade_id)?.nome ?? 'Sem filial'
+}
+
 export default function GestaoUsuarios() {
   const [usuariosApi, setUsuariosApi] = useState<UsuarioApi[]>([])
   const [permissoes, setPermissoes] = useState<PermissaoApi[]>([])
@@ -486,12 +494,20 @@ function ModalUsuario({
 
   function enviar(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    onSalvar({ nome, email, senha, funcao: funcaoPorPapel[papel], unidadeId, permissaoIds })
+    onSalvar({
+      nome,
+      email,
+      senha,
+      funcao: funcaoPorPapel[papel],
+      unidadeId: papel === 'Administrador' ? null : unidadeId,
+      permissaoIds,
+    })
   }
 
   function trocarPapel(novoPapel: PapelUsuario) {
     setPapel(novoPapel)
     setPermissaoIds(idsPermissoesSugeridas(novoPapel, permissoes))
+    if (novoPapel === 'Administrador') setUnidadeId(null)
   }
 
   function alternarPermissao(permissaoId: number) {
@@ -500,7 +516,7 @@ function ModalUsuario({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/55 p-4" role="dialog" aria-modal="true" aria-label={usuario ? 'Editar usuário' : 'Novo usuário'}>
-      <form onSubmit={enviar} className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+      <form onSubmit={enviar} className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl [scrollbar-width:none] sm:p-6 [&::-webkit-scrollbar]:hidden">
         <div className="flex items-center justify-between gap-4">
           <h2 className="font-barlow-condensed text-2xl font-bold">{usuario ? 'Editar usuário' : 'Novo usuário'}</h2>
           <button type="button" onClick={onFechar} aria-label="Fechar" className="rounded-lg p-2 hover:bg-gray-100"><X className="h-5 w-5" /></button>
@@ -510,7 +526,7 @@ function ModalUsuario({
           <CampoTexto rotulo="Email" valor={email} onChange={setEmail} tipo="email" />
           <CampoTexto rotulo={usuario ? 'Nova senha (opcional)' : 'Senha'} valor={senha} onChange={setSenha} tipo="password" obrigatorio={!usuario} />
           <label className="grid gap-1.5 font-barlow text-sm font-semibold">Papel<select value={papel} onChange={(event) => trocarPapel(event.target.value as PapelUsuario)} className="h-11 rounded-lg border border-[#d7dce4] bg-white px-3 font-normal outline-none focus:border-amarelo focus:ring-2 focus:ring-amarelo/25"><option>Administrador</option><option>Caixa</option><option>Cozinha</option></select></label>
-          <label className="grid gap-1.5 font-barlow text-sm font-semibold">Filial<select value={unidadeId ?? ''} onChange={(event) => setUnidadeId(event.target.value ? Number(event.target.value) : null)} className="h-11 rounded-lg border border-[#d7dce4] bg-white px-3 font-normal outline-none focus:border-amarelo focus:ring-2 focus:ring-amarelo/25"><option value="">Sem filial</option>{unidades.map((unidade) => <option key={unidade.id} value={unidade.id}>{unidade.nome}</option>)}</select></label>
+          <label className="grid gap-1.5 font-barlow text-sm font-semibold">Filial<select value={papel === 'Administrador' ? '' : unidadeId ?? ''} onChange={(event) => setUnidadeId(event.target.value ? Number(event.target.value) : null)} disabled={papel === 'Administrador'} className="h-11 rounded-lg border border-[#d7dce4] bg-white px-3 font-normal outline-none focus:border-amarelo focus:ring-2 focus:ring-amarelo/25 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"><option value="">{papel === 'Administrador' ? 'Todas as unidades' : 'Sem filial'}</option>{unidades.map((unidade) => <option key={unidade.id} value={unidade.id}>{unidade.nome}</option>)}</select><span className="text-xs font-normal text-cinza-base/60">{papel === 'Administrador' ? 'Administradores podem acessar todas as unidades.' : 'Caixa e cozinha ficam vinculados a uma filial.'}</span></label>
           <fieldset className="rounded-xl border border-[#d7dce4] p-4">
             <legend className="px-1 font-barlow text-sm font-semibold">Permissões de acesso</legend>
             <p className="mb-3 font-barlow text-xs text-cinza-base/60">Personalize os módulos que este usuário poderá acessar.</p>
@@ -530,7 +546,6 @@ function CampoTexto({ rotulo, valor, onChange, tipo = 'text', obrigatorio = true
 }
 
 function mapearUsuario(usuario: UsuarioApi, unidades: Unidade[]): UsuarioPainel {
-  const unidade = unidades.find((item) => item.id === usuario.unidade_id)
   return {
     id: usuario.id,
     nome: usuario.nome,
@@ -538,7 +553,7 @@ function mapearUsuario(usuario: UsuarioApi, unidades: Unidade[]): UsuarioPainel 
     funcao: usuario.funcao,
     papel: papelPorFuncao[usuario.funcao],
     unidadeId: usuario.unidade_id,
-    filial: unidade?.nome ?? 'Sem filial',
+    filial: rotuloFilial(usuario, unidades),
     permissaoIds: usuario.permissoes.map((permissao) => permissao.id),
     acessos: usuario.permissoes.map((permissao) => permissaoLabels[permissao.nome]),
   }
