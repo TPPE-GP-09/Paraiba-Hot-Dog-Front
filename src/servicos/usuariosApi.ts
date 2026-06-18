@@ -35,6 +35,11 @@ export type UsuarioUpdateApi = Partial<Omit<UsuarioCreateApi, 'senha'>> & {
   senha?: string
 }
 
+type ListarUsuariosParams = {
+  email?: string | null
+  nome?: string | null
+}
+
 async function respostaJson<T>(response: Response): Promise<T> {
   if (response.ok) return response.json() as Promise<T>
 
@@ -50,8 +55,8 @@ async function respostaJson<T>(response: Response): Promise<T> {
   throw new Error(mensagem)
 }
 
-export async function listarUsuariosApi() {
-  return respostaJson<UsuarioApi[]>(await apiFetch('/usuarios/'))
+export async function listarUsuariosApi(params?: ListarUsuariosParams) {
+  return respostaJson<UsuarioApi[]>(await apiFetch('/usuarios/', { params }))
 }
 
 export async function listarPermissoesApi() {

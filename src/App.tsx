@@ -16,10 +16,17 @@ import RecuperarSenha from './telas/usuario/RecuperarSenha'
 import RedefinirSenha from './telas/usuario/RedefinirSenha'
 import UnidadeAraucarias from './telas/usuario/UnidadeAraucarias'
 import AnotarPedidos from './telas/administrador/AnotarPedidos'
+import type { NomePermissaoApi } from './servicos/usuariosApi'
 
 export default function App() {
   const { pathname } = window.location
-  const { isAuthenticated, hasRole } = useAuth()
+  const {
+    isAuthenticated,
+    hasRole,
+    hasPermission,
+    isLoadingUser,
+    permissoes,
+  } = useAuth()
 
   useEffect(() => {
     document.title = getPageTitle(pathname)
@@ -37,12 +44,21 @@ export default function App() {
     pathname.startsWith('/admin') ||
     pathname === '/dashboard' ||
     pathname === '/cozinha'
+  const permissaoRota = getRequiredPermission(pathname)
 
   if (rotaAdministrativa && !isAuthenticated) {
     return <Login />
   }
 
-  if (rotaAdministrativa && !hasRole('administrador')) {
+  if (rotaAdministrativa && isLoadingUser) {
+    return <CarregandoAcesso />
+  }
+
+  if (rotaAdministrativa && !hasRole('administrador') && permissoes.length === 0) {
+    return <AcessoNegado />
+  }
+
+  if (permissaoRota && !hasPermission(permissaoRota)) {
     return <AcessoNegado />
   }
 
@@ -132,9 +148,28 @@ function getPageTitle(pathname: string) {
   return baseTitle
 }
 
+function getRequiredPermission(pathname: string): NomePermissaoApi | null {
+  if (pathname === '/admin/anotar-pedidos') return 'anotar_pedidos'
+  if (pathname === '/dashboard' || pathname === '/admin/dashboard') return 'dashboard'
+  if (pathname === '/cozinha' || pathname === '/admin/cozinha') return 'cozinha'
+  if (pathname === '/admin/cardapio' || pathname.startsWith('/admin/configuracoes/')) {
+    return 'configuracoes'
+  }
+
+  return null
+}
+
 function RedirectTo({ href }: { href: string }) {
   window.location.replace(href)
   return null
+}
+
+function CarregandoAcesso() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-branco px-6 text-center">
+      <p className="font-barlow text-cinza-base">Carregando permissões...</p>
+    </main>
+  )
 }
 
 function AcessoNegado() {
