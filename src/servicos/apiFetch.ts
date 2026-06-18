@@ -73,18 +73,8 @@ export async function apiFetch(path: string, { auth = true, baseUrl, params, hea
     requestHeaders.set('Authorization', `Bearer ${token}`)
   }
 
-  const response = await fetch(buildApiUrl(path, params, baseUrl), {
+  return fetch(buildApiUrl(path, params, baseUrl), {
     ...options,
     headers: requestHeaders,
   })
-
-  if (auth && response.status === 401) {
-    clearAuthTokens()
-
-    if (!window.location.pathname.startsWith('/login')) {
-      window.location.href = '/login'
-    }
-  }
-
-  return response
 }
