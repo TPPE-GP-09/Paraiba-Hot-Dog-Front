@@ -251,6 +251,10 @@ export default function GestaoUnidades() {
     <div className={`min-h-screen bg-[#edf2f8] text-preto-v1 ${CLASSE_OFFSET_BARRA_ADMIN}`}>
       <BarraDeNavegacaoAdmin />
 
+      {notificacao && (
+        <Notificacao mensagem={notificacao} onFechar={() => setNotificacao(null)} />
+      )}
+
       <main className="mx-auto grid w-full max-w-[90rem] gap-5 px-4 py-6 sm:px-6 lg:grid-cols-[19rem_minmax(0,1fr)] lg:px-8 lg:py-8">
         <aside className="h-fit overflow-hidden rounded-2xl border border-[#d8dee7] bg-white shadow-sm lg:sticky lg:top-6">
           <div className="border-b border-[#e2e6ec] p-5">
@@ -268,9 +272,6 @@ export default function GestaoUnidades() {
                   </p>
                 </div>
               </div>
-              {notificacao && (
-                <Notificacao mensagem={notificacao} onFechar={() => setNotificacao(null)} />
-              )}
             </div>
             <button
               type="button"
@@ -455,7 +456,7 @@ export default function GestaoUnidades() {
 
       {unidadeParaExcluir && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 px-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="titulo-excluir-unidade"
@@ -514,12 +515,12 @@ function Notificacao({
 
   return (
     <div
-      className="flex items-center gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50 px-6 py-4 font-barlow text-sm font-medium text-emerald-800 shadow-[0_4px_16px_rgba(16,185,129,0.1)] sm:text-base"
+      className="fixed bottom-6 right-6 z-[70] flex items-center gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50 px-6 py-4 font-barlow text-sm font-medium text-emerald-800 shadow-[0_4px_16px_rgba(16,185,129,0.15)]"
       role="status"
       aria-live="polite"
     >
-      <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600 sm:h-6 sm:w-6" aria-hidden />
-      <span className="whitespace-nowrap">{mensagem}</span>
+      <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" aria-hidden />
+      <span>{mensagem}</span>
     </div>
   )
 }
