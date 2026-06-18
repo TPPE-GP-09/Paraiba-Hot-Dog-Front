@@ -16,10 +16,6 @@ type ResultadoFidelidade =
     }
   | null;
 
-function formatarMensagemNaoEncontrado() {
-  return "Não encontramos seu cadastro. Confira se digitou corretamente.";
-}
-
 export default function CartaoFidelidade() {
   const [cadastro, setCadastro] = useState("");
   const [consultando, setConsultando] = useState(false);
@@ -53,7 +49,6 @@ export default function CartaoFidelidade() {
       }
 
       if (!fidelidade) {
-        setMensagem(formatarMensagemNaoEncontrado());
         setResultado({ status: "nao-encontrado" });
         return;
       }

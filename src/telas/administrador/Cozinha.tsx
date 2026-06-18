@@ -3,7 +3,6 @@ import { ChevronDown, Search } from 'lucide-react'
 import BarraDeNavegacaoAdmin, {
   CLASSE_OFFSET_BARRA_ADMIN,
 } from '../../componentes/administrador/BarraDeNavegacaoAdmin'
-import { cozinhaMockItems, pedidosCanceladosMock } from '../../dados/cozinhaMock'
 import {
   atualizarStatusCozinha,
   cancelarPedido,
@@ -359,9 +358,9 @@ function PedidoCard({
 
   return (
     <article
-      className={`flex w-[min(88vw,320px)] shrink-0 snap-start flex-col self-stretch overflow-hidden rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] max-lg:h-full lg:h-auto lg:w-full lg:max-w-[320px] lg:shrink ${cardSurface}`}
+      className={`w-[min(100%,300px)] shrink-0 snap-start overflow-hidden rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.08)] sm:w-[300px] ${cardSurface}`}
     >
-      <div className="flex shrink-0 items-center justify-between px-4 pt-4 pb-3">
+      <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <span className="font-barlow-condensed text-sm font-black uppercase tracking-wider text-preto-v1">
           Pedido #{pedido.id}
         </span>
@@ -370,9 +369,9 @@ function PedidoCard({
         </time>
       </div>
 
-      <div className="mx-4 mb-4 h-px shrink-0 bg-[#e8e8e8]" />
+      <div className="mx-4 mb-4 h-px bg-[#e8e8e8]" />
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+      <div className="min-h-[180px] px-4 pb-4">
         <p className="mb-3 text-xs font-bold tracking-widest uppercase text-[#999]">{pedido.mesa}</p>
         <div className="space-y-4">
           {pedido.itens.map((item, index) => (
@@ -403,10 +402,10 @@ function PedidoCard({
         </div>
       </div>
 
-      <div className="mx-4 h-px shrink-0 bg-[#e8e8e8]" />
+      <div className="mx-4 h-px bg-[#e8e8e8]" />
 
       {entregue || cancelado ? (
-        <div className="shrink-0 px-4 py-3">
+        <div className="px-4 py-3">
           <div
             className={`flex min-h-11 items-center justify-center rounded-[6px] px-3 py-2 text-center font-barlow-condensed text-sm font-semibold uppercase leading-snug tracking-wide sm:text-base ${
               cancelado
@@ -418,7 +417,7 @@ function PedidoCard({
           </div>
         </div>
       ) : (
-        <footer className="grid shrink-0 grid-cols-3 gap-2 px-4 py-3">
+        <footer className="grid grid-cols-3 gap-2 px-4 py-3">
           <button
             className={`${acaoBotaoBase} ${
               preparando
@@ -453,30 +452,18 @@ function PedidoCard({
   )
 }
 
-function carregarMockCozinha() {
-  const grupos = agruparItens(cozinhaMockItems)
-  return {
-    fila: grupos.filter((p) => p.status !== 'entregue' && p.status !== 'cancelado'),
-    entregues: grupos.filter((p) => p.status === 'entregue'),
-    cancelados: pedidosCanceladosParaCards(pedidosCanceladosMock),
-  }
-}
-
-export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
-  const mockInicial = modoMock ? carregarMockCozinha() : null
+export default function Cozinha() {
   const [aba, setAba] = useState<AbaCozinha>('fila')
-  const [cancelados, setCancelados] = useState<PedidoCozinha[]>(mockInicial?.cancelados ?? [])
-  const [entregues, setEntregues] = useState<PedidoCozinha[]>(mockInicial?.entregues ?? [])
+  const [cancelados, setCancelados] = useState<PedidoCozinha[]>([])
+  const [entregues, setEntregues] = useState<PedidoCozinha[]>([])
   const [erro, setErro] = useState('')
-  const [fila, setFila] = useState<PedidoCozinha[]>(mockInicial?.fila ?? [])
-  const [loading, setLoading] = useState(!modoMock)
+  const [fila, setFila] = useState<PedidoCozinha[]>([])
+  const [loading, setLoading] = useState(true)
   const [pedidoCancelando, setPedidoCancelando] = useState<PedidoCozinha | null>(null)
   const [updatingKey, setUpdatingKey] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
 
   async function carregarCozinha() {
-    if (modoMock) return
-
     try {
       setLoading(true)
       setErro('')
@@ -494,11 +481,6 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
   }
 
   async function carregarCancelados() {
-    if (modoMock) {
-      setCancelados(pedidosCanceladosParaCards(pedidosCanceladosMock))
-      return
-    }
-
     try {
       setLoading(true)
       setErro('')
@@ -513,14 +495,12 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
   }
 
   useEffect(() => {
-    if (modoMock) return
-
     const timeout = window.setTimeout(() => {
       void carregarCozinha()
     }, 0)
 
     return () => window.clearTimeout(timeout)
-  }, [modoMock])
+  }, [])
 
   const pedidosVisiveis = useMemo(() => {
     if (aba === 'fila') return fila
@@ -558,9 +538,7 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
     setUpdatingKey(key)
 
     try {
-      if (!modoMock) {
-        await atualizarStatusCozinha(pedido.id, pedido.lote, status)
-      }
+      await atualizarStatusCozinha(pedido.id, pedido.lote, status)
       atualizarPedidoLocal(pedido, status)
     } catch {
       setErro('Não foi possível atualizar o pedido agora.')
@@ -576,7 +554,7 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
   }
 
   return (
-    <main className={`flex h-dvh flex-col overflow-hidden bg-branco text-preto-v1 lg:h-auto lg:min-h-screen lg:overflow-visible ${CLASSE_OFFSET_BARRA_ADMIN}`}>
+    <main className={`min-h-screen bg-branco text-preto-v1 ${CLASSE_OFFSET_BARRA_ADMIN}`}>
       {pedidoCancelando && (
         <CancelarModal
           pedido={pedidoCancelando}
@@ -584,9 +562,7 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
           onConfirmar={async (motivo) => {
             if (!pedidoCancelando) return
             try {
-              if (!modoMock) {
-                await cancelarPedido(pedidoCancelando.id, motivo)
-              }
+              await cancelarPedido(pedidoCancelando.id, motivo)
               cancelarPedidoLocal(pedidoCancelando)
             } catch {
               setErro('Não foi possível cancelar o pedido agora.')
@@ -597,14 +573,8 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
 
       <BarraDeNavegacaoAdmin />
 
-      <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-branco px-3 py-4 sm:px-6 sm:py-6 lg:min-h-[calc(100vh-4rem)] lg:flex-none lg:overflow-visible lg:px-8 lg:py-10">
-        {modoMock && (
-          <div className="mb-4 shrink-0 rounded-lg border border-amarelo/60 bg-amarelo/10 px-4 py-2.5 text-center font-barlow text-sm text-preto-v1 lg:mx-auto lg:max-w-4xl">
-            Modo demonstração — dados fictícios para visualização
-          </div>
-        )}
-
-        <div className="mb-4 flex shrink-0 flex-col gap-2 sm:mb-5 sm:flex-row sm:items-center sm:gap-3 lg:mx-auto lg:mb-8 lg:max-w-4xl">
+      <section className="min-h-[calc(100vh-4rem)] bg-branco px-3 py-4 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 lg:mx-auto lg:mb-8 lg:max-w-4xl">
           <div className="min-w-0 flex-1">
             <SeletorAbaCozinha
               aba={aba}
@@ -628,13 +598,13 @@ export default function Cozinha({ modoMock = false }: { modoMock?: boolean }) {
         </div>
 
         {!loading && (
-          <p className="mb-3 shrink-0 font-barlow text-sm text-[#666666] sm:mb-4 lg:mx-auto lg:max-w-3xl">
+          <p className="mb-4 font-barlow text-sm text-[#666666] lg:mx-auto lg:max-w-3xl">
             {textoContagem}
           </p>
         )}
 
         {(loading || erro) && (
-          <p className="mb-3 min-h-6 shrink-0 font-barlow text-xs font-bold text-[#777] sm:mb-5">
+          <p className="mb-5 min-h-6 font-barlow text-xs font-bold text-[#777]">
             {loading ? 'Carregando pedidos...' : erro}
           </p>
         )}
