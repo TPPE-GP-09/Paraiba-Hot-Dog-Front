@@ -47,20 +47,24 @@ function FaqItem({ pergunta, resposta, isOpen, onToggle }: FaqItemProps) {
         </span>
         <ChevronDown
           aria-hidden
-          className={`h-5 w-5 shrink-0 text-amarelo transition-transform duration-300 min-[490px]:h-6 min-[490px]:w-6 ${
+          className={`h-5 w-5 shrink-0 text-amarelo transition-transform duration-150 min-[490px]:h-6 min-[490px]:w-6 ${
             isOpen ? 'rotate-180' : ''
           }`}
           strokeWidth={2.5}
         />
       </button>
 
-      {isOpen && (
+      <div
+        className={`overflow-hidden transition-[max-height] duration-150 ease-out ${
+          isOpen ? 'max-h-40' : 'max-h-0'
+        }`}
+      >
         <div className="px-5 pb-4 pt-0 min-[490px]:px-6 min-[490px]:pb-5">
           <p className="text-left font-barlow text-base font-normal text-branco min-[490px]:text-lg">
             {resposta}
           </p>
         </div>
-      )}
+      </div>
     </div>
   )
 }
@@ -83,7 +87,7 @@ export default function DuvidasFrequentes() {
         Dúvidas <span className="text-amarelo">Frequentes</span>
       </h2>
 
-      <div className="mt-6 flex w-full max-w-3xl flex-col gap-2 min-[490px]:mt-8 min-[490px]:gap-2.5">
+      <div className="mx-auto mt-6 flex w-full max-w-3xl flex-col gap-2 min-[490px]:mt-8 min-[490px]:gap-2.5">
         {faqItems.map(({ pergunta, resposta }, index) => (
           <FaqItem
             key={pergunta}
