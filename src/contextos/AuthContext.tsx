@@ -10,6 +10,12 @@ import { listarUsuariosApi, type UsuarioApi } from '../servicos/usuariosApi'
 import { AuthContext, type AuthContextValue } from './authContextCore'
 
 const loggedUserEmailKey = 'logged_user_email'
+const permissoesAdministrador = [
+  'anotar_pedidos',
+  'cozinha',
+  'dashboard',
+  'configuracoes',
+] as const
 
 function readCookie(name: string) {
   const cookie = document.cookie
@@ -36,10 +42,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoadingUser, setIsLoadingUser] = useState(false)
   const token = readToken()
   const roles = tokenExpirado(token) ? [] : extrairRolesToken(token)
+  const isAdministrador = roles.includes('administrador')
   const isAuthenticated = Boolean(token) && !tokenExpirado(token)
   const permissoes = useMemo(
-    () => usuarioAtual?.permissoes.map((permissao) => permissao.nome) ?? [],
-    [usuarioAtual],
+    () =>
+      usuarioAtual?.permissoes.map((permissao) => permissao.nome) ??
+      (isAdministrador ? [...permissoesAdministrador] : []),
+    [isAdministrador, usuarioAtual],
   )
 
   useEffect(() => {
@@ -49,6 +58,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const subject = extrairSubjectToken(token)
 
     if (!isAuthenticated) {
+      setUsuarioAtual(null)
+      setIsLoadingUser(false)
+      return
+    }
+
+    if (isAdministrador) {
       setUsuarioAtual(null)
       setIsLoadingUser(false)
       return
@@ -83,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       ativo = false
     }
-  }, [isAuthenticated, token])
+  }, [isAuthenticated, isAdministrador, token])
 
   const value = useMemo<AuthContextValue>(() => {
     const getToken = () => readToken()
@@ -100,8 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return token ? { Authorization: `Bearer ${token}` } : ({} as HeadersInit)
       },
       hasRole: (role) => roles.includes(role),
-      hasPermission: (permission) =>
-        permissoes.includes(permission) || (!usuarioAtual && roles.includes('administrador')),
+      hasPermission: (permission) => permissoes.includes(permission),
     }
   }, [isAuthenticated, isLoadingUser, permissoes, roles, token, usuarioAtual])
 

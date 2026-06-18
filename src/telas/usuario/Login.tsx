@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import logoBranca from '../../imagens/logos/logo-branca.png'
+import { clearAuthTokens } from '../../servicos/apiFetch'
 import { loginWithKeycloak } from '../../servicos/authApi'
 import { extrairEmailToken, tokenPossuiRole } from '../../servicos/authToken'
 import { listarUsuariosApi } from '../../servicos/usuariosApi'
@@ -16,6 +17,7 @@ export default function Login() {
     setLoading(true)
 
     try {
+      clearAuthTokens()
       const tokens = await loginWithKeycloak(email, password)
       localStorage.setItem('logged_user_email', email)
 
@@ -34,6 +36,7 @@ export default function Login() {
       window.location.href = '/'
     } catch (error) {
       console.error('Login error:', error)
+      clearAuthTokens()
       alert('Credenciais invalidas ou servidor fora do ar. Verifique seus dados e tente novamente.')
     } finally {
       setLoading(false)
