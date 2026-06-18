@@ -1,5 +1,8 @@
 type JwtPayload = {
   exp?: number
+  sub?: string
+  email?: string
+  preferred_username?: string
   realm_access?: {
     roles?: string[]
   }
@@ -45,4 +48,14 @@ export function tokenExpirado(token: string | null) {
 
 export function tokenPossuiRole(token: string | null, role: string) {
   return extrairRolesToken(token).includes(role)
+}
+
+export function extrairEmailToken(token: string | null) {
+  const payload = lerPayloadToken(token)
+
+  return payload?.email ?? payload?.preferred_username ?? null
+}
+
+export function extrairSubjectToken(token: string | null) {
+  return lerPayloadToken(token)?.sub ?? null
 }

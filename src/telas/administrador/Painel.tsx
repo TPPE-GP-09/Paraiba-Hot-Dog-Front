@@ -6,6 +6,7 @@ import ModalConfirmacaoSaida from '../../componentes/administrador/painel/ModalC
 import OpcoesPainel from '../../componentes/administrador/painel/OpcoesPainel'
 import SeletorUnidade from '../../componentes/administrador/painel/SeletorUnidade'
 import { listarUnidades } from '../../servicos/api'
+import { useAuth } from '../../contextos/useAuth'
 
 export default function Painel() {
   const [unidades, setUnidades] = useState<string[]>([])
@@ -13,15 +14,25 @@ export default function Painel() {
   const [carregandoUnidades, setCarregandoUnidades] = useState(true)
   const [erroUnidades, setErroUnidades] = useState(false)
   const [modalSairAberto, setModalSairAberto] = useState(false)
+  const { usuarioAtual, isLoadingUser } = useAuth()
+  const unidadeUsuarioId = usuarioAtual?.unidade_id ?? null
 
   useEffect(() => {
+    if (isLoadingUser) {
+      setCarregandoUnidades(true)
+      return
+    }
+
     let ativo = true
 
     listarUnidades()
       .then((unidadesApi) => {
         if (!ativo) return
 
-        const nomes = unidadesApi.map((unidade) => unidade.nome)
+        const unidadesPermitidas = unidadeUsuarioId
+          ? unidadesApi.filter((unidade) => unidade.id === unidadeUsuarioId)
+          : unidadesApi
+        const nomes = unidadesPermitidas.map((unidade) => unidade.nome)
         setUnidades(nomes)
         setUnidadeSelecionada(nomes[0] ?? '')
       })
@@ -35,7 +46,7 @@ export default function Painel() {
     return () => {
       ativo = false
     }
-  }, [])
+  }, [isLoadingUser, unidadeUsuarioId])
 
   function abrirModalSair() {
     setModalSairAberto(true)
@@ -84,6 +95,7 @@ export default function Painel() {
                 opcoes={unidades}
                 valor={unidadeSelecionada}
                 onChange={setUnidadeSelecionada}
+                disabled={Boolean(unidadeUsuarioId)}
               />
             )}
           </div>

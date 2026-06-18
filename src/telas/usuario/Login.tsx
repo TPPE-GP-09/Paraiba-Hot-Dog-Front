@@ -2,7 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import logoBranca from '../../imagens/logos/logo-branca.png'
 import { loginWithKeycloak } from '../../servicos/authApi'
-import { tokenPossuiRole } from '../../servicos/authToken'
+import { extrairEmailToken, tokenPossuiRole } from '../../servicos/authToken'
+import { listarUsuariosApi } from '../../servicos/usuariosApi'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -16,8 +17,16 @@ export default function Login() {
 
     try {
       const tokens = await loginWithKeycloak(email, password)
+      localStorage.setItem('logged_user_email', email)
 
       if (tokenPossuiRole(tokens.access_token, 'administrador')) {
+        window.location.href = '/admin'
+        return
+      }
+
+      const emailToken = extrairEmailToken(tokens.access_token)
+      const usuarios = emailToken ? await listarUsuariosApi({ email: emailToken }) : []
+      if (usuarios[0]?.permissoes.length) {
         window.location.href = '/admin'
         return
       }

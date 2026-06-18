@@ -1,7 +1,15 @@
-import { useMemo, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { getStoredToken } from '../servicos/apiFetch'
-import { extrairRolesToken, tokenExpirado } from '../servicos/authToken'
+import {
+  extrairEmailToken,
+  extrairRolesToken,
+  extrairSubjectToken,
+  tokenExpirado,
+} from '../servicos/authToken'
+import { listarUsuariosApi, type UsuarioApi } from '../servicos/usuariosApi'
 import { AuthContext, type AuthContextValue } from './authContextCore'
+
+const loggedUserEmailKey = 'logged_user_email'
 
 function readCookie(name: string) {
   const cookie = document.cookie
@@ -24,23 +32,78 @@ function readToken() {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [usuarioAtual, setUsuarioAtual] = useState<UsuarioApi | null>(null)
+  const [isLoadingUser, setIsLoadingUser] = useState(false)
+  const token = readToken()
+  const roles = tokenExpirado(token) ? [] : extrairRolesToken(token)
+  const isAuthenticated = Boolean(token) && !tokenExpirado(token)
+  const permissoes = useMemo(
+    () => usuarioAtual?.permissoes.map((permissao) => permissao.nome) ?? [],
+    [usuarioAtual],
+  )
+
+  useEffect(() => {
+    const emailToken = extrairEmailToken(token)
+    const emailSalvo = localStorage.getItem(loggedUserEmailKey)
+    const identificadorEmail = emailToken?.includes('@') ? emailToken : emailSalvo
+    const subject = extrairSubjectToken(token)
+
+    if (!isAuthenticated) {
+      setUsuarioAtual(null)
+      setIsLoadingUser(false)
+      return
+    }
+
+    let ativo = true
+    setIsLoadingUser(true)
+
+    const carregarUsuario = identificadorEmail
+      ? listarUsuariosApi({ email: identificadorEmail })
+      : listarUsuariosApi()
+
+    carregarUsuario
+      .then((usuarios) => {
+        if (!ativo) return
+
+        const usuarioEncontrado =
+          usuarios.find((usuario) => subject && usuario.keycloak_id === subject) ??
+          usuarios.find((usuario) => emailToken && usuario.email === emailToken) ??
+          usuarios.find((usuario) => identificadorEmail && usuario.email === identificadorEmail) ??
+          null
+
+        setUsuarioAtual(usuarioEncontrado)
+      })
+      .catch(() => {
+        if (ativo) setUsuarioAtual(null)
+      })
+      .finally(() => {
+        if (ativo) setIsLoadingUser(false)
+      })
+
+    return () => {
+      ativo = false
+    }
+  }, [isAuthenticated, token])
+
   const value = useMemo<AuthContextValue>(() => {
     const getToken = () => readToken()
-    const token = getToken()
-    const roles = tokenExpirado(token) ? [] : extrairRolesToken(token)
-
     return {
       token,
       roles,
-      isAuthenticated: Boolean(token) && !tokenExpirado(token),
+      usuarioAtual,
+      permissoes,
+      isAuthenticated,
+      isLoadingUser,
       getToken,
       getAuthHeaders: () => {
         const token = getToken()
         return token ? { Authorization: `Bearer ${token}` } : ({} as HeadersInit)
       },
       hasRole: (role) => roles.includes(role),
+      hasPermission: (permission) =>
+        permissoes.includes(permission) || (!usuarioAtual && roles.includes('administrador')),
     }
-  }, [])
+  }, [isAuthenticated, isLoadingUser, permissoes, roles, token, usuarioAtual])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
