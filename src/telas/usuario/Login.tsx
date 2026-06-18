@@ -123,10 +123,7 @@ export default function Login() {
           <div className="mt-4 text-center">
             <button
               type="button"
-              onClick={() =>
-                (window.location.href =
-                  'http://localhost:8080/realms/master/login-actions/reset-credentials?client_id=account-console')
-              }
+              onClick={() => (window.location.href = '/esqueci-senha')}
               className="font-barlow text-sm text-cinza-base underline-offset-2 transition-colors hover:text-amarelo hover:underline"
             >
               Esqueci minha senha
