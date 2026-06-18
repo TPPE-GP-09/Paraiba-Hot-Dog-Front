@@ -3,6 +3,8 @@ import { ChevronDown, Search } from 'lucide-react'
 import BarraDeNavegacaoAdmin, {
   CLASSE_OFFSET_BARRA_ADMIN,
 } from '../../componentes/administrador/BarraDeNavegacaoAdmin'
+import { useAuth } from '../../contextos/useAuth'
+import { listarUnidades, type Unidade } from '../../servicos/api'
 import {
   atualizarStatusCozinha,
   cancelarPedido,
@@ -453,6 +455,8 @@ function PedidoCard({
 }
 
 export default function Cozinha() {
+  const { isLoadingUser, usuarioAtual } = useAuth()
+  const unidadeUsuarioId = usuarioAtual?.unidade_id ?? null
   const [aba, setAba] = useState<AbaCozinha>('fila')
   const [cancelados, setCancelados] = useState<PedidoCozinha[]>([])
   const [entregues, setEntregues] = useState<PedidoCozinha[]>([])
@@ -462,12 +466,21 @@ export default function Cozinha() {
   const [pedidoCancelando, setPedidoCancelando] = useState<PedidoCozinha | null>(null)
   const [updatingKey, setUpdatingKey] = useState<string | null>(null)
   const [busca, setBusca] = useState('')
+  const [unidades, setUnidades] = useState<Unidade[]>([])
+  const [unidadeSelecionadaId, setUnidadeSelecionadaId] = useState<number | null>(null)
+
+  const unidadeSelecionada = useMemo(
+    () => unidades.find((unidade) => unidade.id === unidadeSelecionadaId) ?? null,
+    [unidadeSelecionadaId, unidades],
+  )
 
   async function carregarCozinha() {
+    if (!unidadeSelecionadaId) return
+
     try {
       setLoading(true)
       setErro('')
-      const items = await listarCozinha()
+      const items = await listarCozinha(unidadeSelecionadaId)
       const grupos = agruparItens(items)
       setFila(grupos.filter((p) => p.status !== 'entregue' && p.status !== 'cancelado'))
       setEntregues(grupos.filter((p) => p.status === 'entregue'))
@@ -481,10 +494,12 @@ export default function Cozinha() {
   }
 
   async function carregarCancelados() {
+    if (!unidadeSelecionadaId) return
+
     try {
       setLoading(true)
       setErro('')
-      const pedidos = await listarPedidosCancelados()
+      const pedidos = await listarPedidosCancelados(unidadeSelecionadaId)
       setCancelados(pedidosCanceladosParaCards(pedidos))
     } catch {
       setErro('Não foi possível carregar os pedidos cancelados.')
@@ -495,12 +510,58 @@ export default function Cozinha() {
   }
 
   useEffect(() => {
+    if (isLoadingUser) return
+
+    let ativo = true
+    setLoading(true)
+
+    listarUnidades()
+      .then((unidadesApi) => {
+        if (!ativo) return
+
+        const unidadesPermitidas = unidadeUsuarioId
+          ? unidadesApi.filter((unidade) => unidade.id === unidadeUsuarioId)
+          : unidadesApi
+
+        setUnidades(unidadesPermitidas)
+        setUnidadeSelecionadaId(unidadesPermitidas[0]?.id ?? null)
+      })
+      .catch(() => {
+        if (!ativo) return
+        setErro('Não foi possível carregar as unidades.')
+        setUnidades([])
+        setUnidadeSelecionadaId(null)
+      })
+      .finally(() => {
+        if (ativo) setLoading(false)
+      })
+
+    return () => {
+      ativo = false
+    }
+  }, [isLoadingUser, unidadeUsuarioId])
+
+  useEffect(() => {
+    if (!unidadeSelecionadaId) return
+
+    if (aba === 'cancelados') {
+      void carregarCancelados()
+      return
+    }
+
     const timeout = window.setTimeout(() => {
       void carregarCozinha()
     }, 0)
 
-    return () => window.clearTimeout(timeout)
-  }, [])
+    const intervalo = window.setInterval(() => {
+      void carregarCozinha()
+    }, 5000)
+
+    return () => {
+      window.clearTimeout(timeout)
+      window.clearInterval(intervalo)
+    }
+  }, [aba, unidadeSelecionadaId])
 
   const pedidosVisiveis = useMemo(() => {
     if (aba === 'fila') return fila
@@ -574,6 +635,35 @@ export default function Cozinha() {
       <BarraDeNavegacaoAdmin />
 
       <section className="min-h-[calc(100vh-4rem)] bg-branco px-3 py-4 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
+        <div className="mb-4 lg:mx-auto lg:max-w-4xl">
+          <label
+            htmlFor="unidade-cozinha"
+            className="mb-1.5 block font-barlow-condensed text-xs font-black uppercase tracking-[0.18em] text-slate-400"
+          >
+            Unidade
+          </label>
+          <select
+            id="unidade-cozinha"
+            value={unidadeSelecionadaId ?? ''}
+            onChange={(event) => {
+              setUnidadeSelecionadaId(Number(event.target.value) || null)
+              setBusca('')
+              setFila([])
+              setEntregues([])
+              setCancelados([])
+            }}
+            disabled={Boolean(unidadeUsuarioId) || isLoadingUser || unidades.length <= 1}
+            className="h-10 w-full rounded-lg border border-slate-200 bg-white px-3 font-barlow text-sm text-preto-v1 outline-none focus:border-amarelo focus:ring-2 focus:ring-amarelo/25 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
+          >
+            {!unidadeSelecionada && <option value="">Selecione uma unidade</option>}
+            {unidades.map((unidade) => (
+              <option key={unidade.id} value={unidade.id}>
+                {unidade.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3 lg:mx-auto lg:mb-8 lg:max-w-4xl">
           <div className="min-w-0 flex-1">
             <SeletorAbaCozinha
