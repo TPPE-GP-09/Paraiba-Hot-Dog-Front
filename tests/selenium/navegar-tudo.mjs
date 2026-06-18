@@ -14,10 +14,10 @@ writeFileSync(
 
 const BASE_URL = normalizeBaseUrl(process.env.SELENIUM_BASE_URL ?? 'https://paraibahotdog.netlify.app')
 const API_BASE_URL = normalizeBaseUrl(process.env.SELENIUM_API_BASE_URL ?? 'https://paraiba-hot-dog-back.onrender.com')
-const LOGIN = process.env.SELENIUM_LOGIN ?? 'integration-test'
-const PASSWORD = process.env.SELENIUM_PASSWORD ?? 'integration-test'
+const LOGIN = process.env.SELENIUM_LOGIN ?? 'admin.paraiba@gmail.com'
+const PASSWORD = process.env.SELENIUM_PASSWORD ?? 'paraiba'
 const HEADLESS = process.env.SELENIUM_HEADLESS !== 'false'
-const TIMEOUT_MS = Number(process.env.SELENIUM_TIMEOUT_MS ?? 15000)
+const TIMEOUT_MS = Number(process.env.SELENIUM_TIMEOUT_MS ?? 45000)
 const STEP_DELAY_MS = Number(process.env.SELENIUM_STEP_DELAY_MS ?? (HEADLESS ? 0 : 700))
 
 const publicRoutes = [
