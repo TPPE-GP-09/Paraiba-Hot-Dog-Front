@@ -12,8 +12,8 @@ writeFileSync(
   Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'),
 )
 
-const BASE_URL = normalizeBaseUrl(process.env.SELENIUM_BASE_URL ?? 'http://localhost:5175/')
-const API_BASE_URL = normalizeBaseUrl(process.env.SELENIUM_API_BASE_URL ?? 'http://127.0.0.1:8000/')
+const BASE_URL = normalizeBaseUrl(process.env.SELENIUM_BASE_URL ?? 'https://paraibahotdog.netlify.app')
+const API_BASE_URL = normalizeBaseUrl(process.env.SELENIUM_API_BASE_URL ?? 'https://paraiba-hot-dog-back.onrender.com')
 const LOGIN = process.env.SELENIUM_LOGIN ?? 'integration-test'
 const PASSWORD = process.env.SELENIUM_PASSWORD ?? 'integration-test'
 const HEADLESS = process.env.SELENIUM_HEADLESS !== 'false'
