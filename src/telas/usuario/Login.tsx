@@ -1,12 +1,15 @@
 import { useState, type FormEvent } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import logoBranca from '../../imagens/logos/logo-branca.png'
 import { loginWithKeycloak } from '../../servicos/authApi'
-import { tokenPossuiRole } from '../../servicos/authToken'
+import { extrairEmailToken, tokenPossuiRole } from '../../servicos/authToken'
+import { listarUsuariosApi } from '../../servicos/usuariosApi'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -14,8 +17,16 @@ export default function Login() {
 
     try {
       const tokens = await loginWithKeycloak(email, password)
+      localStorage.setItem('logged_user_email', email)
 
       if (tokenPossuiRole(tokens.access_token, 'administrador')) {
+        window.location.href = '/admin'
+        return
+      }
+
+      const emailToken = extrairEmailToken(tokens.access_token)
+      const usuarios = emailToken ? await listarUsuariosApi({ email: emailToken }) : []
+      if (usuarios[0]?.permissoes.length) {
         window.location.href = '/admin'
         return
       }
@@ -72,36 +83,55 @@ export default function Login() {
               <label htmlFor="password" className="font-barlow text-sm font-semibold text-preto-v1">
                 Senha
               </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                placeholder="********"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                disabled={loading}
-                className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-barlow text-sm text-preto-v1 outline-none transition-colors placeholder:text-gray-400 focus:border-amarelo focus:ring-2 focus:ring-amarelo/30 disabled:opacity-60"
-              />
-            </div>
-
-            <div className="text-right">
-              <a
-                href="/esqueci-senha"
-                className="font-barlow text-xs font-semibold text-cinza-base transition-colors hover:text-amarelo"
-              >
-                Esqueci minha senha
-              </a>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  placeholder="********"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                  disabled={loading}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 pr-11 font-barlow text-sm text-preto-v1 outline-none transition-colors placeholder:text-gray-400 focus:border-amarelo focus:ring-2 focus:ring-amarelo/30 disabled:opacity-60"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  disabled={loading}
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-preto-v1 disabled:opacity-60"
+                >
+                  {showPassword ? (
+                    <EyeOff size={18} strokeWidth={2} />
+                  ) : (
+                    <Eye size={18} strokeWidth={2} />
+                  )}
+                </button>
+              </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="mt-1 w-full rounded-xl bg-amarelo py-3 font-barlow-condensed text-base font-bold uppercase tracking-widest text-preto-v1 shadow-md transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mt-1 w-full rounded-xl bg-amarelo py-3 font-barlow-condensed text-base font-semibold uppercase tracking-widest text-preto-v1 shadow-md transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? 'ENTRANDO...' : 'ENTRAR'}
             </button>
           </form>
+
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() =>
+                (window.location.href =
+                  'http://localhost:8080/realms/master/login-actions/reset-credentials?client_id=account-console')
+              }
+              className="font-barlow text-sm text-cinza-base underline-offset-2 transition-colors hover:text-amarelo hover:underline"
+            >
+              Esqueci minha senha
+            </button>
+          </div>
 
 
         </div>

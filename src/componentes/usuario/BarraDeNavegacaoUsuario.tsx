@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { Menu, User, X } from 'lucide-react'
 import logoBranca from '../../imagens/logos/logo-branca.png'
 import logoPreta from '../../imagens/logos/logo-preta.png'
 
 const navLinks = [
   { label: 'Cardápio', href: '/cardapio' },
-  { label: 'Unidades', href: '#unidades' },
+  { label: 'Unidades', href: '/#unidades' },
   { label: 'Sobre nós', href: '/sobre-nos' },
   { label: 'Cartão fidelidade', href: '/cartao-fidelidade' },
 ] as const
@@ -17,16 +17,24 @@ const RIGHT_ACTION_WIDTH = 44
 
 function NavItems({
   activeLinkClassName,
-  currentPath,
+  currentLocation,
   linkClassName,
 }: {
   activeLinkClassName: string
-  currentPath: string
+  currentLocation: string
   linkClassName: string
 }) {
+  const isLinkActive = (href: string) => {
+    if (href === '/#unidades') {
+      return currentLocation === '/#unidades' || currentLocation.startsWith('/unidades/')
+    }
+
+    return currentLocation === href
+  }
+
   return navLinks.map(({ label, href }) => (
     <li key={href}>
-      <a href={href} className={currentPath === href ? activeLinkClassName : linkClassName}>
+      <a href={href} className={isLinkActive(href) ? activeLinkClassName : linkClassName}>
         {label}
       </a>
     </li>
@@ -40,7 +48,7 @@ type NavbarProps = {
 export default function Navbar({ variant = 'light' }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [useMobileMenu, setUseMobileMenu] = useState(false)
-  const currentPath = window.location.pathname
+  const currentLocation = `${window.location.pathname}${window.location.hash}`
   const isDark = variant === 'dark'
   const logo = isDark ? logoBranca : logoPreta
   const headerClassName = isDark ? 'bg-preto-v1' : 'bg-branco'
@@ -49,8 +57,26 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
   const activeLinkClassName = `${linkBaseClassName} text-amarelo`
   const iconClassName = isDark ? 'text-branco hover:text-amarelo' : 'text-preto-v1 hover:text-amarelo'
   const mobileMenuClassName = isDark
-    ? 'border-t border-branco/10 bg-preto-v1 px-6 py-5'
-    : 'border-t border-preto-v1/10 bg-branco px-6 py-5'
+    ? 'bg-preto-v1 px-6 py-5'
+    : 'bg-branco px-6 py-5'
+  const linhaGradienteClassName = isDark
+    ? 'h-px w-full shrink-0 bg-[linear-gradient(to_right,transparent_0%,rgba(255,255,255,0.28)_4%,rgba(255,255,255,0.28)_96%,transparent_100%)]'
+    : 'h-px w-full shrink-0 bg-[linear-gradient(to_right,transparent_0%,rgba(26,26,26,0.12)_4%,rgba(26,26,26,0.12)_96%,transparent_100%)]'
+
+  function LinhaDivisor({ className = '' }: { className?: string }) {
+    return (
+      <div
+        role="separator"
+        aria-hidden
+        className={`${linhaGradienteClassName} ${className}`.trim()}
+      />
+    )
+  }
+
+  const mobileLinks = [
+    ...navLinks,
+    { label: 'Acesso restrito', href: ADMIN_HREF },
+  ] as const
 
   const barRef = useRef<HTMLDivElement>(null)
   const logoRef = useRef<HTMLAnchorElement>(null)
@@ -93,13 +119,37 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
     }
   }, [checkLayout])
 
+  useEffect(() => {
+    if (!isOpen || !useMobileMenu) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isOpen, useMobileMenu])
+
   const toggleMenu = () => setIsOpen((open) => !open)
   const closeMenu = () => setIsOpen(false)
+  const menuMobileAberto = isOpen && useMobileMenu
 
   return (
-    <header
-      className={`fixed top-0 left-0 z-50 w-full ${headerClassName} ${isOpen ? '' : 'h-16'}`}
-    >
+    <>
+      {menuMobileAberto ? (
+        <button
+          type="button"
+          className={`fixed inset-0 z-[49] backdrop-blur-sm motion-reduce:backdrop-blur-none ${
+            isDark ? 'bg-black/35' : 'bg-black/15'
+          }`}
+          onClick={closeMenu}
+          aria-label="Fechar menu"
+        />
+      ) : null}
+
+      <header
+        className={`fixed top-0 left-0 z-50 w-full ${headerClassName} ${isOpen ? '' : 'h-16'}`}
+      >
       <div
         ref={barRef}
         className="pagina-container relative flex h-16 items-center"
@@ -112,7 +162,7 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
         >
           <NavItems
             activeLinkClassName={activeLinkClassName}
-            currentPath={currentPath}
+            currentLocation={currentLocation}
             linkClassName={linkClassName}
           />
         </ul>
@@ -141,7 +191,7 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
               <ul className="flex items-center gap-6 whitespace-nowrap md:gap-8">
                 <NavItems
                   activeLinkClassName={activeLinkClassName}
-                  currentPath={currentPath}
+                  currentLocation={currentLocation}
                   linkClassName={linkClassName}
                 />
               </ul>
@@ -155,7 +205,7 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
               <ul className="pointer-events-auto flex items-center gap-10 whitespace-nowrap">
                 <NavItems
                   activeLinkClassName={activeLinkClassName}
-                  currentPath={currentPath}
+                  currentLocation={currentLocation}
                   linkClassName={linkClassName}
                 />
               </ul>
@@ -187,28 +237,40 @@ export default function Navbar({ variant = 'light' }: NavbarProps) {
         )}
       </div>
 
-      {isOpen && useMobileMenu && (
+      {menuMobileAberto && (
         <nav
           id="mobile-menu"
           className={mobileMenuClassName}
           aria-label="Navegação principal"
         >
-          <ul className="flex flex-col gap-5">
-            {navLinks.map(({ label, href }) => (
-              <li key={href}>
-                <a href={href} className={currentPath === href ? activeLinkClassName : linkClassName} onClick={closeMenu}>
-                  {label}
-                </a>
-              </li>
+          <LinhaDivisor />
+          <ul className="flex flex-col">
+            {mobileLinks.map(({ label, href }, index) => (
+              <Fragment key={href}>
+                {index > 0 ? <LinhaDivisor className="my-3" /> : null}
+                <li className="py-3">
+                  <a
+                    href={href}
+                    className={
+                      href === '/#unidades'
+                        ? currentLocation === '/#unidades' || currentLocation.startsWith('/unidades/')
+                          ? activeLinkClassName
+                          : linkClassName
+                        : currentLocation === href
+                          ? activeLinkClassName
+                          : linkClassName
+                    }
+                    onClick={closeMenu}
+                  >
+                    {label}
+                  </a>
+                </li>
+              </Fragment>
             ))}
-            <li>
-              <a href={ADMIN_HREF} className={linkClassName} onClick={closeMenu}>
-                Acesso restrito
-              </a>
-            </li>
           </ul>
         </nav>
       )}
     </header>
+    </>
   )
 }

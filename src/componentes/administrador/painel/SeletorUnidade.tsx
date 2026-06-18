@@ -5,12 +5,14 @@ type SeletorUnidadeProps = {
   opcoes: readonly string[]
   valor: string
   onChange: (valor: string) => void
+  disabled?: boolean
 }
 
 export default function SeletorUnidade({
   opcoes,
   valor,
   onChange,
+  disabled = false,
 }: SeletorUnidadeProps) {
   const [aberto, setAberto] = useState(false)
   const [indiceDestacado, setIndiceDestacado] = useState(0)
@@ -37,6 +39,7 @@ export default function SeletorUnidade({
   }, [aberto])
 
   function abrirLista() {
+    if (disabled) return
     setIndiceDestacado(indiceSelecionado >= 0 ? indiceSelecionado : 0)
     setAberto(true)
   }
@@ -49,6 +52,8 @@ export default function SeletorUnidade({
   function lidarComTecladoNoBotao(
     event: React.KeyboardEvent<HTMLButtonElement>,
   ) {
+    if (disabled) return
+
     if (
       event.key === 'ArrowDown' ||
       event.key === 'Enter' ||
@@ -94,13 +99,17 @@ export default function SeletorUnidade({
         type="button"
         id="unidade"
         aria-haspopup="listbox"
-        aria-expanded={aberto}
+        aria-expanded={!disabled && aberto}
         aria-controls={listaId}
+        aria-disabled={disabled}
+        disabled={disabled}
         onClick={() => (aberto ? setAberto(false) : abrirLista())}
         onKeyDown={lidarComTecladoNoBotao}
         className={[
           'flex w-full items-center justify-between rounded-lg border bg-white px-5 py-4 font-barlow text-xl text-preto-v1 shadow-sm transition-all duration-200',
-          aberto
+          disabled
+            ? 'cursor-not-allowed border-gray-200 bg-gray-50 text-gray-500'
+            : aberto
             ? 'border-gray-400 shadow-md'
             : 'border-gray-300 hover:border-gray-400',
         ].join(' ')}
@@ -116,7 +125,7 @@ export default function SeletorUnidade({
         />
       </button>
 
-      {aberto && (
+      {!disabled && aberto && (
         <ul
           id={listaId}
           role="listbox"

@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import CardapioAdm from './telas/administrador/CardapioAdm'
 import Painel from './telas/administrador/Painel'
 import GestaoUnidades from './telas/administrador/GestaoUnidades'
@@ -6,19 +7,30 @@ import GestaoBlog from './telas/administrador/GestaoBlog'
 import { useAuth } from './contextos/useAuth'
 import Cardapio from './telas/usuario/Cardapio'
 import CartaoFidelidade from './telas/usuario/CartaoFidelidade'
-import Cozinha from './telas/cozinha/Cozinha'
-import Dashboard from './telas/dashboard/Dashboard'
+import Cozinha from './telas/administrador/Cozinha'
+import Dashboard from './telas/administrador/Dashboard'
 import Inicio from './telas/usuario/Inicio'
 import Login from './telas/usuario/Login'
 import SobreNos from './telas/usuario/SobreNos'
 import RecuperarSenha from './telas/usuario/RecuperarSenha'
 import RedefinirSenha from './telas/usuario/RedefinirSenha'
 import UnidadeAraucarias from './telas/usuario/UnidadeAraucarias'
-import AnotarPedidos from './telas/pedidos/AnotarPedidos'
+import AnotarPedidos from './telas/administrador/AnotarPedidos'
+import type { NomePermissaoApi } from './servicos/usuariosApi'
 
 export default function App() {
   const { pathname } = window.location
-  const { isAuthenticated, hasRole } = useAuth()
+  const {
+    isAuthenticated,
+    hasRole,
+    hasPermission,
+    isLoadingUser,
+    permissoes,
+  } = useAuth()
+
+  useEffect(() => {
+    document.title = getPageTitle(pathname)
+  }, [pathname])
 
   if (pathname === '/admin/login') {
     if (isAuthenticated && hasRole('administrador')) {
@@ -32,12 +44,21 @@ export default function App() {
     pathname.startsWith('/admin') ||
     pathname === '/dashboard' ||
     pathname === '/cozinha'
+  const permissaoRota = getRequiredPermission(pathname)
 
   if (rotaAdministrativa && !isAuthenticated) {
     return <Login />
   }
 
-  if (rotaAdministrativa && !hasRole('administrador')) {
+  if (rotaAdministrativa && isLoadingUser) {
+    return <CarregandoAcesso />
+  }
+
+  if (rotaAdministrativa && !hasRole('administrador') && permissoes.length === 0) {
+    return <AcessoNegado />
+  }
+
+  if (permissaoRota && !hasPermission(permissaoRota)) {
     return <AcessoNegado />
   }
 
@@ -104,9 +125,51 @@ export default function App() {
   return <Inicio />
 }
 
+function getPageTitle(pathname: string) {
+  const baseTitle = 'Paraíba Hot Dog'
+
+  if (pathname === '/cardapio') return `Cardápio | ${baseTitle}`
+  if (pathname === '/cartao-fidelidade') return `Cartão Fidelidade | ${baseTitle}`
+  if (pathname === '/sobre-nos') return `Sobre Nós | ${baseTitle}`
+  if (pathname.startsWith('/unidades/')) return `Unidade | ${baseTitle}`
+  if (pathname === '/login' || pathname === '/admin/login') return `Login | ${baseTitle}`
+  if (pathname === '/esqueci-senha' || pathname === '/recuperar-senha') {
+    return `Recuperar Senha | ${baseTitle}`
+  }
+  if (pathname === '/admin') return `Painel Administrativo | ${baseTitle}`
+  if (pathname === '/admin/cardapio') return `Cardápio Admin | ${baseTitle}`
+  if (pathname === '/admin/configuracoes/usuarios') return `Usuários | ${baseTitle}`
+  if (pathname === '/admin/configuracoes/unidades') return `Unidades | ${baseTitle}`
+  if (pathname === '/admin/configuracoes/blog') return `Blog | ${baseTitle}`
+  if (pathname === '/admin/anotar-pedidos') return `Anotar Pedidos | ${baseTitle}`
+  if (pathname === '/dashboard' || pathname === '/admin/dashboard') return `Dashboard | ${baseTitle}`
+  if (pathname === '/cozinha' || pathname === '/admin/cozinha') return `Cozinha | ${baseTitle}`
+
+  return baseTitle
+}
+
+function getRequiredPermission(pathname: string): NomePermissaoApi | null {
+  if (pathname === '/admin/anotar-pedidos') return 'anotar_pedidos'
+  if (pathname === '/dashboard' || pathname === '/admin/dashboard') return 'dashboard'
+  if (pathname === '/cozinha' || pathname === '/admin/cozinha') return 'cozinha'
+  if (pathname === '/admin/cardapio' || pathname.startsWith('/admin/configuracoes/')) {
+    return 'configuracoes'
+  }
+
+  return null
+}
+
 function RedirectTo({ href }: { href: string }) {
   window.location.replace(href)
   return null
+}
+
+function CarregandoAcesso() {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-branco px-6 text-center">
+      <p className="font-barlow text-cinza-base">Carregando permissões...</p>
+    </main>
+  )
 }
 
 function AcessoNegado() {

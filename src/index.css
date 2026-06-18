@@ -27,6 +27,31 @@ body {
   min-height: 100vh;
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(160, 160, 160, 0.85) rgba(255, 255, 255, 0.08);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(170, 170, 170, 0.9), rgba(120, 120, 120, 0.7));
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(195, 195, 195, 0.95), rgba(145, 145, 145, 0.8));
+}
+
 button {
   font: inherit;
 }
@@ -69,6 +94,35 @@ button {
   50% {
     transform: translateY(-14px);
   }
+}
+
+@keyframes carrossel-dogs-grupos {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(var(--carrossel-shift, -50%));
+  }
+}
+
+.carrossel-nossos-dogs-faixa {
+  --carrossel-visiveis: 2;
+  width: calc((var(--carrossel-total) / var(--carrossel-visiveis)) * 100%);
+}
+
+@media (min-width: 490px) {
+  .carrossel-nossos-dogs-faixa {
+    --carrossel-visiveis: 4;
+  }
+}
+
+.carrossel-nossos-dogs-card {
+  width: calc(100% / var(--carrossel-total));
+}
+
+@utility animacao-carrossel-dogs-grupos {
+  animation: carrossel-dogs-grupos 56s linear infinite;
 }
 
 @utility animacao-smash-home {

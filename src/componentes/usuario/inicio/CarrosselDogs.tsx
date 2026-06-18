@@ -3,6 +3,7 @@ type CarrosselDogsProps = {
   title: string
   alt: string
   destacado?: boolean
+  modo?: 'destaque' | 'faixa'
 }
 
 export default function CarrosselDogs({
@@ -10,7 +11,26 @@ export default function CarrosselDogs({
   title,
   alt,
   destacado = false,
+  modo = 'destaque',
 }: CarrosselDogsProps) {
+  if (modo === 'faixa') {
+    return (
+      <article className="flex h-full w-full flex-col overflow-hidden rounded-md bg-[#2F2F2F] shadow-[0_0_20px_rgba(255,255,255,0.1),0_0_40px_rgba(255,255,255,0.07),0_0_70px_rgba(255,255,255,0.04)]">
+        <img
+          src={image}
+          alt={alt}
+          className="aspect-[4/5] w-full object-cover"
+          loading="lazy"
+        />
+        <div className="px-2 py-2.5 min-[490px]:px-2 min-[490px]:py-2">
+          <h3 className="truncate text-center font-barlow-condensed text-lg uppercase leading-tight text-white min-[490px]:text-[clamp(1rem,1.6vw,1.125rem)]">
+            {title}
+          </h3>
+        </div>
+      </article>
+    )
+  }
+
   return (
     <div
       className={[

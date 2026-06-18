@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { X } from "lucide-react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { ChevronDown, X } from "lucide-react";
 import BarraDeNavegacao from "../../componentes/usuario/BarraDeNavegacaoUsuario";
 import Rodape from "../../componentes/usuario/Rodape";
 import type { ProdutoCardapio, SecaoCardapio } from "../../model/cardapio";
@@ -34,7 +34,7 @@ function CardProduto({
     <button
       type="button"
       onClick={() => onSelect(produto)}
-      className="group flex w-full flex-col overflow-hidden rounded-[5px] bg-[#222] text-left shadow-[0_12px_24px_rgba(0,0,0,0.28)] outline-none transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-amarelo min-[640px]:h-44 min-[640px]:flex-row"
+      className="group flex w-full flex-col overflow-hidden rounded-[12px] bg-zinc-700 text-left shadow-[0_12px_24px_rgba(0,0,0,0.28)] outline-none transition-transform duration-300 hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-amarelo min-[640px]:h-44 min-[640px]:flex-row"
       aria-label={`Ver detalhes de ${produto.nome}`}
     >
       <div className="order-2 grid min-h-[12rem] flex-1 grid-rows-[minmax(0,1fr)_3.25rem] gap-2 px-3 py-3 text-branco min-[640px]:order-1 min-[640px]:min-h-0 min-[640px]:py-4">
@@ -65,16 +65,16 @@ function CardProduto({
         </div>
       </div>
 
-      <div className="order-1 h-44 w-full overflow-hidden border-b border-preto-v1 bg-preto-v3 min-[640px]:order-3 min-[640px]:h-full min-[640px]:w-48 min-[640px]:border-b-0 min-[640px]:border-l">
+      <div className="order-1 h-44 w-full overflow-hidden border-b border-zinc-800 bg-zinc-600 min-[640px]:order-3 min-[640px]:h-full min-[640px]:w-48 min-[640px]:border-b-0 min-[640px]:border-l">
         {imagem ? (
           <img
             src={imagem}
             alt={produto.nome}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-105 group-hover:brightness-105"
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full items-center justify-center bg-preto-v3 font-barlow-condensed text-2xl font-black uppercase text-amarelo">
+          <div className="flex h-full items-center justify-center bg-zinc-600 font-barlow-condensed text-2xl font-black uppercase text-amarelo">
             Paraíba
           </div>
         )}
@@ -101,11 +101,11 @@ function DetalheProduto({
       onClick={onClose}
     >
       <div
-        className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[5px] bg-[#222] text-branco shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
+        className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-[5px] bg-zinc-800 text-branco shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="grid min-[768px]:grid-cols-[minmax(0,0.95fr)_minmax(20rem,1fr)]">
-          <div className="aspect-square overflow-hidden bg-preto-v3 min-[768px]:aspect-auto min-[768px]:h-[28rem]">
+          <div className="aspect-square overflow-hidden bg-zinc-600 min-[768px]:aspect-auto min-[768px]:h-[28rem]">
             {imagem ? (
               <img
                 src={imagem}
@@ -197,58 +197,207 @@ function DetalheProduto({
   );
 }
 
-function NavegacaoCategorias({ secoes }: { secoes: SecaoCardapio[] }) {
+function SeletorUnidadeCardapio({
+  valor,
+  opcoes,
+  desabilitado = false,
+  classeBotao,
+  onChange,
+}: {
+  valor: number | "";
+  opcoes: Array<{ id: number | ""; label: string }>;
+  desabilitado?: boolean;
+  classeBotao: string;
+  onChange: (id: number | "") => void;
+}) {
+  const [aberto, setAberto] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const listaId = useId();
+  const labelAtual =
+    opcoes.find((opcao) => opcao.id === valor)?.label ?? "Todas as unidades";
+
+  useEffect(() => {
+    if (!aberto) return;
+
+    function fecharAoClicarFora(event: MouseEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setAberto(false);
+      }
+    }
+
+    document.addEventListener("mousedown", fecharAoClicarFora);
+    return () => document.removeEventListener("mousedown", fecharAoClicarFora);
+  }, [aberto]);
+
   return (
-    <>
-      <nav
-        aria-label="Categorias do cardápio"
-        className="fixed left-0 right-0 top-16 z-[60] border-y border-branco/10 bg-preto-v1/95 shadow-[0_12px_24px_rgba(0,0,0,0.35)] backdrop-blur"
+    <div ref={containerRef} className="relative w-full">
+      <button
+        type="button"
+        id="unidade-cardapio"
+        disabled={desabilitado}
+        aria-haspopup="listbox"
+        aria-expanded={aberto}
+        aria-controls={listaId}
+        onClick={() => !desabilitado && setAberto((atual) => !atual)}
+        className={`flex w-full items-center justify-between gap-3 px-4 font-barlow text-sm font-semibold text-branco transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-45 ${classeBotao} ${
+          aberto
+            ? "border-amarelo ring-2 ring-amarelo/30"
+            : "hover:border-branco/20"
+        }`}
       >
-        <div className="pagina-container overflow-x-auto py-3">
-          <ul className="flex min-w-max min-[900px]:w-full">
-            {secoes.map((secao) => (
-              <li key={secao.id} className="min-w-40 flex-1">
-                <a
-                  href={`#${secao.id}`}
-                  className="flex items-center justify-center gap-1 border border-transparent bg-preto-v3 px-4 py-4 font-barlow-condensed text-xl font-black uppercase leading-none text-branco transition-colors hover:border-[#E1BF00] hover:bg-[#E1BF00] hover:text-black active:border-[#E1BF00] active:bg-[#E1BF00] active:text-black focus:border-[#E1BF00] focus:bg-[#E1BF00] focus:text-black focus:outline-none"
+        <span className="truncate text-left">{labelAtual}</span>
+        <ChevronDown
+          size={20}
+          className={`shrink-0 text-branco/65 transition-transform duration-200 ${
+            aberto ? "rotate-180" : ""
+          }`}
+          aria-hidden
+        />
+      </button>
+
+      {aberto && (
+        <ul
+          id={listaId}
+          role="listbox"
+          aria-labelledby="unidade-cardapio"
+          className="absolute top-full z-30 mt-1 max-h-60 w-full overflow-hidden overflow-y-auto rounded-2xl border border-branco/10 bg-zinc-800 py-1 shadow-[0_10px_24px_rgba(0,0,0,0.22)]"
+        >
+          {opcoes.map((opcao) => {
+            const selecionada = opcao.id === valor;
+
+            return (
+              <li key={String(opcao.id)} role="option" aria-selected={selecionada}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(opcao.id);
+                    setAberto(false);
+                  }}
+                  className={`w-full px-4 py-2.5 text-left font-barlow text-sm font-semibold transition-colors ${
+                    selecionada
+                      ? "bg-amarelo text-preto-v1"
+                      : "text-branco hover:bg-zinc-700"
+                  }`}
                 >
-                  {secao.titulo}
-                </a>
+                  {opcao.label}
+                </button>
               </li>
-            ))}
-          </ul>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function NavegacaoCategorias({
+  secoes,
+  secaoAtivaId,
+  unidadeSelecionadaId,
+  unidades,
+  carregandoUnidades,
+  erroUnidades,
+  onUnidadeChange,
+}: {
+  secoes: SecaoCardapio[];
+  secaoAtivaId: string;
+  unidadeSelecionadaId: number | "";
+  unidades: Unidade[];
+  carregandoUnidades: boolean;
+  erroUnidades: boolean;
+  onUnidadeChange: (id: number | "") => void;
+}) {
+  const barraControle =
+    "h-12 rounded-2xl border border-branco/10 bg-zinc-800 shadow-[0_10px_24px_rgba(0,0,0,0.22)]";
+  const opcaoCategoria =
+    "flex h-9 items-center justify-center whitespace-nowrap rounded-xl px-3 font-barlow-condensed text-sm font-black uppercase leading-none transition-colors duration-200 min-[640px]:px-5 min-[640px]:text-base";
+  const opcoesUnidade = [
+    {
+      id: "" as const,
+      label: carregandoUnidades ? "Carregando unidades..." : "Todas as unidades",
+    },
+    ...unidades.map((unidade) => ({ id: unidade.id, label: unidade.nome })),
+  ];
+
+  return (
+    <nav
+      aria-label="Categorias do cardápio"
+      className="sticky top-16 z-[40] mt-8 bg-zinc-950 py-4"
+    >
+      <div className="flex flex-col gap-3 min-[640px]:flex-row min-[640px]:items-stretch min-[640px]:justify-start min-[640px]:gap-3">
+        <ul
+          className={`order-2 flex w-full items-center gap-1 px-1.5 ${barraControle} min-[640px]:order-1 min-[640px]:w-max min-[640px]:shrink-0`}
+        >
+          {secoes.map((secao) => (
+            <li key={secao.id} className="min-w-0 flex-1 min-[640px]:flex-none">
+              <a
+                href={`#${secao.id}`}
+                className={`${opcaoCategoria} w-full min-[640px]:w-auto ${
+                  secaoAtivaId === secao.id
+                    ? "bg-amarelo text-preto-v1"
+                    : "bg-transparent text-branco/75 hover:bg-branco/10 hover:text-branco"
+                }`}
+              >
+                {secao.titulo}
+              </a>
+            </li>
+          ))}
+        </ul>
+
+        <div className="order-1 w-full shrink-0 font-barlow min-[640px]:order-2 min-[640px]:w-52">
+          <SeletorUnidadeCardapio
+            valor={unidadeSelecionadaId}
+            opcoes={opcoesUnidade}
+            desabilitado={carregandoUnidades}
+            classeBotao={barraControle}
+            onChange={onUnidadeChange}
+          />
+          {erroUnidades && (
+            <p className="mt-2 text-xs text-branco/55">
+              Não foi possível carregar as unidades. O cardápio completo continua disponível.
+            </p>
+          )}
         </div>
-      </nav>
-    </>
+      </div>
+    </nav>
   );
 }
 
 function SecaoProdutos({
   secao,
   onSelectProduto,
+  ativa,
 }: {
   secao: SecaoCardapio;
   onSelectProduto: (produto: ProdutoCardapio) => void;
+  ativa: boolean;
 }) {
   return (
-    <section id={secao.id} className="scroll-mt-36 pt-14 first:pt-12">
+    <section id={secao.id} className="scroll-mt-44 pt-14 first:pt-12">
       <h2
-        className={`font-barlow-condensed text-[clamp(2rem,8vw,3.5rem)] font-black uppercase leading-none ${
-          secao.destaque ? "text-amarelo" : "text-branco"
+        className={`font-barlow-condensed text-[clamp(2rem,8vw,3.5rem)] font-black uppercase leading-none transition-colors ${
+          ativa ? "text-amarelo" : "text-branco"
         }`}
       >
         {secao.titulo}
       </h2>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 pb-5 min-[520px]:grid-cols-2 min-[640px]:gap-5 min-[1180px]:grid-cols-3">
-        {secao.produtos.map((produto) => (
-          <CardProduto
-            key={produto.id}
-            produto={produto}
-            onSelect={onSelectProduto}
-          />
-        ))}
-      </div>
+      {secao.produtos.length > 0 ? (
+        <div className="mt-6 grid grid-cols-1 gap-4 pb-5 min-[520px]:grid-cols-2 min-[640px]:gap-5 min-[1180px]:grid-cols-3">
+          {secao.produtos.map((produto) => (
+            <CardProduto
+              key={produto.id}
+              produto={produto}
+              onSelect={onSelectProduto}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-6 rounded-[12px] border border-branco/10 bg-zinc-800 px-4 py-5 font-barlow text-sm text-branco/60">
+          Categoria cadastrada. Os itens dessa seção ainda não foram
+          adicionados.
+        </div>
+      )}
     </section>
   );
 }
@@ -265,18 +414,25 @@ export default function Cardapio() {
   const [erroUnidades, setErroUnidades] = useState(false);
   const [produtoSelecionado, setProdutoSelecionado] =
     useState<ProdutoCardapio | null>(null);
+  const [secaoAtivaId, setSecaoAtivaId] = useState(() =>
+    window.location.hash.replace("#", ""),
+  );
 
   useEffect(() => {
     let ativo = true;
+    setCarregando(true);
 
-    listarSecoesCardapio(unidadeSelecionadaId || null)
+    listarSecoesCardapio(unidadeSelecionadaId || null, false, true)
       .then((resultado) => {
         if (!ativo) return;
         setSecoes(resultado);
         setErroCarregamento(false);
       })
       .catch(() => {
-        if (ativo) setErroCarregamento(true);
+        if (ativo) {
+          setSecoes([]);
+          setErroCarregamento(true);
+        }
       })
       .finally(() => {
         if (ativo) setCarregando(false);
@@ -297,7 +453,10 @@ export default function Cardapio() {
         setErroUnidades(false);
       })
       .catch(() => {
-        if (ativo) setErroUnidades(true);
+        if (ativo) {
+          setUnidades([]);
+          setErroUnidades(true);
+        }
       })
       .finally(() => {
         if (ativo) setCarregandoUnidades(false);
@@ -317,13 +476,50 @@ export default function Cardapio() {
       unidades.find((unidade) => unidade.id === unidadeSelecionadaId) ?? null,
     [unidadeSelecionadaId, unidades],
   );
+  const secaoAtivaExibida = secaoAtivaId || secoes[0]?.id || "";
+
+  useEffect(() => {
+    if (!secoes.length) return;
+
+    const atualizarSecaoAtiva = () => {
+      const pontoAtivo = window.scrollY + 180;
+      let secaoAtual = secoes[0]?.id ?? "";
+
+      secoes.forEach((secao) => {
+        const elemento = document.getElementById(secao.id);
+        if (!elemento) return;
+
+        if (elemento.offsetTop <= pontoAtivo) {
+          secaoAtual = secao.id;
+        }
+      });
+
+      setSecaoAtivaId(secaoAtual);
+    };
+
+    let frameId = 0;
+    const reagirAoScroll = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(atualizarSecaoAtiva);
+    };
+
+    atualizarSecaoAtiva();
+    window.addEventListener("scroll", reagirAoScroll, { passive: true });
+    window.addEventListener("resize", reagirAoScroll);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", reagirAoScroll);
+      window.removeEventListener("resize", reagirAoScroll);
+    };
+  }, [secoes]);
 
   return (
     <>
       <BarraDeNavegacao />
 
-      <main className="min-h-screen overflow-x-clip bg-preto-v1 pt-[8.75rem] text-branco">
-        <section className="pagina-container pt-12 pb-16 min-[768px]:pt-16">
+      <main className="min-h-screen overflow-x-clip bg-zinc-950 pt-[7rem] text-branco">
+        <section className="pagina-container pt-6 pb-16 min-[768px]:pt-8">
           <div className="max-w-4xl">
             <p className="font-barlow text-sm font-semibold uppercase text-amarelo">
               Paraíba Hot Dog
@@ -337,54 +533,33 @@ export default function Cardapio() {
             </p>
           </div>
 
-          <div className="mt-8 max-w-xl font-barlow">
-            <label
-              htmlFor="unidade-cardapio"
-              className="block text-sm font-semibold uppercase text-branco/75"
-            >
-              Unidade
-            </label>
-            <select
-              id="unidade-cardapio"
-              value={unidadeSelecionadaId}
-              disabled={carregandoUnidades}
-              onChange={(event) => {
+          {!carregando && (
+            <NavegacaoCategorias
+              secoes={secoes}
+              secaoAtivaId={secaoAtivaExibida}
+              unidadeSelecionadaId={unidadeSelecionadaId}
+              unidades={unidades}
+              carregandoUnidades={carregandoUnidades}
+              erroUnidades={erroUnidades}
+              onUnidadeChange={(id) => {
                 setCarregando(true);
                 setProdutoSelecionado(null);
-                setUnidadeSelecionadaId(
-                  event.target.value ? Number(event.target.value) : "",
-                );
+                setUnidadeSelecionadaId(id);
               }}
-              className="mt-2 h-12 w-full rounded-[5px] border border-branco/15 bg-[#222] px-4 font-barlow text-base font-semibold text-branco outline-none transition-colors focus:border-amarelo focus:ring-2 focus:ring-amarelo/30 disabled:cursor-not-allowed disabled:text-branco/45"
-            >
-              <option value="">
-                {carregandoUnidades ? "Carregando unidades..." : "Todas as unidades"}
-              </option>
-              {unidades.map((unidade) => (
-                <option key={unidade.id} value={unidade.id}>
-                  {unidade.nome}
-                </option>
-              ))}
-            </select>
-            {erroUnidades && (
-              <p className="mt-2 text-sm text-branco/55">
-                Não foi possível carregar as unidades. O cardápio completo
-                continua disponível.
-              </p>
-            )}
-          </div>
+            />
+          )}
 
           {carregando ? (
-            <div className="mt-12 rounded-[5px] border border-branco/10 bg-[#222] px-5 py-8 font-barlow text-branco/80">
+            <div className="mt-12 rounded-[5px] border border-branco/10 bg-zinc-800 px-5 py-8 font-barlow text-branco/80">
               Carregando cardápio...
             </div>
           ) : erroCarregamento ? (
-            <div className="mt-12 rounded-[5px] border border-branco/10 bg-[#222] px-5 py-8 font-barlow text-branco/80">
+            <div className="mt-12 rounded-[5px] border border-branco/10 bg-zinc-800 px-5 py-8 font-barlow text-branco/80">
               Não foi possível carregar o cardápio no momento.
             </div>
           ) : (
             <>
-              <p className="mt-6 font-barlow text-sm text-branco/60">
+              <p className="font-barlow text-sm text-branco/60">
                 {totalProdutos} itens disponíveis
                 {unidadeSelecionada ? ` em ${unidadeSelecionada.nome}` : ""}.
               </p>
@@ -394,6 +569,7 @@ export default function Cardapio() {
                   <SecaoProdutos
                     key={secao.id}
                     secao={secao}
+                    ativa={secao.id === secaoAtivaExibida}
                     onSelectProduto={setProdutoSelecionado}
                   />
                 ))}
@@ -402,8 +578,6 @@ export default function Cardapio() {
           )}
         </section>
       </main>
-
-      {!carregando && <NavegacaoCategorias secoes={secoes} />}
 
       {produtoSelecionado && (
         <DetalheProduto

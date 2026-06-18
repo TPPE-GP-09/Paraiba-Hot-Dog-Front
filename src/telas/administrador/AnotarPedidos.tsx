@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   Banknote,
   CheckCircle2,
+  ChevronDown,
   CircleDollarSign,
   ClipboardPen,
   CreditCard,
@@ -18,7 +19,10 @@ import {
   UserPlus,
   X,
 } from 'lucide-react'
-import logoBranca from '../../imagens/logos/logo-branca.png'
+import BarraDeNavegacaoAdmin, {
+  CLASSE_OFFSET_BARRA_ADMIN,
+} from '../../componentes/administrador/BarraDeNavegacaoAdmin'
+import { useAuth } from '../../contextos/useAuth'
 import { consultarFidelidade, type FidelidadeCliente } from '../../servicos/fidelidadeApi'
 import { criarClienteApi } from '../../servicos/clientesApi'
 import { listarUnidades, resolverUrlImagem, type Unidade } from '../../servicos/api'
@@ -249,9 +253,9 @@ const secoes: SecaoCardapio[] = [
 
 const pagamentos = [
   { id: 'pix', label: 'Pix', icon: <QrCode size={19} /> },
-  { id: 'credito', label: 'Credito', icon: <CreditCard size={19} /> },
+  { id: 'credito', label: 'Crédito', icon: <CreditCard size={19} /> },
   { id: 'dinheiro', label: 'Dinheiro', icon: <Banknote size={19} /> },
-  { id: 'debito', label: 'Debito', icon: <CircleDollarSign size={19} /> },
+  { id: 'debito', label: 'Débito', icon: <CircleDollarSign size={19} /> },
 ]
 
 function moeda(valor: number) {
@@ -259,6 +263,8 @@ function moeda(valor: number) {
 }
 
 export default function AnotarPedidos() {
+  const { usuarioAtual, isLoadingUser } = useAuth()
+  const unidadeUsuarioId = usuarioAtual?.unidade_id ?? null
   const [pedido, setPedido] = useState<ItemPedido[]>([])
   const [pagamento, setPagamento] = useState('pix')
   const [fidelidade, setFidelidade] = useState<'cadastro' | 'sem-cadastro'>('cadastro')
@@ -290,12 +296,12 @@ export default function AnotarPedidos() {
           setSecoesApi(secoesMapeadas)
           setAvisoCardapio('')
         } else {
-          setAvisoCardapio('O backend respondeu, mas o banco ainda nao possui produtos ativos com variacoes e precos. Exibindo o cardapio de demonstracao.')
+          setAvisoCardapio('O backend respondeu, mas o banco ainda não possui produtos ativos com variações e preços. Exibindo o cardápio de demonstração.')
         }
       })
       .catch((error) => {
         console.error('Menu lookup error:', error)
-        if (ativo) setAvisoCardapio('Nao foi possivel carregar o cardapio do backend. Exibindo o cardapio de demonstracao.')
+        if (ativo) setAvisoCardapio('Não foi possível carregar o cardápio do backend. Exibindo o cardápio de demonstração.')
       })
       .finally(() => {
         if (ativo) setCarregandoCardapio(false)
@@ -307,13 +313,19 @@ export default function AnotarPedidos() {
   }, [])
 
   useEffect(() => {
+    if (isLoadingUser) return
+
     listarUnidades()
       .then((dados) => {
-        setUnidades(dados)
-        setUnidadeId(dados[0]?.id ?? null)
+        const unidadesPermitidas = unidadeUsuarioId
+          ? dados.filter((unidade) => unidade.id === unidadeUsuarioId)
+          : dados
+
+        setUnidades(unidadesPermitidas)
+        setUnidadeId(unidadesPermitidas[0]?.id ?? null)
       })
       .catch((error) => console.error('Units lookup error:', error))
-  }, [])
+  }, [isLoadingUser, unidadeUsuarioId])
 
   useEffect(() => {
     if (!unidadeId) return
@@ -403,7 +415,7 @@ export default function AnotarPedidos() {
       return false
     }
     if (pedido.some((item) => !item.produtoVariacaoId)) {
-      setMensagemPedido('Este pedido possui itens demonstrativos. Cadastre o cardapio real no backend antes de finalizar.')
+      setMensagemPedido('Este pedido possui itens demonstrativos. Cadastre o cardápio real no backend antes de finalizar.')
       return false
     }
     return true
@@ -428,7 +440,7 @@ export default function AnotarPedidos() {
       setMensagemPedido(`Pedido #${salvo.id} mantido aberto e enviado para a cozinha.`)
       await carregarPedidosAbertos(unidadeId)
     } catch (error) {
-      setMensagemPedido(error instanceof Error ? error.message : 'Nao foi possivel salvar o pedido.')
+      setMensagemPedido(error instanceof Error ? error.message : 'Não foi possível salvar o pedido.')
     } finally {
       setFinalizando(false)
     }
@@ -448,7 +460,7 @@ export default function AnotarPedidos() {
       setMensagemPedido(`Pedido #${pedidoAbertoId} atualizado com sucesso.`)
       await carregarPedidosAbertos(unidadeId)
     } catch (error) {
-      setMensagemPedido(error instanceof Error ? error.message : 'Nao foi possivel alterar o item.')
+      setMensagemPedido(error instanceof Error ? error.message : 'Não foi possível alterar o item.')
     } finally {
       setEditandoItemId(null)
     }
@@ -461,7 +473,7 @@ export default function AnotarPedidos() {
       setMensagemPedido('Observação atualizada.')
       await carregarPedidosAbertos(unidadeId)
     } catch (error) {
-      setMensagemPedido(error instanceof Error ? error.message : 'Nao foi possivel atualizar a observação.')
+      setMensagemPedido(error instanceof Error ? error.message : 'Não foi possível atualizar a observação.')
     }
   }
 
@@ -474,7 +486,7 @@ export default function AnotarPedidos() {
       let idParaFinalizar = pedidoAbertoId
       const pedidoSelecionado = pedidosAbertos.find((item) => item.id === pedidoAbertoId)
       if (pedidoSelecionado?.status === 'pago' && !pedido.length) {
-        setMensagemPedido(`O pedido #${pedidoSelecionado.id} ja esta pago e aguarda entrega da cozinha.`)
+        setMensagemPedido(`O pedido #${pedidoSelecionado.id} já está pago e aguarda entrega da cozinha.`)
         return
       }
       if (idParaFinalizar && pedido.length) {
@@ -503,7 +515,7 @@ export default function AnotarPedidos() {
       setMensagemPedido(`Pedido #${finalizado.id} finalizado e enviado para a cozinha.`)
       await carregarPedidosAbertos(unidadeId)
     } catch (error) {
-      setMensagemPedido(error instanceof Error ? error.message : 'Nao foi possivel finalizar o pedido.')
+      setMensagemPedido(error instanceof Error ? error.message : 'Não foi possível finalizar o pedido.')
     } finally {
       setFinalizando(false)
     }
@@ -527,6 +539,8 @@ export default function AnotarPedidos() {
   }
 
   function alterarUnidade(id: number) {
+    if (unidadeUsuarioId) return
+
     setUnidadeId(id || null)
     setPedidoAbertoId(null)
     setPedido([])
@@ -537,18 +551,21 @@ export default function AnotarPedidos() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] text-[#18212f]">
-      <header className="flex h-16 items-center bg-preto-v1 px-5 lg:px-7">
-        <a href="/admin" aria-label="Voltar ao painel"><img src={logoBranca} alt="Paraiba Hot Dog" className="h-20 w-auto object-contain" /></a>
-        <div className="ml-auto flex items-center gap-2 text-xs font-semibold text-white/70 lg:hidden"><ShoppingBag size={17} /> {pedido.reduce((total, item) => total + item.quantidade, 0)} itens</div>
-      </header>
+    <div className={`min-h-screen bg-[#f5f7fb] text-[#18212f] ${CLASSE_OFFSET_BARRA_ADMIN}`}>
+      <BarraDeNavegacaoAdmin
+        acaoDireita={
+          <div className="flex items-center gap-2 text-xs font-semibold text-white/70 lg:hidden">
+            <ShoppingBag size={17} /> {pedido.reduce((total, item) => total + item.quantidade, 0)} itens
+          </div>
+        }
+      />
 
       <div className="mx-auto grid max-w-[1900px] lg:grid-cols-[230px_minmax(0,1fr)_360px]">
         <aside className="hidden min-h-[calc(100vh-4rem)] border-r border-slate-200 bg-[#f5f7fb] px-4 py-8 lg:block">
           <div className="flex items-center justify-between gap-2">
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">Pedidos abertos</p>
-              <p className="mt-1 text-[10px] text-slate-400">Ainda nao finalizados</p>
+              <p className="mt-1 text-[10px] text-slate-400">Ainda não finalizados</p>
             </div>
             <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-amarelo px-2 text-xs font-black text-preto-v1">{pedidosAbertos.length}</span>
           </div>
@@ -577,10 +594,10 @@ export default function AnotarPedidos() {
         <main className="min-w-0 px-4 py-6 sm:px-6 lg:px-7 lg:py-8">
           <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div><div className="flex items-center gap-2 text-sm font-semibold text-emerald-600"><ClipboardPen size={18} /> Novo pedido</div><h1 className="mt-1 font-barlow-condensed text-3xl font-black uppercase">Anotar pedidos</h1></div>
-            <label className="flex h-11 w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 shadow-sm sm:max-w-xs"><Search size={18} className="text-slate-400" /><input value={busca} onChange={(event) => setBusca(event.target.value)} className="w-full bg-transparent text-sm outline-none" placeholder="Buscar no cardapio..." /></label>
+            <label className="flex h-11 w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 shadow-sm sm:max-w-xs"><Search size={18} className="text-slate-400" /><input value={busca} onChange={(event) => setBusca(event.target.value)} className="w-full bg-transparent text-sm outline-none" placeholder="Buscar no cardápio..." /></label>
           </div>
 
-          {carregandoCardapio && <div className="mb-5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-500">Carregando cardapio do backend...</div>}
+          {carregandoCardapio && <div className="mb-5 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-500">Carregando cardápio do backend...</div>}
           {!carregandoCardapio && avisoCardapio && <div className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-800">{avisoCardapio}</div>}
 
           {secoesFiltradas.map((secao) => (
@@ -590,8 +607,19 @@ export default function AnotarPedidos() {
           ))}
         </main>
 
-        <ResumoPedido key={resumoKey} pedido={pedido} subtotal={subtotal} pagamento={pagamento} fidelidade={fidelidade} unidades={unidades} unidadeId={unidadeId} nomeComanda={nomeComanda} clientePedido={clientePedido} pedidosAbertos={pedidosAbertos} pedidoAbertoId={pedidoAbertoId} usarDescontoFidelidade={usarDescontoFidelidade} finalizando={finalizando} editandoItemId={editandoItemId} mensagemPedido={mensagemPedido} onPagamento={setPagamento} onFidelidade={setFidelidade} onQuantidade={alterarQuantidade} onEditarItemRegistrado={editarItemRegistrado} onAtualizarObservacao={atualizarObservacaoItemRegistrado} onUnidade={alterarUnidade} onNomeComanda={setNomeComanda} onCliente={setClientePedido} onUsarDesconto={setUsarDescontoFidelidade} onSalvarAberto={salvarPedidoAberto} onFinalizar={finalizarPedido} />
+        <ResumoPedido key={resumoKey} pedido={pedido} subtotal={subtotal} pagamento={pagamento} fidelidade={fidelidade} unidades={unidades} unidadeId={unidadeId} unidadeBloqueada={Boolean(unidadeUsuarioId)} nomeComanda={nomeComanda} clientePedido={clientePedido} pedidosAbertos={pedidosAbertos} pedidoAbertoId={pedidoAbertoId} usarDescontoFidelidade={usarDescontoFidelidade} finalizando={finalizando} editandoItemId={editandoItemId} mensagemPedido={mensagemPedido} onPagamento={setPagamento} onFidelidade={setFidelidade} onQuantidade={alterarQuantidade} onEditarItemRegistrado={editarItemRegistrado} onAtualizarObservacao={atualizarObservacaoItemRegistrado} onUnidade={alterarUnidade} onNomeComanda={setNomeComanda} onCliente={setClientePedido} onUsarDesconto={setUsarDescontoFidelidade} onSalvarAberto={salvarPedidoAberto} onFinalizar={finalizarPedido} />
       </div>
+
+      <button
+        type="button"
+        onClick={() =>
+          document.getElementById('resumo-pedido')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+        className="fixed bottom-5 left-1/2 z-40 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-emerald-600 text-white shadow-[0_8px_24px_rgba(5,150,105,0.35)] transition hover:brightness-95 active:scale-95 lg:hidden"
+        aria-label="Ir para o resumo do pedido"
+      >
+        <ChevronDown size={24} strokeWidth={2.5} />
+      </button>
 
       {produtoEmConfiguracao && <ModalConfiguracao produto={produtoEmConfiguracao} onFechar={() => setProdutoEmConfiguracao(null)} onAdicionar={(item) => { adicionarAoPedido(item); setProdutoEmConfiguracao(null) }} />}
     </div>
@@ -610,21 +638,29 @@ function CardProduto({ produto, onAdicionar }: { produto: Produto; onAdicionar: 
         <div className="flex items-start justify-between gap-3"><h3 className="font-barlow-condensed text-lg font-black">{produto.nome}</h3><div className="shrink-0 text-right">{produto.variacoes && <span className="block text-[9px] uppercase text-slate-400">A partir de</span>}<strong className="whitespace-nowrap text-sm">{moeda(produto.preco)}</strong></div></div>
         <p className="mt-1 flex-1 text-xs leading-5 text-slate-400">{produto.descricao}</p>
         {produto.permiteCombo && <p className="mt-2 text-[10px] font-bold uppercase text-emerald-600">Disponivel individual ou combo</p>}
-        <button type="button" onClick={() => onAdicionar(produto)} className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-amarelo px-4 py-2.5 text-xs font-black transition hover:brightness-95"><Plus size={15} /> {produto.variacoes || produto.permiteCombo ? 'Escolher opcoes' : 'Adicionar'}</button>
+        <button type="button" onClick={() => onAdicionar(produto)} className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-amarelo px-4 py-2.5 text-xs font-black transition hover:brightness-95"><Plus size={15} /> {produto.variacoes || produto.permiteCombo ? 'Escolher opções' : 'Adicionar'}</button>
       </div>
     </article>
   )
 }
 
 function ModalConfiguracao({ produto, onFechar, onAdicionar }: { produto: Produto; onFechar: () => void; onAdicionar: (item: Omit<ItemPedido, 'quantidade'>) => void }) {
-  const [variacao, setVariacao] = useState(produto.variacoes?.[0] ?? null)
-  const [combo, setCombo] = useState(false)
+  const temVariacoesMultiplas = Boolean(produto.variacoes && produto.variacoes.length > 1)
+  const [variacao, setVariacao] = useState<VariacaoProduto | null>(
+    temVariacoesMultiplas ? null : (produto.variacoes?.[0] ?? null),
+  )
+  const [comboEscolha, setComboEscolha] = useState<boolean | null>(produto.permiteCombo ? null : false)
   const [bebida, setBebida] = useState(bebidasCombo[0])
   const [observacao, setObservacao] = useState('')
+  const combo = comboEscolha === true
   const precoIndividual = variacao?.preco ?? produto.preco
   const precoFinal = combo ? (variacao?.precoCombo ?? precoIndividual + 13) : precoIndividual
+  const tamanhoRespondido = !temVariacoesMultiplas || variacao !== null
+  const comboRespondido = !produto.permiteCombo || comboEscolha !== null
+  const podeAdicionar = tamanhoRespondido && comboRespondido
 
   function confirmar() {
+    if (!podeAdicionar) return
     const nomeBase = variacao?.nome ?? produto.nome
     const descricaoBase = variacao?.descricao ?? produto.descricao
     onAdicionar({
@@ -644,9 +680,44 @@ function ModalConfiguracao({ produto, onFechar, onAdicionar }: { produto: Produt
       <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl bg-white shadow-2xl" onClick={(event) => event.stopPropagation()}>
         <div className="relative h-40 overflow-hidden sm:h-48"><img src={produto.imagem} alt={produto.nome} className="h-full w-full object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/10" /><button type="button" onClick={onFechar} className="absolute right-4 top-4 rounded-full bg-white/95 p-2 shadow-md" aria-label="Fechar"><X size={20} /></button><div className="absolute bottom-4 left-5 text-white"><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-amarelo">Configure o item</p><h2 className="font-barlow-condensed text-3xl font-black uppercase">{produto.nome}</h2></div></div>
         <div className="space-y-6 p-5 sm:p-6">
-          {produto.variacoes && produto.variacoes.length > 1 && <GrupoConfiguracao titulo="Escolha o tamanho" descricao="Selecione uma opcao.">{produto.variacoes.map((opcao, index) => <BotaoOpcao key={opcao.id} ativo={variacao?.id === opcao.id} titulo={opcao.nome} descricao={opcao.descricao} preco={opcao.preco} marcador={`${index + 1}x`} onClick={() => setVariacao(opcao)} />)}</GrupoConfiguracao>}
+          {produto.variacoes && produto.variacoes.length > 1 && (
+            <GrupoConfiguracao titulo="Escolha o tamanho" descricao="Selecione uma opção." obrigatorio>
+              {produto.variacoes.map((opcao, index) => (
+                <BotaoOpcao
+                  key={opcao.id}
+                  ativo={variacao?.id === opcao.id}
+                  titulo={opcao.nome}
+                  descricao={opcao.descricao}
+                  preco={opcao.preco}
+                  marcador={`${index + 1}x`}
+                  onClick={() => setVariacao(opcao)}
+                />
+              ))}
+            </GrupoConfiguracao>
+          )}
 
-          {produto.permiteCombo && <GrupoConfiguracao titulo="Deseja transformar em combo?" descricao="O combo acompanha Paraiba Chips e uma bebida."><BotaoOpcao ativo={!combo} titulo="Somente o lanche" descricao="Sem acompanhamento ou bebida" preco={precoIndividual} onClick={() => setCombo(false)} /><BotaoOpcao ativo={combo} titulo="Quero o combo" descricao="Paraiba Chips + bebida" preco={variacao?.precoCombo ?? precoIndividual + 13} onClick={() => setCombo(true)} /></GrupoConfiguracao>}
+          {produto.permiteCombo && (
+            <GrupoConfiguracao
+              titulo="Deseja transformar em combo?"
+              descricao="O combo acompanha Paraíba Chips e uma bebida."
+              obrigatorio
+            >
+              <BotaoOpcao
+                ativo={comboEscolha === false}
+                titulo="Somente o lanche"
+                descricao="Sem acompanhamento ou bebida"
+                preco={precoIndividual}
+                onClick={() => setComboEscolha(false)}
+              />
+              <BotaoOpcao
+                ativo={comboEscolha === true}
+                titulo="Quero o combo"
+                descricao="Paraiba Chips + bebida"
+                preco={variacao?.precoCombo ?? precoIndividual + 13}
+                onClick={() => setComboEscolha(true)}
+              />
+            </GrupoConfiguracao>
+          )}
 
           {combo && <GrupoConfiguracao titulo="Escolha a bebida" descricao="Selecione a bebida do combo.">{bebidasCombo.map((opcao) => <BotaoOpcao key={opcao} ativo={bebida === opcao} titulo={opcao} onClick={() => setBebida(opcao)} />)}</GrupoConfiguracao>}
 
@@ -655,22 +726,47 @@ function ModalConfiguracao({ produto, onFechar, onAdicionar }: { produto: Produt
             <textarea value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Ex: sem cebola, ponto da carne bem passado..." maxLength={200} rows={3} className="mt-3 w-full resize-none rounded-xl border border-slate-200 p-3 text-sm placeholder:text-slate-300 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400" />
           </section>
 
-          <div className="sticky bottom-0 -mx-5 -mb-5 flex gap-3 border-t border-slate-200 bg-white p-5 sm:-mx-6 sm:-mb-6 sm:p-6"><button type="button" onClick={onFechar} className="rounded-xl border border-slate-200 px-5 py-3 text-xs font-bold uppercase text-slate-500">Cancelar</button><button type="button" onClick={confirmar} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amarelo px-4 py-3 text-xs font-black uppercase"><Plus size={16} /> Adicionar - {moeda(precoFinal)}</button></div>
+          <div className="sticky bottom-0 -mx-5 -mb-5 flex gap-3 border-t border-slate-200 bg-white p-5 sm:-mx-6 sm:-mb-6 sm:p-6"><button type="button" onClick={onFechar} className="rounded-xl border border-slate-200 px-5 py-3 text-xs font-bold uppercase text-slate-500">Cancelar</button><button type="button" disabled={!podeAdicionar} onClick={confirmar} className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amarelo px-4 py-3 text-xs font-black uppercase disabled:cursor-not-allowed disabled:opacity-50"><Plus size={16} /> Adicionar - {moeda(precoFinal)}</button></div>
         </div>
       </div>
     </div>
   )
 }
 
-function GrupoConfiguracao({ titulo, descricao, children }: { titulo: string; descricao: string; children: ReactNode }) {
-  return <section><div><h3 className="text-sm font-black">{titulo}</h3><p className="mt-0.5 text-xs text-slate-400">{descricao}</p></div><div className="mt-3 space-y-2">{children}</div></section>
+function GrupoConfiguracao({
+  titulo,
+  descricao,
+  obrigatorio = false,
+  children,
+}: {
+  titulo: string
+  descricao: string
+  obrigatorio?: boolean
+  children: ReactNode
+}) {
+  return (
+    <section>
+      <div>
+        <h3 className="text-sm font-black">
+          {titulo}
+          {obrigatorio && (
+            <span className="ml-1 text-red-600" aria-hidden>
+              *
+            </span>
+          )}
+        </h3>
+        <p className="mt-0.5 text-xs text-slate-400">{descricao}</p>
+      </div>
+      <div className="mt-3 space-y-2">{children}</div>
+    </section>
+  )
 }
 
 function BotaoOpcao({ ativo, titulo, descricao, preco, marcador, onClick }: { ativo: boolean; titulo: string; descricao?: string; preco?: number; marcador?: string; onClick: () => void }) {
   return <button type="button" onClick={onClick} className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${ativo ? 'border-emerald-500 bg-emerald-50 shadow-sm' : 'border-slate-200 hover:border-slate-300'}`}><span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-black ${ativo ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>{marcador ?? <span className={`h-3 w-3 rounded-full border-2 ${ativo ? 'border-white bg-white' : 'border-slate-300'}`} />}</span><span className="min-w-0 flex-1"><span className="block text-sm font-black">{titulo}</span>{descricao && <span className="mt-0.5 block text-xs text-slate-400">{descricao}</span>}</span>{preco !== undefined && <strong className="whitespace-nowrap text-sm">{moeda(preco)}</strong>}</button>
 }
 
-function ResumoPedido({ pedido, subtotal, pagamento, fidelidade, unidades, unidadeId, nomeComanda, clientePedido, pedidosAbertos, pedidoAbertoId, usarDescontoFidelidade, finalizando, editandoItemId, mensagemPedido, onPagamento, onFidelidade, onQuantidade, onEditarItemRegistrado, onAtualizarObservacao, onUnidade, onNomeComanda, onCliente, onUsarDesconto, onSalvarAberto, onFinalizar }: { pedido: ItemPedido[]; subtotal: number; pagamento: string; fidelidade: 'cadastro' | 'sem-cadastro'; unidades: Unidade[]; unidadeId: number | null; nomeComanda: string; clientePedido: ClienteVinculado | null; pedidosAbertos: PedidoApi[]; pedidoAbertoId: number | null; usarDescontoFidelidade: boolean; finalizando: boolean; editandoItemId: number | null; mensagemPedido: string; onPagamento: (valor: string) => void; onFidelidade: (valor: 'cadastro' | 'sem-cadastro') => void; onQuantidade: (id: string, quantidade: number) => void; onEditarItemRegistrado: (item: PedidoApi['itens'][number], acao: 'adicionar' | 'remover' | 'excluir') => void; onAtualizarObservacao: (itemId: number, observacao: string | null) => Promise<void>; onUnidade: (id: number) => void; onNomeComanda: (nome: string) => void; onCliente: (cliente: ClienteVinculado | null) => void; onUsarDesconto: (usar: boolean) => void; onSalvarAberto: () => void; onFinalizar: () => void }) {
+function ResumoPedido({ pedido, subtotal, pagamento, fidelidade, unidades, unidadeId, unidadeBloqueada, nomeComanda, clientePedido, pedidosAbertos, pedidoAbertoId, usarDescontoFidelidade, finalizando, editandoItemId, mensagemPedido, onPagamento, onFidelidade, onQuantidade, onEditarItemRegistrado, onAtualizarObservacao, onUnidade, onNomeComanda, onCliente, onUsarDesconto, onSalvarAberto, onFinalizar }: { pedido: ItemPedido[]; subtotal: number; pagamento: string; fidelidade: 'cadastro' | 'sem-cadastro'; unidades: Unidade[]; unidadeId: number | null; unidadeBloqueada: boolean; nomeComanda: string; clientePedido: ClienteVinculado | null; pedidosAbertos: PedidoApi[]; pedidoAbertoId: number | null; usarDescontoFidelidade: boolean; finalizando: boolean; editandoItemId: number | null; mensagemPedido: string; onPagamento: (valor: string) => void; onFidelidade: (valor: 'cadastro' | 'sem-cadastro') => void; onQuantidade: (id: string, quantidade: number) => void; onEditarItemRegistrado: (item: PedidoApi['itens'][number], acao: 'adicionar' | 'remover' | 'excluir') => void; onAtualizarObservacao: (itemId: number, observacao: string | null) => Promise<void>; onUnidade: (id: number) => void; onNomeComanda: (nome: string) => void; onCliente: (cliente: ClienteVinculado | null) => void; onUsarDesconto: (usar: boolean) => void; onSalvarAberto: () => void; onFinalizar: () => void }) {
   const [identificacao, setIdentificacao] = useState('')
   const [clienteVinculado, setClienteVinculado] = useState<FidelidadeCliente | null>(null)
   const [consultandoCliente, setConsultandoCliente] = useState(false)
@@ -715,7 +811,7 @@ function ResumoPedido({ pedido, subtotal, pagamento, fidelidade, unidades, unida
       const cliente = await consultarFidelidade(valor)
       if (!cliente) {
         setClienteVinculado(null)
-        setErroFidelidade('Cliente nao encontrado no programa fidelidade.')
+        setErroFidelidade('Cliente não encontrado no programa fidelidade.')
         return
       }
       setClienteVinculado(cliente)
@@ -723,7 +819,7 @@ function ResumoPedido({ pedido, subtotal, pagamento, fidelidade, unidades, unida
       if (!nomeComanda.trim()) onNomeComanda(cliente.nome)
     } catch (error) {
       console.error('Loyalty lookup error:', error)
-      setErroFidelidade('Nao foi possivel consultar a fidelidade agora.')
+      setErroFidelidade('Não foi possível consultar a fidelidade agora.')
     } finally {
       setConsultandoCliente(false)
     }
@@ -741,7 +837,7 @@ function ResumoPedido({ pedido, subtotal, pagamento, fidelidade, unidades, unida
   }
 
   return (
-    <aside className="border-t border-slate-200 bg-white lg:sticky lg:top-0 lg:flex lg:h-[calc(100vh-4rem)] lg:flex-col lg:border-l lg:border-t-0">
+    <aside id="resumo-pedido" className="scroll-mt-20 border-t border-slate-200 bg-white lg:sticky lg:top-16 lg:flex lg:h-[calc(100vh-4rem)] lg:flex-col lg:border-l lg:border-t-0 lg:scroll-mt-0">
       <div className="border-b border-slate-200 px-6 py-6">
         <h2 className="font-barlow-condensed text-xl font-black uppercase">Resumo do pedido</h2>
         <p className="mt-1 text-xs text-slate-400">Confira os itens antes de finalizar.</p>
@@ -750,11 +846,11 @@ function ResumoPedido({ pedido, subtotal, pagamento, fidelidade, unidades, unida
       <div className="flex-1 overflow-y-auto px-5 py-5">
         <div className="mb-5 grid gap-2">
           <label className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Unidade</label>
-          <select value={unidadeId ?? ''} onChange={(event) => onUnidade(Number(event.target.value))} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs outline-none focus:border-emerald-500">
+          <select value={unidadeId ?? ''} onChange={(event) => onUnidade(Number(event.target.value))} disabled={unidadeBloqueada} className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-xs outline-none focus:border-emerald-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500">
             <option value="">Selecione</option>
             {unidades.map((unidade) => <option key={unidade.id} value={unidade.id}>{unidade.nome}</option>)}
           </select>
-          {pedidoAbertoId && <p className={`rounded-lg px-3 py-2 text-[10px] font-semibold ${pedidoEmPreparo ? 'bg-blue-50 text-blue-800' : 'bg-amber-50 text-amber-800'}`}>{pedidoEmPreparo ? `O pedido #${pedidoAbertoId} ja esta sendo preparado e nao pode mais ser alterado.` : `Editando o pedido #${pedidoAbertoId}. Se ele ja estiver pago, sera reaberto e precisara de novo fechamento.`}</p>}
+          {pedidoAbertoId && <p className={`rounded-lg px-3 py-2 text-[10px] font-semibold ${pedidoEmPreparo ? 'bg-blue-50 text-blue-800' : 'bg-amber-50 text-amber-800'}`}>{pedidoEmPreparo ? `O pedido #${pedidoAbertoId} já está sendo preparado e não pode mais ser alterado.` : `Editando o pedido #${pedidoAbertoId}. Se ele já estiver pago, será reaberto e precisará de novo fechamento.`}</p>}
           <label className="mt-2 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Nome da comanda</label>
           <input value={nomeComanda} onChange={(event) => onNomeComanda(event.target.value)} disabled={Boolean(pedidoAbertoId)} placeholder="Ex.: Mesa 3 ou Samuel" className="h-10 rounded-lg border border-slate-200 px-3 text-xs outline-none focus:border-emerald-500 disabled:bg-slate-100" />
         </div>
@@ -788,7 +884,7 @@ function ResumoPedido({ pedido, subtotal, pagamento, fidelidade, unidades, unida
               <>
                 <div className="flex items-center justify-between gap-3">
                   <div><p className="text-xs font-bold">Deseja cadastrar o cliente?</p><p className="mt-0.5 text-[10px] text-slate-400">O pedido pode continuar sem cadastro.</p></div>
-                  <button type="button" onClick={() => { setQuerCadastrar((valor) => !valor); setErroFidelidade('') }} className={`rounded-lg px-3 py-2 text-[10px] font-black uppercase ${querCadastrar ? 'bg-slate-200 text-slate-600' : 'bg-amarelo text-preto-v1'}`}>{querCadastrar ? 'Agora nao' : 'Cadastrar'}</button>
+                  <button type="button" onClick={() => { setQuerCadastrar((valor) => !valor); setErroFidelidade('') }} className={`rounded-lg px-3 py-2 text-[10px] font-black uppercase ${querCadastrar ? 'bg-slate-200 text-slate-600' : 'bg-amarelo text-preto-v1'}`}>{querCadastrar ? 'Agora não' : 'Cadastrar'}</button>
                 </div>
                 {querCadastrar && (
                   <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
@@ -803,7 +899,7 @@ function ResumoPedido({ pedido, subtotal, pagamento, fidelidade, unidades, unida
                         setCadastroConcluido(true)
                         onCliente({ id: cliente.id, nome: cliente.nome, pontos: cliente.pontos_fidelidade, totalParaPremio: 10 })
                       } catch (error) {
-                        setErroFidelidade(error instanceof Error ? error.message : 'Nao foi possivel cadastrar o cliente.')
+                        setErroFidelidade(error instanceof Error ? error.message : 'Não foi possível cadastrar o cliente.')
                       }
                     }} className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-3 py-2.5 text-[10px] font-black uppercase text-white"><UserPlus size={15} /> Cadastrar e vincular</button>
                   </div>
@@ -833,7 +929,7 @@ function ResumoPedido({ pedido, subtotal, pagamento, fidelidade, unidades, unida
 
         {itensRegistrados.length > 0 && (
           <section className="mb-4">
-            <div className="mb-2 flex items-center justify-between"><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Itens ja registrados</p><span className="rounded-full bg-slate-100 px-2 py-1 text-[9px] font-bold text-slate-500">Pedido #{pedidoAbertoId}</span></div>
+            <div className="mb-2 flex items-center justify-between"><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Itens já registrados</p><span className="rounded-full bg-slate-100 px-2 py-1 text-[9px] font-bold text-slate-500">Pedido #{pedidoAbertoId}</span></div>
             <div className="space-y-2">
               {itensRegistrados.map((item) => (
                 <div key={item.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
@@ -910,7 +1006,7 @@ function ResumoPedido({ pedido, subtotal, pagamento, fidelidade, unidades, unida
 
         {pedido.length > 0 && <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">Novos itens</p>}
         {pedido.length === 0 && itensRegistrados.length === 0 ? (
-          <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 text-center"><ShoppingBag size={32} strokeWidth={1.5} className="text-slate-300" /><p className="mt-3 text-sm font-bold">Seu pedido esta vazio</p><p className="mt-1 text-xs text-slate-400">Adicione produtos do cardapio.</p></div>
+          <div className="flex min-h-48 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 text-center"><ShoppingBag size={32} strokeWidth={1.5} className="text-slate-300" /><p className="mt-3 text-sm font-bold">Seu pedido está vazio</p><p className="mt-1 text-xs text-slate-400">Adicione produtos do cardápio.</p></div>
         ) : pedido.length > 0 ? (
           <div className="space-y-3">{pedido.map((item) => <div key={item.id} className="rounded-xl border border-slate-200 p-3"><div className="flex justify-between gap-3"><div><p className="text-sm font-bold">{item.nome}</p><p className="mt-1 text-[10px] leading-4 text-slate-400">{item.descricao}</p><p className="mt-1 text-xs text-slate-400">{moeda(item.preco)} cada</p></div><button type="button" onClick={() => onQuantidade(item.id, 0)} className="text-slate-300 hover:text-red-500"><Trash2 size={16} /></button></div><div className="mt-3 flex items-center justify-between"><div className="flex items-center overflow-hidden rounded-lg border border-slate-200"><button type="button" onClick={() => onQuantidade(item.id, item.quantidade - 1)} className="p-2"><Minus size={13} /></button><span className="min-w-8 text-center text-xs font-bold">{item.quantidade}</span><button type="button" onClick={() => onQuantidade(item.id, item.quantidade + 1)} className="p-2"><Plus size={13} /></button></div><strong className="text-sm">{moeda(item.preco * item.quantidade)}</strong></div></div>)}</div>
         ) : null}
@@ -987,7 +1083,7 @@ function mapearCardapioApi(
   return Array.from(grupos.entries()).map(([titulo, produtos], index) => ({
     id: `api-${index}-${normalizarTexto(titulo)}`,
     titulo,
-    subtitulo: 'Produtos e precos carregados diretamente do backend.',
+    subtitulo: 'Produtos e preços carregados diretamente do backend.',
     produtos,
   }))
 }
