@@ -5,10 +5,10 @@ import BarraDeNavegacaoAdmin, {
 } from '../../componentes/administrador/BarraDeNavegacaoAdmin'
 import { useAuth } from '../../contextos/useAuth'
 import { listarUnidades, type Unidade } from '../../servicos/api'
+import { buildApiUrl, getStoredToken } from '../../servicos/apiFetch'
 import {
   atualizarStatusCozinha,
   cancelarPedido,
-  listarCozinha,
   listarPedidosCancelados,
   type CozinhaItem,
   type PedidoApi,
@@ -22,6 +22,8 @@ const ABAS_COZINHA: Array<{ id: AbaCozinha; label: string }> = [
   { id: 'entregues', label: 'Entregues' },
   { id: 'cancelados', label: 'Cancelados' },
 ]
+
+const TEMPO_PEDIDO_ENTREGUE_NA_FILA_MS = 20000
 
 function textoQuantidadePedidos(
   aba: AbaCozinha,
@@ -469,29 +471,13 @@ export default function Cozinha() {
   const [unidades, setUnidades] = useState<Unidade[]>([])
   const [unidadeSelecionadaId, setUnidadeSelecionadaId] = useState<number | null>(null)
 
+  const entreguesRecentesRef = useRef<Record<string, number>>({})
+  const savedForUnidadeRef = useRef<number | null>(null)
+
   const unidadeSelecionada = useMemo(
     () => unidades.find((unidade) => unidade.id === unidadeSelecionadaId) ?? null,
     [unidadeSelecionadaId, unidades],
   )
-
-  async function carregarCozinha() {
-    if (!unidadeSelecionadaId) return
-
-    try {
-      setLoading(true)
-      setErro('')
-      const items = await listarCozinha(unidadeSelecionadaId)
-      const grupos = agruparItens(items)
-      setFila(grupos.filter((p) => p.status !== 'entregue' && p.status !== 'cancelado'))
-      setEntregues(grupos.filter((p) => p.status === 'entregue'))
-    } catch {
-      setErro('Não foi possível carregar a fila da API.')
-      setFila([])
-      setEntregues([])
-    } finally {
-      setLoading(false)
-    }
-  }
 
   async function carregarCancelados() {
     if (!unidadeSelecionadaId) return
@@ -549,19 +535,79 @@ export default function Cozinha() {
       return
     }
 
-    const timeout = window.setTimeout(() => {
-      void carregarCozinha()
-    }, 0)
+    const token = getStoredToken()
+    if (!token) {
+      setErro('Sessão expirada. Faça login novamente.')
+      setLoading(false)
+      return
+    }
 
-    const intervalo = window.setInterval(() => {
-      void carregarCozinha()
-    }, 5000)
+    setLoading(true)
+    const url = buildApiUrl(`/pedidos/cozinha/stream/${unidadeSelecionadaId}`, { token })
+    const es = new EventSource(url)
+
+    es.onopen = () => {
+      setErro('')
+    }
+
+    es.onmessage = (event) => {
+      try {
+        const items = JSON.parse(event.data as string) as CozinhaItem[]
+        const grupos = agruparItens(items)
+        const agora = Date.now()
+        setFila(
+          grupos.filter((p) => {
+            if (p.status === 'cancelado') return false
+            if (p.status !== 'entregue') return true
+            return (entreguesRecentesRef.current[`${p.id}-${p.lote}`] ?? 0) > agora
+          }),
+        )
+        setLoading(false)
+        setErro('')
+      } catch {
+        setErro('Erro ao processar dados da cozinha.')
+      }
+    }
+
+    es.onerror = () => {
+      setErro('Conexão perdida. Reconectando...')
+      setLoading(false)
+    }
 
     return () => {
-      window.clearTimeout(timeout)
-      window.clearInterval(intervalo)
+      es.close()
     }
   }, [aba, unidadeSelecionadaId])
+
+  useEffect(() => {
+    savedForUnidadeRef.current = null
+    if (!unidadeSelecionadaId) {
+      setEntregues([])
+      return
+    }
+    const key = `entregues-cozinha-${unidadeSelecionadaId}`
+    try {
+      const salvo = localStorage.getItem(key)
+      const parsed = salvo ? (JSON.parse(salvo) as PedidoCozinha[]) : []
+      setEntregues(parsed)
+    } catch {
+      setEntregues([])
+    }
+  }, [unidadeSelecionadaId])
+
+  useEffect(() => {
+    if (!unidadeSelecionadaId) return
+    if (savedForUnidadeRef.current !== unidadeSelecionadaId) {
+      savedForUnidadeRef.current = unidadeSelecionadaId
+      return
+    }
+    const key = `entregues-cozinha-${unidadeSelecionadaId}`
+    try {
+      localStorage.setItem(key, JSON.stringify(entregues))
+    } catch {
+      console.warn('[cozinha] SAVE erro localStorage indisponível')
+    }
+  }, [entregues, unidadeSelecionadaId])
 
   const pedidosVisiveis = useMemo(() => {
     if (aba === 'fila') return fila
@@ -584,8 +630,21 @@ export default function Cozinha() {
 
   function atualizarPedidoLocal(pedido: PedidoCozinha, status: 'preparando' | 'entregue') {
     if (status === 'entregue') {
-      setFila((atual) => atual.filter((item) => !(item.id === pedido.id && item.lote === pedido.lote)))
-      setEntregues((atual) => [{ ...pedido, status: 'entregue' }, ...atual])
+      const key = `${pedido.id}-${pedido.lote}`
+      const pedidoEntregue = { ...pedido, status: 'entregue' as const }
+      entreguesRecentesRef.current[key] = Date.now() + TEMPO_PEDIDO_ENTREGUE_NA_FILA_MS
+
+      setFila((atual) =>
+        atual.map((item) => (item.id === pedido.id && item.lote === pedido.lote ? pedidoEntregue : item)),
+      )
+      setEntregues((atual) => [
+        pedidoEntregue,
+        ...atual.filter((item) => !(item.id === pedido.id && item.lote === pedido.lote)),
+      ])
+      window.setTimeout(() => {
+        delete entreguesRecentesRef.current[key]
+        setFila((atual) => atual.filter((item) => !(item.id === pedido.id && item.lote === pedido.lote)))
+      }, TEMPO_PEDIDO_ENTREGUE_NA_FILA_MS)
       return
     }
 
@@ -688,9 +747,18 @@ export default function Cozinha() {
         </div>
 
         {!loading && (
-          <p className="mb-4 font-barlow text-sm text-[#666666] lg:mx-auto lg:max-w-3xl">
-            {textoContagem}
-          </p>
+          <div className="mb-4 flex items-center justify-between gap-3 lg:mx-auto lg:max-w-3xl">
+            <p className="font-barlow text-sm text-[#666666]">{textoContagem}</p>
+            {aba === 'entregues' && entregues.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setEntregues([])}
+                className="shrink-0 rounded-lg border border-slate-200 px-3 py-1.5 font-barlow text-xs font-semibold text-slate-500 transition-colors hover:border-slate-300 hover:text-slate-700"
+              >
+                Limpar lista
+              </button>
+            )}
+          </div>
         )}
 
         {(loading || erro) && (
