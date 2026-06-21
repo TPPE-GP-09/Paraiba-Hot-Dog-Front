@@ -3,6 +3,7 @@ type JwtPayload = {
   sub?: string
   email?: string
   preferred_username?: string
+  roles?: string[]
   realm_access?: {
     roles?: string[]
   }
@@ -31,8 +32,9 @@ export function lerPayloadToken(token: string | null): JwtPayload | null {
 
 export function extrairRolesToken(token: string | null) {
   const payload = lerPayloadToken(token)
-  const roles = new Set(payload?.realm_access?.roles ?? [])
+  const roles = new Set(payload?.roles ?? [])
 
+  payload?.realm_access?.roles?.forEach((role) => roles.add(role))
   Object.values(payload?.resource_access ?? {}).forEach((client) => {
     client.roles?.forEach((role) => roles.add(role))
   })

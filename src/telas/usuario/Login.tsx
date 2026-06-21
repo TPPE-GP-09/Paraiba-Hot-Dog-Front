@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import logoBranca from '../../imagens/logos/logo-branca.png'
-import { loginWithKeycloak } from '../../servicos/authApi'
+import { loginComJwt } from '../../servicos/authApi'
 import { extrairEmailToken, tokenPossuiRole } from '../../servicos/authToken'
 import { listarUsuariosApi } from '../../servicos/usuariosApi'
 
@@ -16,7 +16,7 @@ export default function Login() {
     setLoading(true)
 
     try {
-      const tokens = await loginWithKeycloak(email, password)
+      const tokens = await loginComJwt(email, password)
       localStorage.setItem('logged_user_email', email)
 
       if (tokenPossuiRole(tokens.access_token, 'administrador')) {
@@ -121,16 +121,12 @@ export default function Login() {
           </form>
 
           <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() =>
-                (window.location.href =
-                  'http://localhost:8080/realms/master/login-actions/reset-credentials?client_id=account-console')
-              }
+            <a
+              href="/esqueci-senha"
               className="font-barlow text-sm text-cinza-base underline-offset-2 transition-colors hover:text-amarelo hover:underline"
             >
               Esqueci minha senha
-            </button>
+            </a>
           </div>
 
 

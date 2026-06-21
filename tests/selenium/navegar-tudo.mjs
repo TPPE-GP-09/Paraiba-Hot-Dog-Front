@@ -12,13 +12,13 @@ writeFileSync(
   Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64'),
 )
 
-const BASE_URL = normalizeBaseUrl(process.env.SELENIUM_BASE_URL ?? 'https://paraiba-three.vercel.app')
-const API_BASE_URL = normalizeBaseUrl(process.env.SELENIUM_API_BASE_URL ?? 'https://paraiba-hot-dog-back.onrender.com')
-const LOGIN = process.env.SELENIUM_LOGIN ?? 'admin.paraiba@gmail.com'
-const PASSWORD = process.env.SELENIUM_PASSWORD ?? 'paraiba'
-const HEADLESS = process.env.SELENIUM_HEADLESS !== 'false'
+const BASE_URL = normalizeBaseUrl(process.env.SELENIUM_BASE_URL ?? 'http://localhost:5173')
+const API_BASE_URL = normalizeBaseUrl(process.env.SELENIUM_API_BASE_URL ?? 'http://localhost:8000')
+const LOGIN = process.env.SELENIUM_LOGIN ?? 'admin.paraiba@example.com'
+const PASSWORD = process.env.SELENIUM_PASSWORD ?? 'Admin@2026'
+const HEADLESS = process.env.SELENIUM_HEADLESS !== 'true'
 const TIMEOUT_MS = Number(process.env.SELENIUM_TIMEOUT_MS ?? 45000)
-const STEP_DELAY_MS = Number(process.env.SELENIUM_STEP_DELAY_MS ?? (HEADLESS ? 0 : 700))
+const STEP_DELAY_MS = Number(process.env.SELENIUM_STEP_DELAY_MS ?? (HEADLESS ? 0 : 300))
 
 const publicRoutes = [
   '/',

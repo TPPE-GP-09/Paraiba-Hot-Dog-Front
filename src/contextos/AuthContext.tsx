@@ -3,7 +3,6 @@ import { getStoredToken } from '../servicos/apiFetch'
 import {
   extrairEmailToken,
   extrairRolesToken,
-  extrairSubjectToken,
   tokenExpirado,
 } from '../servicos/authToken'
 import { listarUsuariosApi, type UsuarioApi } from '../servicos/usuariosApi'
@@ -46,7 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const emailToken = extrairEmailToken(token)
     const emailSalvo = localStorage.getItem(loggedUserEmailKey)
     const identificadorEmail = emailToken?.includes('@') ? emailToken : emailSalvo
-    const subject = extrairSubjectToken(token)
 
     if (!isAuthenticated) {
       setUsuarioAtual(null)
@@ -66,7 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!ativo) return
 
         const usuarioEncontrado =
-          usuarios.find((usuario) => subject && usuario.keycloak_id === subject) ??
           usuarios.find((usuario) => emailToken && usuario.email === emailToken) ??
           usuarios.find((usuario) => identificadorEmail && usuario.email === identificadorEmail) ??
           null
